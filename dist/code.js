@@ -18,7 +18,7 @@ const iconMap = Object.freeze({
 });
 // Globals
 var jsonContainer = document.querySelector("#jsonContainer");
-function loadJson() {
+function loadJsonFile() {
     return __awaiter(this, void 0, void 0, function* () {
         const name = document.querySelector("#name");
         if (name) {
@@ -36,6 +36,14 @@ function loadJson() {
             }
         }
     });
+}
+function loadJsonString() {
+    const name = document.querySelector("#name");
+    if (name) {
+        const nameVal = name.value;
+        const json = JSON.parse(nameVal);
+        vizJson(json);
+    }
 }
 function clearJson() {
     jsonContainer.textContent = null;
@@ -111,4 +119,4 @@ function vizJson(obj) {
         parseObject(obj, jsonContainer);
     }
 }
-(() => __awaiter(void 0, void 0, void 0, function* () { return yield loadJson(); }))();
+(() => __awaiter(void 0, void 0, void 0, function* () { return yield loadJsonFile(); }))();

@@ -12,7 +12,7 @@ const iconMap: Readonly<any> = Object.freeze({
 // Globals
 var jsonContainer: HTMLDivElement = document.querySelector("#jsonContainer")!;
 
-async function loadJson(): Promise<void> {
+async function loadJsonFile(): Promise<void> {
   const name = document.querySelector("#name");
   if (name) {
     try {
@@ -21,9 +21,9 @@ async function loadJson(): Promise<void> {
       if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
       }
-      
+
       const json = await response.json();
-      
+
       vizJson(json);
 
     } catch (error: any) {
@@ -32,7 +32,16 @@ async function loadJson(): Promise<void> {
   }
 }
 
-function clearJson(){
+function loadJsonString(): void {
+  const name = document.querySelector("#name");
+  if (name) {
+    const nameVal = (name as HTMLInputElement).value;
+    const json = JSON.parse(nameVal);
+    vizJson(json);
+  }
+}
+
+function clearJson() {
   jsonContainer.textContent = null;
 }
 
@@ -108,9 +117,9 @@ function parseObject(obj: any, target: HTMLDivElement) {
 
 function vizJson(obj: any) {
   jsonContainer.textContent = null; // nuke existing objs
-  if (obj){
+  if (obj) {
     parseObject(obj, jsonContainer);
   }
 }
 
-(async () => await loadJson())();
+(async () => await loadJsonFile())();
