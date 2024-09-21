@@ -8,16 +8,22 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <script defer src="dist/code.js"></script>
+    <script type="module" defer src="dist/code.js"></script>
 </head>
 
 <body>
     <h1>Oh! That's a JSON!!</h1>
 
     <input type="text" id="name" value="demo">
-    <button type="button" id="open" onclick="loadJsonFile()">Open (file)</button>
-    <button type="button" id="open-str" onclick="loadJsonString()">Open (raw JSON)</button>
-    <button type="button" id="clear" onclick="clearJson()">Clear</button>
+    <button type="button" id="open">Open (file)</button>
+    <button type="button" id="open-str">Open (raw JSON)</button>
+    <button type="button" id="clear">Clear</button>
+    <button type="button" id="save">Back to JSON</button>
+
+    <details class="entry">
+        <summary><i class="fa-solid fa-code"></i> <strong>JSON Output</strong> (try modifying content w/ Inspect Element!)</summary>
+        <pre id="jsonOutput"></pre>
+    </details>
 
     <div id="jsonContainer"></div>
 </body>

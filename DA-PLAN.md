@@ -21,7 +21,11 @@ Saving traverses the page (specifically the container div) via DOM to build an o
 
 ## UX CONSIDERATIONS
 
+- The raw "value" element should be hidden, not removed, when an editor is open...
+  - So the save code doesn't have to attempt to read the input
 - Editing elements should only appear after edit button is pressed
+  - All editable text should act as its own edit button
+  - When doing keyboard nav, only when it has focus
 - **UNDO**
   - This will be real tough unless Custom Editor API can help out...
 - When does a string go from input type=text to textarea?
@@ -112,6 +116,15 @@ True bidirectional sync would SUCK in every way,
 
 HOWEVER a stripped down view-only mode could be a nice language feature to add, maybe even as a separate extension
 
+- Viewer could perhaps be an on-build flag that packs in only the view mode? Some kind of #ifdef situation?
+
 ## IMPORTANT LINKS
 
 - JSON spec: https://datatracker.ietf.org/doc/html/rfc8259#section-1.2 & https://ecma-international.org/publications-and-standards/standards/ecma-404/
+
+## LICENSING TANGLE
+
+So far, you are reusing code that is:
+
+- CC BY-SA 4.0 (StackOverflow answers)
+- MIT
