@@ -1,0 +1,33 @@
+html {
+    font-family: sans-serif;
+}
+
+.key {
+    font-weight: bold;
+}
+
+.value {
+    margin-left: 30px;
+}
+
+.type {
+    font-style: italic;
+    font-weight: normal;
+    font-size: 0.8em;
+}
+
+.entry {
+    border: 2px solid gray;
+    margin: 5px;
+    background-color: var(--vscode-editor-background);
+}
+
+.array {
+    border: 2px solid red;
+    background-color: #400000;
+}
+
+.object {
+    border: 2px solid blue;
+    background-color: #000040;
+}

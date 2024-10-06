@@ -1,7 +1,7 @@
 {
-  "name": "visual-json-editor-vscode",
-  "displayName": "visual-json-editor-vscode",
-  "description": "TODO write a description",
+  "name": "visual-json",
+  "displayName": "Visual JSON Editor",
+  "description": "TODO: write a description",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.93.0"
@@ -14,8 +14,20 @@
   "contributes": {
     "commands": [
       {
-        "command": "visual-json-editor-vscode.helloWorld",
+        "command": "visual-json.helloWorld",
         "title": "Hello World"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "visual-json.mainEditor",
+        "displayName": "Visual JSON Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.json"
+          }
+        ],
+        "priority": "default"
       }
     ]
   },
