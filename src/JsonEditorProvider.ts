@@ -161,18 +161,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
                 <script defer src="${scriptUri}" nonce="${nonce}"></script>
             </head>
             <body>
-                <input type="text" id="name">
-                <button type="button" id="open-str">Open (raw JSON)</button>
-                <button type="button" id="clear">Clear</button>
-                <button type="button" id="save">Back to JSON</button>
-
-                <details class="entry">
-                    <summary><i class="fa-solid fa-code"></i> <strong>JSON Output</strong> (try modifying content w/ Inspect Element!)</summary>
-                    <pre id="jsonOutput"></pre>
-                </details>
-
                 <div id="jsonContainer"></div>
-
             </body>
             </html>
         `;
