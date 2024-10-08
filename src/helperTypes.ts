@@ -8,6 +8,16 @@ export type Message = {
     body: any
 };
 
+export type IDMessage = {
+    type: string,
+    requestId: number,
+    body: any
+}
+
+export interface JsonDocumentDelegate {
+    getDataHtml(): Promise<string>;
+}
+
 /**
  * Tracks all of the extension's webviews.
  * (From Custom Editor Sample)

@@ -89,6 +89,11 @@ function parseObject(obj, target) {
         });
 
         entry.appendChild(valueDiv);
+
+        // TODO: (FUNC) + button for collections
+        // TODO: (STRETCH) Rearrange collections somehow
+        //   - Keep array numbering intact
+
         target.appendChild(entry);
     });
 }
@@ -124,14 +129,21 @@ function parseValue(value, type = null) {
 //#region Messaging
 
 // Message Handler
-window.addEventListener('message', (/** @type {MessageEvent<{type: String, body: any}>} */ event) => {
+window.addEventListener('message', (/** @type {MessageEvent<{type: String, requestId: Number, body: any}>} */ event) => {
     const message = event.data;
     switch (message.type) {
         case "doc":
             jsonContainer.textContent = null;
             parseObject(message.body, jsonContainer);
             // vscode.setState(something);
-            break;
+            return;
+        case "getDataHtml":
+            vscode.postMessage({
+                type: "responseReady",
+                requestId: message.requestId,
+                body: jsonContainer.innerHTML
+            });
+            return;
     }
 });
 
@@ -142,77 +154,9 @@ document.querySelector("#ping").onclick = () => {
 
 //#endregion
 
-// TODO: Test state recovery
+// TODO: Try out state recovery
 // const state = vscode.getState();
 // if (state) {}
-
-// TODO: Saving should dump jsonContainer.innerHTML for safety?
-//#region Save Logic
-/**
- * "We can rebuild him, we have the technology..."
- * Turn #jsonContainer back into an object and serialize it to #jsonOutput.
- */
-// function reSerialize() {
-//     let resultObj = {};
-//     for (const child of jsonContainer.children) {
-//         addFromNode(child, resultObj);
-//     }
-//     const out = document.querySelector("#jsonOutput");
-//     out.textContent = JSON.stringify(resultObj, null, 2); // Prettify w/ 2spc indent
-// }
-
-// Read ele.classList and return the JSON type it contains
-// Theoretically the type will always be class #2, but don't make that assumption
-// function getTypeOfElement(ele) {
-//     const result = intersect(Array.from(ele.classList), validBaseTypes);
-//     if (result.length > 1) {
-//         throw new Error(
-//             `Element ${ele.outerHTML} has multiple base types (${result})! It shouldn't!!`
-//         );
-//     }
-//     return result[0];
-// }
-
-/**
- * Given child (the value as a <details> key/value pair), extract the key+value
- * and add them to parent (possibly recurring to do it fully).
- */
-// function addFromNode(child, parent) {
-//     const keyElement = child.querySelector(".key");
-//     const valElement = child.querySelector(".value");
-//     const childKey = keyElement.querySelector(".name")?.textContent;
-//     let childValue;
-//     switch (getTypeOfElement(child)) {
-//         case "string":
-//             childValue = valElement.textContent;
-//             break;
-//         case "number":
-//             childValue = parseFloat(valElement.textContent);
-//             break;
-//         case "boolean":
-//             childValue = valElement.textContent === "true";
-//             break;
-//         case "null":
-//             childValue = null;
-//             break;
-//         case "object":
-//             childValue = {};
-//             for (const grandchild of valElement.children) {
-//                 addFromNode(grandchild, childValue);
-//             }
-//             break;
-//         case "array":
-//             childValue = [];
-//             for (const grandchild of valElement.children) {
-//                 addFromNode(grandchild, childValue);
-//             }
-//             break;
-//     }
-//     // Fun fact: Arrays can be indexed by strings of ints!
-//     // (It doesn't matter that parent is having its "0" set)
-//     parent[childKey] = childValue;
-// }
-//#endregion
 
 vscode.postMessage({type: "ready"});
 

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Disposable, disposeAll } from './dispose';
 import { JsonDocument } from "./JsonDocument";
-import { Message, WebviewCollection } from "./helperTypes";
+import { IDMessage, Message, WebviewCollection } from "./helperTypes";
 import { randomBytes } from "crypto";
 
 export class JsonEditorProvider implements vscode.CustomEditorProvider{
@@ -24,11 +24,13 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
                  * This option keeps editor webviews "alive" when they're not visible.
                  * It uses extra RAM, but is necessary to preserve the document
                  * (which is currently stored in/as the UI).
-                 * @todo: Look for a way to let this be false?
+                 * @todo: Look for a way to let this be false? (Something about state in view's code)
                  */
                 webviewOptions: {
                     retainContextWhenHidden: true,
                 },
+                // TODO: (STRETCH/QOL) Look into syncing state between editors
+                //  - Remove error check in getDataHtml()
                 supportsMultipleEditorsPerDocument: false,
             });
     }
@@ -45,7 +47,23 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
         _openContext: { backupId?: string },
         _token: vscode.CancellationToken
     ): Promise<JsonDocument> {
-        const document: JsonDocument = await JsonDocument.create(uri);
+        const document = await JsonDocument.create(uri, {
+            // Implement retrieving data from the webview here, as JsonDocument
+            // doesn't get to access it.
+            getDataHtml: async () => {
+                const webviewsForThisDoc = Array.from(this.webviews.get(document.uri));
+                if (webviewsForThisDoc.length === 0) {
+                    throw new Error("Could not find a webview for this document");
+                }
+                else if (webviewsForThisDoc.length > 1) {
+                    throw new Error("Doc is somehow open in multiple tabs...");
+                }
+                return await this.sendMessageWithResponse<string>(webviewsForThisDoc[0], {
+                    type: "getDataHtml",
+                    body: null
+                });
+            }
+        });
 
         // TODO: If you give JsonDocument events, register them here
 
@@ -76,7 +94,9 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
                 if (document.uri.scheme === 'untitled') {
                     // Handle any setup necessary for new documents (probably none?)
                 } else {
-                    this.sendMessage(webviewPanel, {type: "doc", body: document.object});
+                    this.sendMessage(webviewPanel, {
+                        type: "doc", body: document.object
+                    });
                 }
             }
         });
@@ -86,23 +106,22 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
     public readonly onDidChangeCustomDocument = this._onDidChangeCustomDocument.event;
 
     public saveCustomDocument(document: JsonDocument, cancellation: vscode.CancellationToken): Thenable<void> {
-        // TODO: Tell webview to serialize, or dump #jsonContainer
 
-        if (document.uri.scheme !== 'untitled'){
-            vscode.window.showErrorMessage("Saving is not implemented yet - canceling.");
-            cancellation.isCancellationRequested = true;
-        }
+        // if (document.uri.scheme !== 'untitled'){
+        //     vscode.window.showErrorMessage("Saving is not implemented yet - canceling.");
+        //     cancellation.isCancellationRequested = true;
+        // }
 
-        return document.save({}, cancellation);
+        return document.save(cancellation);
     }
 
     public saveCustomDocumentAs(document: JsonDocument, destination: vscode.Uri, cancellation: vscode.CancellationToken): Thenable<void> {
-        if (document.uri.scheme !== 'untitled'){
-            vscode.window.showErrorMessage("Saving As is not implemented yet - canceling.");
-            cancellation.isCancellationRequested = true;
-        }
+        // if (document.uri.scheme !== 'untitled'){
+        //     vscode.window.showErrorMessage("Saving As is not implemented yet - canceling.");
+        //     cancellation.isCancellationRequested = true;
+        // }
 
-        return document.saveAs({}, destination, cancellation);
+        return document.saveAs(destination, cancellation);
     }
 
     public revertCustomDocument(document: JsonDocument, cancellation: vscode.CancellationToken): Thenable<void> {
@@ -123,15 +142,37 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
         panel.webview.postMessage(message);
     }
 
-    private onGetMessage(document: JsonDocument, message: Message): void {
+    private _requestId = 1;
+    private readonly _callbacks = new Map<number, (response: any) => void>();
+
+    /** Send a message to panel expecting a response (the Promise returned). */
+    private sendMessageWithResponse<R = unknown>(
+        panel: vscode.WebviewPanel,
+        message: Message
+    ): Promise<R> {
+        const requestId = this._requestId++;
+        // When this promise is resolved, add the result to _callbacks
+        const p = new Promise<R>(resolve => this._callbacks.set(requestId, resolve));
+        // Send the message
+		panel.webview.postMessage({ type: message.type, requestId, body: message.body });
+		return p;
+    }
+
+    private onGetMessage(document: JsonDocument, message: Message | IDMessage): void {
         switch(message.type){
             case "ping":
                 vscode.window.showInformationMessage("Polo!");
-                break;
-            case "ready": break;
+                return;
+
+            case "responseReady":
+                const callback = this._callbacks.get((message as IDMessage).requestId);
+                callback?.(message.body);
+                return;
+
+            case "ready": return;
             default:
                 vscode.window.showErrorMessage(`What am I supposed to do with a ${message.type}?!`);
-                break;
+                return;
         }
     }
 
