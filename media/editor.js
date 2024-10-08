@@ -1,5 +1,5 @@
 //@ts-check
-// JS but TypeScript-ness is in the comments...
+// (JS but TypeScript-ness is in the comments...)
 
 // Limit scope/namespacing(?)
 (function () {
@@ -121,6 +121,31 @@ function parseValue(value, type = null) {
     }
 }
 
+//#region Messaging
+
+// Message Handler
+window.addEventListener('message', (/** @type {MessageEvent<{type: String, body: any}>} */ event) => {
+    const message = event.data;
+    switch (message.type) {
+        case "doc":
+            jsonContainer.textContent = null;
+            parseObject(message.body, jsonContainer);
+            // vscode.setState(something);
+            break;
+    }
+});
+
+//@ts-ignore
+document.querySelector("#ping").onclick = () => {
+    vscode.postMessage({type: "ping"});
+};
+
+//#endregion
+
+// TODO: Test state recovery
+// const state = vscode.getState();
+// if (state) {}
+
 // TODO: Saving should dump jsonContainer.innerHTML for safety?
 //#region Save Logic
 /**
@@ -188,5 +213,7 @@ function parseValue(value, type = null) {
 //     parent[childKey] = childValue;
 // }
 //#endregion
+
+vscode.postMessage({type: "ready"});
 
 }());

@@ -76,7 +76,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
                 if (document.uri.scheme === 'untitled') {
                     // Handle any setup necessary for new documents (probably none?)
                 } else {
-                    // Send the document's data
+                    this.sendMessage(webviewPanel, {type: "doc", body: document.object});
                 }
             }
         });
@@ -124,8 +124,15 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
     }
 
     private onGetMessage(document: JsonDocument, message: Message): void {
-        throw new Error("Not implemented");
-        // TODO: switch(message.type)
+        switch(message.type){
+            case "ping":
+                vscode.window.showInformationMessage("Polo!");
+                break;
+            case "ready": break;
+            default:
+                vscode.window.showErrorMessage(`What am I supposed to do with a ${message.type}?!`);
+                break;
+        }
     }
 
     //#endregion
@@ -161,7 +168,8 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
                 <script defer src="${scriptUri}" nonce="${nonce}"></script>
             </head>
             <body>
-                <div id="jsonContainer"></div>
+                <button type="button" id="ping">Marco!</button>
+                <div id="jsonContainer">Something went wrong :(</div>
             </body>
             </html>
         `;

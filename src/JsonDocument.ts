@@ -9,8 +9,14 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
     static async create(uri: vscode.Uri)
     : Promise<JsonDocument | PromiseLike<JsonDocument>> {
-        const fileObj = this.readFile(uri);
-        return new JsonDocument(uri);
+        const fileObj = await this.readFile(uri);
+        return new JsonDocument(uri, fileObj);
+    }
+
+    private constructor(uri: vscode.Uri, fileObj: any) {
+        super();
+        this._uri = uri;
+        this._object = fileObj;
     }
 
     private readonly _uri: vscode.Uri;
@@ -33,11 +39,6 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         vscode.workspace.fs.writeFile(uri, encoded);
     }
 
-    private constructor(uri: vscode.Uri) {
-        super();
-        this._uri = uri;
-    }
-
     /**
      * Attempt to parse the file at (uri) as JSON. Return the object if successful.
      * @param uri 
@@ -55,6 +56,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         try {
             jsonObject = JSON.parse(text);
         }
+        // TODO: (QOL) Dump all problems with the JSON? + Signal to open plaintext editor
         catch (e) {
             if (e instanceof SyntaxError) {
                 vscode.window.showErrorMessage(`File is not valid JSON: ${e.message}`);
