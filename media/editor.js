@@ -74,8 +74,22 @@ function parseObject(obj, target) {
         const label = document.createElement("summary");
         label.className = "key";
         // TODO: (STYLE) Pull an icon from VS Code?
-        label.innerHTML = `<span class="name">${key}</span> <span class="type">${valueType}</span>`;
         entry.appendChild(label);
+
+        // name/key of item (inside label)
+        const name = document.createElement("span");
+        name.className = "name";
+        name.textContent = key;
+        label.appendChild(name);
+
+        label.innerHTML += " ";
+
+        // type of item (inside label)
+        const type = document.createElement("span");
+        type.className = "type";
+        type.textContent = valueType;
+        label.appendChild(type);
+
         // value (could be another object/array)
         const valueDiv = document.createElement("div");
         valueDiv.className = "value";
