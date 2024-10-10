@@ -57,6 +57,11 @@ function jsonType(val) {
  * @param {HTMLElement} target Container to hold the object
  */
 function parseObject(obj, target) {
+    // The root object can be an array [] or object {}
+    if (target.id === "jsonContainer") {
+        jsonContainer.className = jsonType(obj);
+    }
+
     Object.getOwnPropertyNames(obj).forEach((key) => {
         // Ignore array's length property (pretend we're not just treating it like an object)
         if (key === "length" && obj instanceof Array) {
@@ -70,6 +75,7 @@ function parseObject(obj, target) {
         const entry = document.createElement("details");
         entry.className = `entry ${valueType}`;
         entry.open = true;
+
         // <summary> (key and type)
         const label = document.createElement("summary");
         label.className = "key";
@@ -97,10 +103,10 @@ function parseObject(obj, target) {
 
         // TODO: (FUNC) Per-entry logic here...
         // Make self editable when clicked. Super basic
-        valueDiv.addEventListener("click", (event) => {
+        valueDiv.onclick = event => {
             // @ts-ignore
             event.target.contentEditable = "true";
-        });
+        };
 
         entry.appendChild(valueDiv);
 
@@ -151,20 +157,18 @@ window.addEventListener('message', (/** @type {MessageEvent<{type: String, reque
             parseObject(message.body, jsonContainer);
             // vscode.setState(something);
             return;
-        case "getDataHtml":
+        case "getData":
             vscode.postMessage({
                 type: "responseReady",
                 requestId: message.requestId,
-                body: jsonContainer.innerHTML
+                body: {
+                    "type": jsonContainer.className,
+                    "html": jsonContainer.innerHTML
+                }
             });
             return;
     }
 });
-
-//@ts-ignore
-document.querySelector("#ping").onclick = () => {
-    vscode.postMessage({type: "ping"});
-};
 
 //#endregion
 
@@ -172,6 +176,6 @@ document.querySelector("#ping").onclick = () => {
 // const state = vscode.getState();
 // if (state) {}
 
-vscode.postMessage({type: "ready"});
+vscode.postMessage({ type: "ready" });
 
 }());

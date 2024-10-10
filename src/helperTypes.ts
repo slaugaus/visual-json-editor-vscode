@@ -3,19 +3,24 @@ import * as vscode from "vscode";
 // TODO: extend this when messaging system is better defined
 // (a string literal can be a type)
 /**  */
-export type Message = {
+export type Message<T> = {
     type: string,
-    body: any
+    body: T
 };
 
-export type IDMessage = {
+export type IDMessage<T> = {
     type: string,
     requestId: number,
-    body: any
+    body: T
+}
+
+export type OutputHTML = {
+    type: "object" | "array",
+    html: string
 }
 
 export interface JsonDocumentDelegate {
-    getDataHtml(): Promise<string>;
+    getData(): Promise<OutputHTML>;
 }
 
 /**

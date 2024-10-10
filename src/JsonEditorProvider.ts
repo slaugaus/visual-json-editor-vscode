@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
 import { Disposable, disposeAll } from './dispose';
 import { JsonDocument } from "./JsonDocument";
-import { IDMessage, Message, WebviewCollection } from "./helperTypes";
+import { IDMessage, Message, OutputHTML, WebviewCollection } from "./helperTypes";
 import { randomBytes } from "crypto";
 
-export class JsonEditorProvider implements vscode.CustomEditorProvider{
+export class JsonEditorProvider implements vscode.CustomEditorProvider {
 
     // _context is actually accessible just by doing this
-    constructor(private readonly _context: vscode.ExtensionContext) {}
+    constructor(private readonly _context: vscode.ExtensionContext) { }
 
     /** Name/ID of the custom editor - reference this in commands that open it */
     private static readonly viewType = "visual-json.mainEditor";
@@ -30,7 +30,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
                     retainContextWhenHidden: true,
                 },
                 // TODO: (STRETCH/QOL) Look into syncing state between editors
-                //  - Remove error check in getDataHtml()
+                //  - Remove error check in getData()
                 supportsMultipleEditorsPerDocument: false,
             });
     }
@@ -50,7 +50,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
         const document = await JsonDocument.create(uri, {
             // Implement retrieving data from the webview here, as JsonDocument
             // doesn't get to access it.
-            getDataHtml: async () => {
+            getData: async () => {
                 const webviewsForThisDoc = Array.from(this.webviews.get(document.uri));
                 if (webviewsForThisDoc.length === 0) {
                     throw new Error("Could not find a webview for this document");
@@ -58,8 +58,8 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
                 else if (webviewsForThisDoc.length > 1) {
                     throw new Error("Doc is somehow open in multiple tabs...");
                 }
-                return await this.sendMessageWithResponse<string>(webviewsForThisDoc[0], {
-                    type: "getDataHtml",
+                return await this.sendMessageWithResponse<OutputHTML>(webviewsForThisDoc[0], {
+                    type: "getData",
                     body: null
                 });
             }
@@ -106,21 +106,10 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
     public readonly onDidChangeCustomDocument = this._onDidChangeCustomDocument.event;
 
     public saveCustomDocument(document: JsonDocument, cancellation: vscode.CancellationToken): Thenable<void> {
-
-        // if (document.uri.scheme !== 'untitled'){
-        //     vscode.window.showErrorMessage("Saving is not implemented yet - canceling.");
-        //     cancellation.isCancellationRequested = true;
-        // }
-
         return document.save(cancellation);
     }
 
     public saveCustomDocumentAs(document: JsonDocument, destination: vscode.Uri, cancellation: vscode.CancellationToken): Thenable<void> {
-        // if (document.uri.scheme !== 'untitled'){
-        //     vscode.window.showErrorMessage("Saving As is not implemented yet - canceling.");
-        //     cancellation.isCancellationRequested = true;
-        // }
-
         return document.saveAs(destination, cancellation);
     }
 
@@ -138,7 +127,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
 
     //#region Messaging
 
-    private sendMessage(panel: vscode.WebviewPanel, message: Message): void {
+    private sendMessage(panel: vscode.WebviewPanel, message: Message<any>): void {
         panel.webview.postMessage(message);
     }
 
@@ -148,24 +137,24 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
     /** Send a message to panel expecting a response (the Promise returned). */
     private sendMessageWithResponse<R = unknown>(
         panel: vscode.WebviewPanel,
-        message: Message
+        message: Message<R | null>
     ): Promise<R> {
         const requestId = this._requestId++;
         // When this promise is resolved, add the result to _callbacks
         const p = new Promise<R>(resolve => this._callbacks.set(requestId, resolve));
         // Send the message
-		panel.webview.postMessage({ type: message.type, requestId, body: message.body });
-		return p;
+        panel.webview.postMessage({ type: message.type, requestId, body: message.body });
+        return p;
     }
 
-    private onGetMessage(document: JsonDocument, message: Message | IDMessage): void {
-        switch(message.type){
+    private onGetMessage(document: JsonDocument, message: Message<any>): void {
+        switch (message.type) {
             case "ping":
                 vscode.window.showInformationMessage("Polo!");
                 return;
 
             case "responseReady":
-                const callback = this._callbacks.get((message as IDMessage).requestId);
+                const callback = this._callbacks.get((message as IDMessage<any>).requestId);
                 callback?.(message.body);
                 return;
 
@@ -199,7 +188,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
                 <meta charset="UTF-8">
 
                 <!-- Allow only images from HTTPS or the media dir, styles from the media dir,
-                and scripts with a certain nonce -->
+                    and scripts with a certain nonce -->
                 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${view.cspSource} blob:; style-src ${view.cspSource}; script-src 'nonce-${nonce}';">
 
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -209,8 +198,9 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider{
                 <script defer src="${scriptUri}" nonce="${nonce}"></script>
             </head>
             <body>
-                <button type="button" id="ping">Marco!</button>
-                <div id="jsonContainer">Something went wrong :(</div>
+                <div id="jsonContainer"></div>
+                <!-- TODO: "Add to container" button needs to be outside of it
+                    for the save error handler to work -->
             </body>
             </html>
         `;

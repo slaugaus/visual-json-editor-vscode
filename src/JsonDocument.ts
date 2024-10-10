@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Disposable } from "./dispose";
-import { JsonDocumentDelegate } from "./helperTypes";
+import { JsonDocumentDelegate, OutputHTML } from "./helperTypes";
 import { HTMLElement, parse } from "node-html-parser";
 
 /**
@@ -11,7 +11,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
     /**
      * Create a new instance from a URI.
-     * @param delegate Function getDataHtml (within object) that returns the HTML containing
+     * @param delegate Function getData (within object) that returns the HTML containing
      *      this document's updated data. Implemented in JsonEditorProvider since it has 
      *      access to the webviews and I don't.
      */
@@ -36,17 +36,27 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
     public get object(): any { return this._object; }
 
-    // TODO: (CONFIG) Setting for how pretty saved JSON is
     async save(cancellation: vscode.CancellationToken) {
         await this.saveAs(this._uri, cancellation);
     }
-
+    
     async saveAs(uri: vscode.Uri, cancellation: vscode.CancellationToken) {
-
-        const dataHtml = await this._delegate.getDataHtml();
-
-        const dataObject = JsonDocument.readHtml(dataHtml);
-
+        
+        const data = await this._delegate.getData();
+        
+        const dataObject = JsonDocument.readHtml(data);
+        
+        // Avoid data loss - catch readHtml returning empty
+        if (data.html.length > 0) {
+            if ((data.type === "array" && dataObject.length === 0)
+                || (data.type === "object" && Object.keys(dataObject).length === 0)) {
+            vscode.window.showErrorMessage(`Save failed! Got an empty ${data.type} even though there should be content.`);
+            cancellation.isCancellationRequested = true;
+            return;
+        }
+    }
+    
+        // TODO: (CONFIG) Setting for how pretty saved JSON is
         const stringified = JSON.stringify(dataObject, null, 2);
         const encoded: Uint8Array = new TextEncoder().encode(stringified);
         if (cancellation.isCancellationRequested) {
@@ -71,6 +81,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
             jsonObject = JSON.parse(text);
         }
         // TODO: (QOL) Dump all problems with the JSON? + Signal to open plaintext editor
+        //  - Or start as the "paste JSON here" editor
         catch (e) {
             if (e instanceof SyntaxError) {
                 vscode.window.showErrorMessage(`File is not valid JSON: ${e.message}`);
@@ -86,9 +97,13 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
     //#region HTML -> Object Logic
 
-    private static readHtml(html: string): any {
-        const container = parse(html);
-        let outputObject = {};
+    private static readHtml(data: OutputHTML): any {
+        const container = parse(data.html);
+
+        let outputObject;
+        // Handle base object being an array
+        if (data.type === "array") { outputObject = []; }
+        else { outputObject = {}; }
 
         for (const child of container.childNodes) {
             this.addFromNode(child as HTMLElement, outputObject);
@@ -107,6 +122,8 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
         const childKey: string = keyElement.querySelector(".name")?.textContent!;
         let childValue: any;
+
+        // TODO: Detect and ignore (or fill in?) incomplete elements
 
         switch (this.getTypeOfElement(child)) {
             case "string":
@@ -156,7 +173,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         const result = ele.classList.value.filter(val => this._validBaseTypes.includes(val));
 
         if (result.length > 1) {
-            throw new Error(`Element ${ele.outerHTML} has multiple base types (${result})! It shouldn't!!`);
+            vscode.window.showErrorMessage(`Element ${ele.outerHTML} has multiple base types (${result})! Returning the first one.`);
         }
         return result[0];
     }

@@ -22,12 +22,12 @@ html {
     background-color: var(--vscode-editor-background);
 }
 
-.array {
+.entry.array {
     border: 2px solid red;
     background-color: #400000;
 }
 
-.object {
+.entry.object {
     border: 2px solid blue;
     background-color: #000040;
 }
