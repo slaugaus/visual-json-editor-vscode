@@ -39,29 +39,36 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
     async save(cancellation: vscode.CancellationToken) {
         await this.saveAs(this._uri, cancellation);
     }
-    
+
     async saveAs(uri: vscode.Uri, cancellation: vscode.CancellationToken) {
-        
+
         const data = await this._delegate.getData();
-        
+
         const dataObject = JsonDocument.readHtml(data);
-        
+
         // Avoid data loss - catch readHtml returning empty
         if (data.html.length > 0) {
             if ((data.type === "array" && dataObject.length === 0)
                 || (data.type === "object" && Object.keys(dataObject).length === 0)) {
-            vscode.window.showErrorMessage(`Save failed! Got an empty ${data.type} even though there should be content.`);
-            cancellation.isCancellationRequested = true;
-            return;
+                vscode.window.showErrorMessage(`Save failed! Got an empty ${data.type} even though there should be content.`);
+                cancellation.isCancellationRequested = true;
+                return;
+            }
         }
-    }
-    
-        // TODO: (CONFIG) Setting for how pretty saved JSON is
-        const stringified = JSON.stringify(dataObject, null, 2);
+
+        // Read from settings (defaults to 2 as defined in package.json)
+        const prettiness = vscode.workspace.getConfiguration("visual-json")
+            .get<number>("outputPrettiness");
+
+        const stringified = JSON.stringify(dataObject, null, prettiness);
+
+        // fs.writeFile requires a Uint8Array
         const encoded: Uint8Array = new TextEncoder().encode(stringified);
+
         if (cancellation.isCancellationRequested) {
             return;
         }
+
         vscode.workspace.fs.writeFile(uri, encoded);
     }
 

@@ -12,12 +12,18 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "visual-json.helloWorld",
-        "title": "Hello World"
+    "configuration":{
+      "title": "Visual JSON Editor",
+      "properties": {
+        "visual-json.outputPrettiness": {
+          "type": "number",
+          "default": 2,
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Prettify saved JSON files and indent them with this many spaces. (0 to disable)"
+        }
       }
-    ],
+    },
     "customEditors": [
       {
         "viewType": "visual-json.mainEditor",

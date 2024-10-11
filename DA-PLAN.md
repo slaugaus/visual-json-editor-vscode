@@ -2,9 +2,17 @@
 
 ## SCRATCHPAD
 
-Editor’s save (HTML -> object) must fail safe, so “emergency exits” don’t lose data
+**Syncing per edit isn't THAT hard, just fire an event with the change and the item's ancestry. There will be snags and renaming will need to be handled, but it's not as bad as you made it out to be.**
 
-- Dumping jsonContainer.innerHTML wouldn’t work as event listeners would be lost (…right?)
+- This opens a path to Undo/Redo
+- Save should still do a full serialize (for now) to compare
+  - (Temp check during dev) "Serializer and edit playback produced different files. Saving one as (uri.bak) so you can diff them."
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/delete
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object
+
+Editor's save (HTML -> object) must fail safe, so “emergency exits” don't lose data
+
+- Dumping jsonContainer.innerHTML wouldn't work as event listeners would be lost (…right?)
 
 If the editor fails to load from JSON, it should open it in the text editor and offer a dump of all the syntax issues (if JSON.parse gives you all of them)
 
@@ -143,5 +151,4 @@ HOWEVER a stripped down view-only mode could be a nice language feature to add, 
 
 So far, you are reusing code that is:
 
-- CC BY-SA 4.0 (StackOverflow answers)
 - MIT

@@ -173,8 +173,9 @@ window.addEventListener('message', (/** @type {MessageEvent<{type: String, reque
 //#endregion
 
 // TODO: Try out state recovery
-// const state = vscode.getState();
-// if (state) {}
+// (https://code.visualstudio.com/api/extension-guides/webview#getstate-and-setstate)
+// const lastState = vscode.getState();
+// if (lastState) {}
 
 vscode.postMessage({ type: "ready" });
 
