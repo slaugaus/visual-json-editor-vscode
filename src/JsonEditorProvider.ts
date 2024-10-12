@@ -203,8 +203,9 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
             </head>
             <body>
                 <div id="jsonContainer"></div>
-                <!-- TODO: "Add to container" button needs to be outside of it
-                    for the save error handler to work -->
+                <button type="button" id="rootPlus">
+                    <i class="codicon codicon-plus"></i> New Item
+                </button>
             </body>
             </html>
         `;
