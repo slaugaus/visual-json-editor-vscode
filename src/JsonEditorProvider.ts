@@ -178,6 +178,9 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
         const styleUri = view.asWebviewUri(vscode.Uri.joinPath(
             this._context.extensionUri, "media", "programmerArt.css"));
 
+        const codiconsUri = view.asWebviewUri(vscode.Uri.joinPath(
+            this._context.extensionUri, "node_modules", "@vscode", "codicons", "dist", "codicon.css"));
+
         // "Number Used Once" for preventing script injection
         const nonce = randomBytes(32).toString("base64");
 
@@ -187,14 +190,15 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
             <head>
                 <meta charset="UTF-8">
 
-                <!-- Allow only images from HTTPS or the media dir, styles from the media dir,
+                <!-- Allow only images from HTTPS or this extension, styles and fonts from this extension,
                     and scripts with a certain nonce -->
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${view.cspSource} blob:; style-src ${view.cspSource}; script-src 'nonce-${nonce}';">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${view.cspSource} blob:; style-src ${view.cspSource}; font-src ${view.cspSource}; script-src 'nonce-${nonce}';">
 
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>JSON Editor</title>
 
                 <link rel="stylesheet" href="${styleUri}"> 
+                <link rel="stylesheet" href="${codiconsUri}"> 
                 <script defer src="${scriptUri}" nonce="${nonce}"></script>
             </head>
             <body>

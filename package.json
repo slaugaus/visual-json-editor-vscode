@@ -12,7 +12,7 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
-    "configuration":{
+    "configuration": {
       "title": "Visual JSON Editor",
       "properties": {
         "visual-json.outputPrettiness": {
@@ -65,6 +65,8 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
+    "@vscode/codicons": "^0.0.36",
+    "monaco": "^1.201704190613.0",
     "node-html-parser": "^6.1.13"
   }
 }

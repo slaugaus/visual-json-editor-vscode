@@ -29,6 +29,15 @@ function sanitizeHTML(str) {
 //     "object",
 // ];
 
+const iconMap = {
+    string: "codicon codicon-quote",
+    number: "codicon codicon-symbol-number",
+    boolean: "codicon codicon-getting-started-item-checked",
+    null: "codicon codicon-question",
+    array: "codicon codicon-array",
+    object: "codicon codicon-symbol-object"
+};
+
 /** @type {HTMLDivElement} */
 //@ts-ignore
 var jsonContainer = document.querySelector("#jsonContainer");
@@ -79,7 +88,7 @@ function parseObject(obj, target) {
         // <summary> (key and type)
         const label = document.createElement("summary");
         label.className = "key";
-        // TODO: (STYLE) Pull an icon from VS Code?
+        label.innerHTML = `<i class="${iconMap[valueType]}"></i> `;
         entry.appendChild(label);
 
         // name/key of item (inside label)
