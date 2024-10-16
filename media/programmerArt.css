@@ -6,7 +6,8 @@ html {
     font-weight: bold;
 }
 
-.value {
+.value,
+.debug-btn {
     margin-left: 30px;
 }
 
@@ -16,18 +17,18 @@ html {
     font-size: 0.8em;
 }
 
-.entry {
+.item {
     border: 2px solid gray;
     margin: 5px;
     background-color: var(--vscode-editor-background);
 }
 
-.entry.array {
+.item.array {
     border: 2px solid red;
     background-color: #400000;
 }
 
-.entry.object {
+.item.object {
     border: 2px solid blue;
     background-color: #000040;
 }

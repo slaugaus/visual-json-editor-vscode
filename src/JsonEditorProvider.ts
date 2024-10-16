@@ -149,9 +149,6 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 
     private onGetMessage(document: JsonDocument, message: Message<any>): void {
         switch (message.type) {
-            case "ping":
-                vscode.window.showInformationMessage("Polo!");
-                return;
 
             case "responseReady":
                 const callback = this._callbacks.get((message as IDMessage<any>).requestId);
@@ -159,6 +156,16 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
                 return;
 
             case "ready": return;
+
+            // case "edit":
+            //     document.makeEdit
+            //     return;
+
+            case "debug":
+                vscode.window.showInformationMessage(message.body);
+                console.log(message.body);
+                return;
+                
             default:
                 vscode.window.showErrorMessage(`What am I supposed to do with a ${message.type}?!`);
                 return;

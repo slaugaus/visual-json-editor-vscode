@@ -84,10 +84,10 @@ class EditorItem {
      * @param {any} value
      * @param {HTMLElement} parent
     */
-   constructor(type, name, value, parent) {
-       this.#createHtml(type, name, value, parent);
+    constructor(type, name, value, parent) {
+        this.#createHtml(type, name, value, parent);
 
-       this.#setupEvents();
+        this.#setupEvents();
     }
 
     static #iconMap = {
@@ -98,7 +98,7 @@ class EditorItem {
         array: "codicon codicon-array",
         object: "codicon codicon-symbol-object"
     };
-    
+
     /**
      * Initialize my HTML, then append to a parent element
      * @param {String} type
@@ -109,7 +109,7 @@ class EditorItem {
     #createHtml(type, name, value, parent) {
         // <details> (main container)
         this.#root = document.createElement("details");
-        this.#root.className = `entry ${type}`;
+        this.#root.className = `item ${type}`;
         this.#root.open = true;
 
         // <summary> (key and type)
@@ -132,10 +132,25 @@ class EditorItem {
         this.#type.textContent = type;
         this.#label.appendChild(this.#type);
 
+        // TODO: temp items
+        this.#whoAmI = document.createElement("button");
+        this.#whoAmI.type = "button";
+        this.#whoAmI.textContent = "Who am I?";
+        this.#whoAmI.className = "debug-btn";
+        this.#root.appendChild(this.#whoAmI);
+
         // value (could be another object/array)
         this.#value = document.createElement("div");
         this.#value.className = "value";
-        this.#value.innerHTML = parseValue(value, type);
+
+        // Preserve the events of child object/arrays
+        if (type === "object" || type === "array") {
+            //@ts-ignore
+            this.#value.append(...parseValue(value, type).children);
+        } else {
+            //@ts-ignore
+            this.#value.innerHTML = parseValue(value, type);
+        }
 
         this.#root.appendChild(this.#value);
 
@@ -149,6 +164,9 @@ class EditorItem {
     /** @type {HTMLSpanElement} */ #type;
     /** @type {HTMLDivElement} */ #value;
 
+    // TODO: temp items
+    /** @type {HTMLButtonElement} */ #whoAmI;
+
     #setupEvents() {
 
         // TODO: children of a summary aren't receptive to clicks...
@@ -161,6 +179,19 @@ class EditorItem {
             if (this.type === "string") {
                 EditorItem.#makeEditable(this.#value);
             }
+        };
+
+        this.#whoAmI.onclick = (event) => {
+            const path = getPathToItem(this.#root);
+            const identity = path.join(".");
+
+            const myself = getItemFromPath(path);
+            const itWorked = myself == this.#root;
+
+            vscode.postMessage({
+                type: "debug",
+                body: `You clicked on ${identity}!\nDid getItemFromPath work? ${itWorked}`
+            });
         };
     }
 
@@ -180,6 +211,12 @@ class EditorItem {
         input.onblur = () => {
             element.hidden = false;
             element.textContent = input.value;
+
+            // TODO: Send edit details
+            vscode.postMessage({
+                type: "edit"
+            });
+
             input.remove();
         };
     }
@@ -214,6 +251,7 @@ function parseObject(obj, target) {
  * Where more of the magic happens! (Parse a value for parseObject)
  * @param {any} value
  * @param {string|null} type 
+ * @returns {string|number|boolean|HTMLDivElement|void}
  */
 function parseValue(value, type = null) {
     // In case we haven't typed it already
@@ -234,14 +272,83 @@ function parseValue(value, type = null) {
         case "object":
             const childObj = document.createElement("div");
             parseObject(value, childObj);
-            return childObj.innerHTML;
+            return childObj;
     }
 }
 
-//@ts-ignore
-document.getElementById("rootPlus").onclick = (e) => {
-    new EditorItem("string", "New Thing", "I'm new!", jsonContainer);
-};
+/** 
+ * @param {Element} item 
+ * @returns {string | null | undefined}
+ */
+function getItemName(item) {
+    // :scope> means "must be a direct child"
+    return item.querySelector(":scope>.key")?.querySelector(":scope>.name")?.textContent;
+}
+
+/**
+ * 
+ * @param {string[]} path List of JS keys, in order
+ * @todo Consider optimizing
+ */
+function getItemFromPath(path) {
+    /** @type {Element} */
+    let target = jsonContainer;
+    // Advance through the item names
+    for (const itemName of path) {
+
+        const value = target.querySelector(":scope>.value");
+
+        let searchTarget;
+        if (value) {
+            // Target is an .item - search its .value
+            searchTarget = value;
+        }
+        else {
+            searchTarget = target;
+        }
+
+        loop2: for (const item of searchTarget.children) {
+            // Got the root item, onto the next child
+            if (itemName === getItemName(item)) {
+                target = item;
+                break loop2;
+            }
+        }
+    }
+
+    return target;
+}
+
+/**
+ * 
+ * @param {Element} item 
+ * @param {string[]} path
+ */
+function getPathToItem(item, path = []) {
+    
+    const name = getItemName(item);
+    if (name) {
+        path.unshift(name);
+    }
+
+    let parent;
+    if (item.parentElement !== jsonContainer
+        && item.parentElement instanceof HTMLDivElement) {
+        parent = item.parentElement.parentElement;
+    }
+    else {
+        parent = item.parentElement;
+    }
+    
+    if (item.parentElement === jsonContainer) {
+        return path;
+    }
+    else if (parent) {
+        getPathToItem(parent, path);
+    }
+
+    return path;
+}
 
 //#region Messaging
 
@@ -273,6 +380,11 @@ window.addEventListener('message', (/** @type {MessageEvent<{type: String, reque
 // (https://code.visualstudio.com/api/extension-guides/webview#getstate-and-setstate)
 // const lastState = vscode.getState();
 // if (lastState) {}
+
+//@ts-ignore
+document.getElementById("rootPlus").onclick = (e) => {
+    new EditorItem("string", "New Thing", "I'm new!", jsonContainer);
+};
 
 vscode.postMessage({ type: "ready" });
 
