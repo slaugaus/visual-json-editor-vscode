@@ -1,18 +1,13 @@
 import * as vscode from "vscode";
 
-// TODO: extend this when messaging system is better defined
+// TODO: extend this when messaging system is better defined?
 // (a string literal can be a type)
 /**  */
 export type Message<T> = {
     type: string,
-    body: T
+    requestId?: number,
+    body?: T
 };
-
-export type IDMessage<T> = {
-    type: string,
-    requestId: number,
-    body: T
-}
 
 export type OutputHTML = {
     type: "object" | "array",
@@ -23,8 +18,15 @@ export interface JsonDocumentDelegate {
     getData(): Promise<OutputHTML>;
 }
 
+export interface JsonEdit {
+    readonly path: string[],
+    readonly type: "contents" | "add" | "delete" | "rename",
+    readonly change: any,
+}
+
 /**
- * Tracks all of the extension's webviews.
+ * Wrapper for a Set that tracks all of the extension's webviews.
+ * 
  * (From Custom Editor Sample)
  */
 export class WebviewCollection {

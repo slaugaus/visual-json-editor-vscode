@@ -78,6 +78,12 @@ class EditorItem {
         this.#value.innerHTML = val;
     }
 
+    // I wanted to cache this after the final appendChild,
+    // but that doesn't work for no clear reason
+    get path() {
+        return getPathToItem(this.#root);
+    }
+
     /**
      * @param {String} type
      * @param {String} name
@@ -135,7 +141,7 @@ class EditorItem {
         // TODO: temp items
         this.#whoAmI = document.createElement("button");
         this.#whoAmI.type = "button";
-        this.#whoAmI.textContent = "Who am I?";
+        this.#whoAmI.innerHTML = '<i class="codicon codicon-search"></i>';
         this.#whoAmI.className = "debug-btn";
         this.#root.appendChild(this.#whoAmI);
 
@@ -155,7 +161,11 @@ class EditorItem {
         this.#root.appendChild(this.#value);
 
         parent.appendChild(this.#root);
+
+        // this.#path = getPathToItem(this.#root);
     }
+
+    // /** @type {string[]} */ #path;
 
     // The HTML comprising this item:
     /** @type {HTMLDetailsElement} */ #root;
@@ -172,25 +182,24 @@ class EditorItem {
         // TODO: children of a summary aren't receptive to clicks...
         this.#name.onclick = (event) => {
             event.stopPropagation();
-            EditorItem.#makeEditable(this.#name);
+            this.#makeEditable(this.#name);
         };
 
         this.#value.onclick = (event) => {
             if (this.type === "string") {
-                EditorItem.#makeEditable(this.#value);
+                this.#makeEditable(this.#value);
             }
         };
 
         this.#whoAmI.onclick = (event) => {
-            const path = getPathToItem(this.#root);
-            const identity = path.join(".");
+            const identity = this.path.join(".");
 
-            const myself = getItemFromPath(path);
-            const itWorked = myself == this.#root;
+            const myself = getItemFromPath(this.path);
+            const itWorked = myself === this.#root;
 
             vscode.postMessage({
                 type: "debug",
-                body: `You clicked on ${identity}!\nDid getItemFromPath work? ${itWorked}`
+                body: `You clicked on ${identity}!\n  Did getItemFromPath work? ${itWorked}`
             });
         };
     }
@@ -198,7 +207,7 @@ class EditorItem {
     /**
      * @param {HTMLElement} element
      */
-    static #makeEditable(element) {
+    #makeEditable(element) {
         element.hidden = true;
 
         const input = document.createElement("input");
@@ -212,9 +221,13 @@ class EditorItem {
             element.hidden = false;
             element.textContent = input.value;
 
-            // TODO: Send edit details
             vscode.postMessage({
-                type: "edit"
+                type: "edit",
+                body: {
+                    path: this.path,
+                    type: "contents",
+                    change: element.textContent
+                }
             });
 
             input.remove();
@@ -286,9 +299,11 @@ function getItemName(item) {
 }
 
 /**
- * 
- * @param {string[]} path List of JS keys, in order
- * @todo Consider optimizing
+ * From a path made by getPathToItem, retrieve the item it's pointing to.
+ * @param {string[]} path List of JSON keys, in order
+ * @returns {Element}
+ * @todo Consider optimizing?
+ * @todo Is the deepest item it finds a good failsafe?
  */
 function getItemFromPath(path) {
     /** @type {Element} */
@@ -311,7 +326,7 @@ function getItemFromPath(path) {
             // Got the root item, onto the next child
             if (itemName === getItemName(item)) {
                 target = item;
-                break loop2;
+                break loop2;    // break out of only this for loop
             }
         }
     }
@@ -320,15 +335,16 @@ function getItemFromPath(path) {
 }
 
 /**
- * 
- * @param {Element} item 
- * @param {string[]} path
+ * Trace item's lineage up to (not including) jsonContainer.
+ * @param {Element} item A details.item
+ * @param {string[]} path Used in recursion
+ * @returns {string[]} Path to the item
  */
 function getPathToItem(item, path = []) {
     
     const name = getItemName(item);
     if (name) {
-        path.unshift(name);
+        path.unshift(name); // prepend
     }
 
     let parent;
@@ -353,7 +369,7 @@ function getPathToItem(item, path = []) {
 //#region Messaging
 
 // Message Handler
-window.addEventListener('message', (/** @type {MessageEvent<{type: String, requestId: Number, body: any}>} */ event) => {
+window.addEventListener('message', (/** @type {MessageEvent<{type: String, requestId?: Number, body: any}>} */ event) => {
     const message = event.data;
     switch (message.type) {
         case "doc":
@@ -361,6 +377,7 @@ window.addEventListener('message', (/** @type {MessageEvent<{type: String, reque
             parseObject(message.body, jsonContainer);
             // vscode.setState(something);
             return;
+
         case "getData":
             vscode.postMessage({
                 type: "responseReady",
@@ -369,6 +386,15 @@ window.addEventListener('message', (/** @type {MessageEvent<{type: String, reque
                     "type": jsonContainer.className,
                     "html": jsonContainer.innerHTML
                 }
+            });
+            return;
+
+        // TODO: change
+
+        default:
+            vscode.postMessage({
+                type: "debug",
+                body: `Editor received unknown message: ${message.type}`
             });
             return;
     }
@@ -381,9 +407,19 @@ window.addEventListener('message', (/** @type {MessageEvent<{type: String, reque
 // const lastState = vscode.getState();
 // if (lastState) {}
 
+let newThingId = 0;
+
 //@ts-ignore
 document.getElementById("rootPlus").onclick = (e) => {
-    new EditorItem("string", "New Thing", "I'm new!", jsonContainer);
+    const newThing = new EditorItem("string", `New Thing ${newThingId++}`, "I'm new!", jsonContainer);
+    vscode.postMessage({
+        type: "edit",
+        body: {
+            path: newThing.path,
+            type: "add",
+            change: newThing
+        }
+    });
 };
 
 vscode.postMessage({ type: "ready" });

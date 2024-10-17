@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { Disposable, disposeAll } from './dispose';
+import { Disposable, disposeAll } from './disposal';
 import { JsonDocument } from "./JsonDocument";
-import { IDMessage, Message, OutputHTML, WebviewCollection } from "./helperTypes";
+import { Message, OutputHTML, WebviewCollection } from "./helperTypes";
 import { randomBytes } from "crypto";
 
 export class JsonEditorProvider implements vscode.CustomEditorProvider {
@@ -44,12 +44,12 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
     // (Opening more editors for the same file reuses the same JsonDocument)
     async openCustomDocument(
         uri: vscode.Uri,
-        _openContext: { backupId?: string },
+        openContext: { backupId?: string },
         _token: vscode.CancellationToken
     ): Promise<JsonDocument> {
-        const document = await JsonDocument.create(uri, {
+        const document = await JsonDocument.create(uri, openContext.backupId, {
             // Implement retrieving data from the webview here, as JsonDocument
-            // doesn't get to access it.
+            // doesn't get to access it. Hooray for delegates!
             getData: async () => {
                 const webviewsForThisDoc = Array.from(this.webviews.get(document.uri));
                 if (webviewsForThisDoc.length === 0) {
@@ -65,7 +65,31 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
             }
         });
 
-        // TODO: If you give JsonDocument events, register them here
+        const docListeners: vscode.Disposable[] = [];
+
+        // Event telling VS Code that edits were made
+        docListeners.push(document.onDidChange(e => {
+            this._onDidChangeCustomDocument.fire({
+                document,
+                ...e    // remaining items = contents of e
+            });
+        }));
+
+        // Event telling all the webviews that the document changed
+        docListeners.push(document.onDidChangeContent(e => {
+            for (const panel of this.webviews.get(document.uri)) {
+                this.sendMessage(panel, {
+                    type: "change",
+                    body: {
+                        edits: e.edits,
+                        content: e.content
+                    }
+                });
+            }
+        }));
+
+        // Dispose these while disposing the document
+        document.onDidDispose(() => { disposeAll(docListeners); });
 
         return document;
     }
@@ -114,13 +138,11 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
     }
 
     public revertCustomDocument(document: JsonDocument, cancellation: vscode.CancellationToken): Thenable<void> {
-        throw new Error("Not implemented");
-        // return document.revert(cancellation);
+        return document.revert(cancellation);
     }
 
     public backupCustomDocument(document: JsonDocument, context: vscode.CustomDocumentBackupContext, cancellation: vscode.CancellationToken): Thenable<vscode.CustomDocumentBackup> {
-        throw new Error("Not implemented");
-        // return document.backup(context.destination, cancellation);
+        return document.backup(context.destination, cancellation);
     }
 
     //#endregion
@@ -151,15 +173,15 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
         switch (message.type) {
 
             case "responseReady":
-                const callback = this._callbacks.get((message as IDMessage<any>).requestId);
+                const callback = this._callbacks.get(message.requestId as number);
                 callback?.(message.body);
                 return;
 
             case "ready": return;
 
-            // case "edit":
-            //     document.makeEdit
-            //     return;
+            case "edit":
+                document.makeEdit(message.body);
+                return;
 
             case "debug":
                 vscode.window.showInformationMessage(message.body);
