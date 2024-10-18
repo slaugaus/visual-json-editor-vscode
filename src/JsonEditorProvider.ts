@@ -130,11 +130,15 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
     public readonly onDidChangeCustomDocument = this._onDidChangeCustomDocument.event;
 
     public saveCustomDocument(document: JsonDocument, cancellation: vscode.CancellationToken): Thenable<void> {
-        return document.save(cancellation);
+        const save = document.save(cancellation);
+        this.sendMessageAll(document, { type: "saved" });
+        return save;
     }
-
+    
     public saveCustomDocumentAs(document: JsonDocument, destination: vscode.Uri, cancellation: vscode.CancellationToken): Thenable<void> {
-        return document.saveAs(destination, cancellation);
+        const saveAs = document.saveAs(destination, cancellation);
+        this.sendMessageAll(document, { type: "saved" });
+        return saveAs;
     }
 
     public revertCustomDocument(document: JsonDocument, cancellation: vscode.CancellationToken): Thenable<void> {
@@ -151,6 +155,13 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 
     private sendMessage(panel: vscode.WebviewPanel, message: Message<any>): void {
         panel.webview.postMessage(message);
+    }
+
+    /** Message all webviews belonging to a JsonDocument */
+    private sendMessageAll(document: JsonDocument, message: Message<any>): void {
+        for (const panel of this.webviews.get(document.uri)){
+            panel.webview.postMessage(message);
+        }
     }
 
     private _requestId = 1;

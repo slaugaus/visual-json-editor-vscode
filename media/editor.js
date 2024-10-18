@@ -213,24 +213,41 @@ class EditorItem {
         const input = document.createElement("input");
         input.type = "text";
         input.value = element.textContent ?? "";
+        input.className = "value editor string";
 
+        
         element.after(input);
         input.focus();
-
-        input.onblur = () => {
+        
+        const onClose = () => {
             element.hidden = false;
-            element.textContent = input.value;
 
-            vscode.postMessage({
-                type: "edit",
-                body: {
-                    path: this.path,
-                    type: "contents",
-                    change: element.textContent
-                }
-            });
+            // Did it actually change?
+            if (element.textContent !== input.value) {
+                element.textContent = input.value;
+    
+                this.#root.classList.add("changed");
+    
+                vscode.postMessage({
+                    type: "edit",
+                    body: {
+                        path: this.path,
+                        type: "contents",
+                        change: element.textContent
+                    }
+                });
+            }
 
             input.remove();
+        };
+
+        // On focus lost (click something else or tab away)
+        input.onblur = onClose;
+
+        input.onkeydown = (e) => {
+            if (e.key === "Escape"){
+                onClose();
+            }
         };
     }
 }
@@ -366,6 +383,12 @@ function getPathToItem(item, path = []) {
     return path;
 }
 
+/** Remove the "changed" indicator from everything that has it */
+function cleanChanged() {
+    document.querySelectorAll(".item.changed").forEach(
+        item => item.classList.remove("changed"));
+}
+
 //#region Messaging
 
 // Message Handler
@@ -387,6 +410,10 @@ window.addEventListener('message', (/** @type {MessageEvent<{type: String, reque
                     "html": jsonContainer.innerHTML
                 }
             });
+            return;
+
+        case "saved":
+            cleanChanged();
             return;
 
         // TODO: change

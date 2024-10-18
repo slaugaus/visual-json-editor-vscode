@@ -11,6 +11,11 @@ html {
     margin-left: 30px;
 }
 
+/* The Codicon in the location test button was too big */
+.debug-btn i {
+    font-size: 0.8em !important;
+}
+
 .type {
     font-style: italic;
     font-weight: normal;
@@ -31,4 +36,12 @@ html {
 .item.object {
     border: 2px solid blue;
     background-color: #000040;
+}
+
+.item.changed {
+    border: 2px solid #808000;
+}
+
+input.editor {
+    display: block;
 }
