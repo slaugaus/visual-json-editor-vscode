@@ -9,6 +9,8 @@ html {
 .value,
 .debug-btn {
     margin-left: 30px;
+    display: block;
+    white-space: pre;
 }
 
 /* The Codicon in the location test button was too big */
@@ -40,8 +42,4 @@ html {
 
 .item.changed {
     border: 2px solid #808000;
-}
-
-input.editor {
-    display: block;
 }

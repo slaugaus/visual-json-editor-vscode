@@ -134,7 +134,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
         this.sendMessageAll(document, { type: "saved" });
         return save;
     }
-    
+
     public saveCustomDocumentAs(document: JsonDocument, destination: vscode.Uri, cancellation: vscode.CancellationToken): Thenable<void> {
         const saveAs = document.saveAs(destination, cancellation);
         this.sendMessageAll(document, { type: "saved" });
@@ -159,7 +159,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 
     /** Message all webviews belonging to a JsonDocument */
     private sendMessageAll(document: JsonDocument, message: Message<any>): void {
-        for (const panel of this.webviews.get(document.uri)){
+        for (const panel of this.webviews.get(document.uri)) {
             panel.webview.postMessage(message);
         }
     }
@@ -198,7 +198,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
                 vscode.window.showInformationMessage(message.body);
                 console.log(message.body);
                 return;
-                
+
             default:
                 vscode.window.showErrorMessage(`What am I supposed to do with a ${message.type}?!`);
                 return;
@@ -221,6 +221,9 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
         const codiconsUri = view.asWebviewUri(vscode.Uri.joinPath(
             this._context.extensionUri, "node_modules", "@vscode", "codicons", "dist", "codicon.css"));
 
+        const fakeInputsUri = view.asWebviewUri(vscode.Uri.joinPath(
+            this._context.extensionUri, "media", "autoGrowingInputs.css"));
+
         // "Number Used Once" for preventing script injection
         const nonce = randomBytes(32).toString("base64");
 
@@ -238,7 +241,8 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
                 <title>JSON Editor</title>
 
                 <link rel="stylesheet" href="${styleUri}"> 
-                <link rel="stylesheet" href="${codiconsUri}"> 
+                <link rel="stylesheet" href="${codiconsUri}">
+                <link rel="stylesheet" href="${fakeInputsUri}">
                 <script defer src="${scriptUri}" nonce="${nonce}"></script>
             </head>
             <body>

@@ -1,0 +1,26 @@
+/* 
+ * Originally by Chris Coyier.
+ * https://codepen.io/chriscoyier/pen/XWbqpzP
+ * MIT License
+ */
+
+.fake-input,
+.fake-textarea {
+    /* TODO: Give these VS Code styling */
+    border: 1px solid #ccc;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 1px 6px;
+}
+
+.fake-textarea {
+    display: block;
+    overflow: hidden;
+    /* resize: both; */
+    min-height: 40px;
+}
+
+.fake-textarea[contenteditable]:empty::before {
+    content: "(Demo of placeholders)";
+    color: gray;
+}

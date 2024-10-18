@@ -182,12 +182,12 @@ class EditorItem {
         // TODO: children of a summary aren't receptive to clicks...
         this.#name.onclick = (event) => {
             event.stopPropagation();
-            this.#makeEditable(this.#name);
+            this.#makeStringEditable(this.#name, false);
         };
 
         this.#value.onclick = (event) => {
             if (this.type === "string") {
-                this.#makeEditable(this.#value);
+                this.#makeStringEditable(this.#value);
             }
         };
 
@@ -206,25 +206,34 @@ class EditorItem {
 
     /**
      * @param {HTMLElement} element
+     * @param {boolean} [allowNewline=true]
      */
-    #makeEditable(element) {
+    #makeStringEditable(element, allowNewline = true) {
         element.hidden = true;
-
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = element.textContent ?? "";
-        input.className = "value editor string";
-
+        element.style.display = "none";
+        
+        // TODO: May be mildly overengineered now that it's using fake-input.
+        // Putting the cursor at the click position also doesn't work b/c of this
+        const input = document.createElement("span");
+        input.textContent = element.textContent ?? "";
+        input.contentEditable = "plaintext-only";
+        if (allowNewline && input.textContent.includes("\n")){
+            input.className = "fake-textarea value editor string";
+        } else {
+            input.className = "fake-input value editor string";
+            input.style.display = "initial";
+        }
         
         element.after(input);
         input.focus();
         
         const onClose = () => {
             element.hidden = false;
-
+            element.style.display = "block";
+            
             // Did it actually change?
-            if (element.textContent !== input.value) {
-                element.textContent = input.value;
+            if (element.textContent !== input.textContent) {
+                element.textContent = input.textContent;
     
                 this.#root.classList.add("changed");
     
@@ -245,8 +254,18 @@ class EditorItem {
         input.onblur = onClose;
 
         input.onkeydown = (e) => {
-            if (e.key === "Escape"){
-                onClose();
+            switch (e.key) {
+                case "Escape":
+                    onClose();
+                    break;
+                // Become a fake textarea if newlines are introduced
+                case "Enter":
+                    if (allowNewline && input.classList.contains("fake-input")) {
+                        input.classList.remove("fake-input");
+                        input.style.display = "block";
+                        input.classList.add("fake-textarea");
+                    }
+                    break;
             }
         };
     }
