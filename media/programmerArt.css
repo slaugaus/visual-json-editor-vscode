@@ -22,6 +22,8 @@ html {
     font-style: italic;
     font-weight: normal;
     font-size: 0.8em;
+    /* Spaces are usually 1/4em wide */
+    margin-left: 0.25em; 
 }
 
 .item {
@@ -42,4 +44,18 @@ html {
 
 .item.changed {
     border: 2px solid #808000;
+}
+
+.clickable {
+    pointer-events: all;
+}
+
+.boolean input {
+    margin-left: 30px;
+    display: inline;
+}
+
+.boolean .value {
+    display: inline;
+    margin-left: 0.25em;
 }

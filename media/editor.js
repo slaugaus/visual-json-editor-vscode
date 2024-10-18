@@ -52,6 +52,51 @@ function jsonType(val) {
     }
 }
 
+/** 
+ * For keydown events, block anything that's not a number.
+ * 
+ * (Because I want to use the fancy fake inputs)
+ * @param {KeyboardEvent} event 
+ */
+function typeNumbersOnly(event) {
+    /** @type Element */ //@ts-ignore
+    const caller = event.target;
+    const currentText = caller.textContent ?? "";
+
+    if (event.key === "Backspace"
+        || event.key === 'Delete'
+        || event.key === 'Tab'
+        || event.key === 'Escape'
+        || event.key === "ArrowLeft"
+        || event.key === "ArrowRight"
+        || (event.key === '.' && !currentText.includes('.'))
+        || (event.key === 'e' && !currentText.includes('e'))
+        || (event.key === '+' && !currentText.includes('+'))
+    ) { return; }
+
+    // If it's not a number (0-9) or the key is not allowed, prevent input
+    if (!/^[0-9]$/.test(event.key)) {
+        event.preventDefault();
+    }
+}
+
+/**
+ * For paste events, block anything that's not a number.
+ * @param {ClipboardEvent} event 
+ */
+function pasteNumbersOnly(event) {
+    /** @type Element */ //@ts-ignore
+    const caller = event.target;
+
+    const currentText = caller.textContent ?? "";
+    const paste = event.clipboardData?.getData('text') ?? "";
+
+    // Prevent paste if it contains non-numeric characters or more than one decimal point
+    if (!/^\d*\.?\d*$/.test(paste) || (paste.includes('.') && currentText.includes('.'))) {
+        event.preventDefault();
+    }
+}
+
 class EditorItem {
 
     get name() {
@@ -89,8 +134,11 @@ class EditorItem {
      * @param {String} name
      * @param {any} value
      * @param {HTMLElement} parent
+     * @param {String} parentType 
     */
-    constructor(type, name, value, parent) {
+    constructor(type, name, value, parent, parentType) {
+        this.#parentType = parentType;
+
         this.#createHtml(type, name, value, parent);
 
         this.#setupEvents();
@@ -126,15 +174,13 @@ class EditorItem {
 
         // name/key of item (inside label)
         this.#name = document.createElement("span");
-        this.#name.className = "name";
+        this.#name.className = "name clickable";
         this.#name.textContent = name;
         this.#label.appendChild(this.#name);
 
-        this.#label.innerHTML += " ";
-
         // type of item (inside label)
         this.#type = document.createElement("span");
-        this.#type.className = "type";
+        this.#type.className = "type clickable";
         this.#type.textContent = type;
         this.#label.appendChild(this.#type);
 
@@ -160,12 +206,19 @@ class EditorItem {
 
         this.#root.appendChild(this.#value);
 
-        parent.appendChild(this.#root);
+        // Type-specific items
+        if (type === "boolean") {
+            this.#checkbox = document.createElement("input");
+            this.#checkbox.type = "checkbox";
+            this.#checkbox.checked = this.value === "true";
+            this.#value.before(this.#checkbox);
+        }
 
-        // this.#path = getPathToItem(this.#root);
+        parent.appendChild(this.#root);
     }
 
-    // /** @type {string[]} */ #path;
+    /** Whether the parent is an obj or array. Needed for renaming
+     *  @type {string} */ #parentType;
 
     // The HTML comprising this item:
     /** @type {HTMLDetailsElement} */ #root;
@@ -174,22 +227,51 @@ class EditorItem {
     /** @type {HTMLSpanElement} */ #type;
     /** @type {HTMLDivElement} */ #value;
 
+    // Type-specific items
+    /** @type {HTMLInputElement} */ #checkbox;
+
     // TODO: temp items
     /** @type {HTMLButtonElement} */ #whoAmI;
 
     #setupEvents() {
 
-        // TODO: children of a summary aren't receptive to clicks...
-        this.#name.onclick = (event) => {
-            event.stopPropagation();
-            this.#makeStringEditable(this.#name, false);
-        };
+        this.#name.addEventListener("click", (event) => {
+            if (this.#parentType === "object") {
+                event.stopPropagation();
+                event.preventDefault();
+                this.#makeNameEditable();
+            }
+        });
 
         this.#value.onclick = (event) => {
-            if (this.type === "string") {
-                this.#makeStringEditable(this.#value);
+            switch (this.type) {
+                case "string":
+                case "number":
+                    this.#makeStringEditable(this.#value);
+                    break;
+                case "boolean":
+                    this.#checkbox.checked = !this.#checkbox.checked;
+                    this.#checkbox.dispatchEvent(new Event("change"));
+                    break;
             }
         };
+
+        if (this.#checkbox) {
+            this.#checkbox.onchange = (event) => {
+                this.#value.textContent = this.#checkbox.checked.toString();
+
+                this.#root.classList.add("changed");
+
+                vscode.postMessage({
+                    type: "edit",
+                    body: {
+                        path: this.path,
+                        type: "contents",
+                        change: this.#value.textContent
+                    }
+                });
+            };
+        }
 
         this.#whoAmI.onclick = (event) => {
             const identity = this.path.join(".");
@@ -205,6 +287,7 @@ class EditorItem {
     }
 
     /**
+     * Editability for string and number
      * @param {HTMLElement} element
      * @param {boolean} [allowNewline=true]
      */
@@ -217,6 +300,13 @@ class EditorItem {
         const input = document.createElement("span");
         input.textContent = element.textContent ?? "";
         input.contentEditable = "plaintext-only";
+
+        if (this.type === "number"){
+            allowNewline = false;
+            input.addEventListener("keydown", typeNumbersOnly);
+            input.addEventListener("paste", pasteNumbersOnly);
+        }
+
         if (allowNewline && input.textContent.includes("\n")){
             input.className = "fake-textarea value editor string";
         } else {
@@ -226,17 +316,20 @@ class EditorItem {
         
         element.after(input);
         input.focus();
+
+        let wasClosed = false;
         
         const onClose = () => {
+            if (wasClosed) { return; }  // Run once
             element.hidden = false;
             element.style.display = "block";
-            
+
             // Did it actually change?
             if (element.textContent !== input.textContent) {
                 element.textContent = input.textContent;
-    
+
                 this.#root.classList.add("changed");
-    
+
                 vscode.postMessage({
                     type: "edit",
                     body: {
@@ -246,14 +339,14 @@ class EditorItem {
                     }
                 });
             }
-
+            wasClosed = true;
             input.remove();
         };
 
         // On focus lost (click something else or tab away)
         input.onblur = onClose;
 
-        input.onkeydown = (e) => {
+        input.addEventListener("keydown", (e) => {
             switch (e.key) {
                 case "Escape":
                     onClose();
@@ -264,7 +357,60 @@ class EditorItem {
                         input.classList.remove("fake-input");
                         input.style.display = "block";
                         input.classList.add("fake-textarea");
+                    } else if (!allowNewline) {
+                        onClose();
                     }
+                    break;
+            }
+        });
+    }
+
+    // TODO: Common reusable makeEditable function
+    #makeNameEditable() {
+        this.#name.classList.add("fake-input");
+        this.#name.contentEditable = "plaintext-only";
+        this.#name.focus();
+
+        const oldName = this.#name.textContent;
+
+        let wasClosed = false;
+        
+        const onClose = () => {
+            if (wasClosed) { return; }
+            this.#name.classList.remove("fake-input");
+            this.#name.contentEditable = "false";
+
+            if (this.#name.textContent !== oldName) {
+                this.#root.classList.add("changed");
+
+                // Strip newlines that get pasted in
+                this.#name.textContent = (this.#name.textContent?.replace("\n", "") ?? null);
+
+                vscode.postMessage({
+                    type: "edit",
+                    body: {
+                        path: this.path,
+                        type: "rename",
+                        change: this.#name.textContent
+                    }
+                });
+            }
+
+            wasClosed = true;
+        };
+
+        this.#name.onblur = onClose;
+
+        this.#name.onkeydown = (e) => {
+            switch (e.key) {
+                case "Escape":
+                    onClose();
+                    break;
+                // Prevent newlines from Enter
+                case "Enter":
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onClose();
                     break;
             }
         };
@@ -277,9 +423,10 @@ class EditorItem {
  * @param {HTMLElement} target Container to hold the object
  */
 function parseObject(obj, target) {
+    const objType = jsonType(obj);
     // The root object can be an array [] or object {}
     if (target.id === "jsonContainer") {
-        jsonContainer.className = jsonType(obj);
+        jsonContainer.classList.add(objType);
     }
 
     Object.getOwnPropertyNames(obj).forEach((key) => {
@@ -292,7 +439,7 @@ function parseObject(obj, target) {
         const valueType = jsonType(value);
 
         // TODO: You made this a class, but is there a good reason for it to be one?
-        new EditorItem(valueType, key, value, target);
+        new EditorItem(valueType, key, value, target, objType);
     });
 }
 
@@ -457,7 +604,7 @@ let newThingId = 0;
 
 //@ts-ignore
 document.getElementById("rootPlus").onclick = (e) => {
-    const newThing = new EditorItem("string", `New Thing ${newThingId++}`, "I'm new!", jsonContainer);
+    const newThing = new EditorItem("string", `New Thing ${newThingId++}`, "I'm new!", jsonContainer, "object");
     vscode.postMessage({
         type: "edit",
         body: {
