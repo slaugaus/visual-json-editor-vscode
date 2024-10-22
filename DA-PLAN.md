@@ -28,6 +28,8 @@ If the editor fails to load from JSON, it should open it in the text editor and 
 
 “File modified externally,” probably an event that can be listened for, should do something.
 
+- JsonDocument.onDidChangeContent does NOT do this (if you modify in a different editor)
+
 it'd be SO FUNNY if certain editor widgets were just Monacos (i.e. micro instances of VS Code text editor)
 
 - https://github.com/microsoft/monaco-editor

@@ -16,9 +16,34 @@ const vscode = acquireVsCodeApi();
  * @return {String} The sanitized string
  */
 function sanitizeHTML(str) {
-    var temp = document.createElement("div");
+    const temp = document.createElement("div");
     temp.textContent = str;
     return temp.innerHTML;
+}
+
+const codiconMap = {
+    // JSON Types
+    string: "codicon codicon-quote",
+    number: "codicon codicon-symbol-number",
+    boolean: "codicon codicon-primitive-square",
+    null: "codicon codicon-question",
+    array: "codicon codicon-array",
+    object: "codicon codicon-symbol-object",
+    // Other Useful
+    true: "codicon codicon-pass-filled",
+    false: "codicon codicon-circle-large-outline",
+    dirty: "codicon codicon-close-dirty"
+};
+
+/**
+ * Create a Codicon <i> from the map.
+ * @param {String} key 
+ * @returns {HTMLElement} \<i class="key">\</i>
+ */
+function codicon(key) {
+    const icon = document.createElement("i");
+    icon.className = codiconMap[key];
+    return icon;
 }
 
 // const validBaseTypes = [
@@ -99,6 +124,23 @@ function pasteNumbersOnly(event) {
 
 class EditorItem {
 
+    /**
+     * @param {String} type
+     * @param {String} name
+     * @param {any} value
+     * @param {HTMLElement} parent
+     * @param {String} parentType 
+    */
+    constructor(type, name, value, parent, parentType) {
+        this.#parentType = parentType;
+
+        this.#createHtml(type, name, value, parent);
+
+        this.#setupEvents();
+    }
+
+    //#region Public Methods/Properties
+
     get name() {
         return this.#name.textContent;
     }
@@ -123,38 +165,60 @@ class EditorItem {
         this.#value.innerHTML = val;
     }
 
-    // I wanted to cache this after the final appendChild,
+    // I wanted to cache this after the final append,
     // but that doesn't work for no clear reason
     get path() {
         return getPathToItem(this.#root);
     }
 
-    /**
-     * @param {String} type
-     * @param {String} name
-     * @param {any} value
-     * @param {HTMLElement} parent
-     * @param {String} parentType 
-    */
-    constructor(type, name, value, parent, parentType) {
-        this.#parentType = parentType;
-
-        this.#createHtml(type, name, value, parent);
-
-        this.#setupEvents();
+    get rootDiv() {
+        return this.#root;
     }
 
-    static #iconMap = {
-        string: "codicon codicon-quote",
-        number: "codicon codicon-symbol-number",
-        boolean: "codicon codicon-primitive-square",
-        null: "codicon codicon-question",
-        array: "codicon codicon-array",
-        object: "codicon codicon-symbol-object",
+    /** 
+     * Turn on this item's "Dirty" (was changed) indicator(s). 
+     * (Turning them off is done with querySelectorAll()s in global cleanChanged()).
+    */
+    makeDirty() {
+        this.#root.classList.add("changed");
+        this.#dirty.style.display = "unset";
+    }
 
-        true: "codicon codicon-pass-filled",
-        false: "codicon codicon-circle-large-outline",
-    };
+    /**
+     * Scroll to me (rootDiv) smoothly, with a highlight animation (CSS-dependent)
+     */
+    highlightAndScroll() {
+        this.#root.classList.add("highlighted");
+
+        // Detect whether I'm visible
+        new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                // Item is in view
+                if (entry.isIntersecting) {
+                    // Switch from static highlight to fade-out animation
+                    this.#root.classList.remove("highlighted");
+                    this.#root.classList.add("flash");
+
+                    // Remove the flash class after the animation is over (1s)
+                    setTimeout(() => {
+                        this.#root.classList.remove("flash");
+                    }, 1000);
+
+                    // Stop observing
+                    observer.disconnect();
+                } 
+                // Otherwise, scroll to it
+                else {
+                    this.#root.scrollIntoView({ behavior: "smooth" });
+                }
+            });
+            // Trigger when 100% visible
+        }, { threshold: 1.0 }).observe(this.#root);
+    }
+
+    //#endregion
+
+    //#region Private Stuff
 
     /**
      * Initialize my HTML, then append to a parent element
@@ -172,31 +236,33 @@ class EditorItem {
         // <summary> (key and type)
         this.#label = document.createElement("summary");
         this.#label.className = "key";
-        this.#root.appendChild(this.#label);
+        this.#root.append(this.#label);
 
         // <i> (Codicon inside label)
-        this.#icon = document.createElement("i");
-        this.#icon.className = EditorItem.#iconMap[type];
-        this.#label.appendChild(this.#icon);
+        this.#icon = codicon(type);
+        this.#label.append(this.#icon);
 
         // name/key of item (inside label)
         this.#name = document.createElement("span");
         this.#name.className = "name clickable";
         this.#name.textContent = name;
-        this.#label.appendChild(this.#name);
+        this.#label.append(this.#name);
 
         // type of item (inside label)
         this.#type = document.createElement("span");
         this.#type.className = "type clickable";
         this.#type.textContent = type;
-        this.#label.appendChild(this.#type);
+        this.#label.append(this.#type);
 
-        // TODO: temp items
-        this.#whoAmI = document.createElement("button");
-        this.#whoAmI.type = "button";
-        this.#whoAmI.innerHTML = '<i class="codicon codicon-search"></i>';
-        this.#whoAmI.className = "debug-btn";
-        this.#root.appendChild(this.#whoAmI);
+        // Dirty (changed) indicator that doesn't rely on color
+        this.#dirty = codicon("dirty");
+        this.#dirty.classList.add("dirty-indicator");
+        this.#dirty.style.display = "none";
+        this.#label.append(this.#dirty);
+
+        this.#buttons = document.createElement("div");
+        this.#buttons.className = "item-btns";
+        this.#root.append(this.#buttons);
 
         // value (could be another object/array)
         this.#value = document.createElement("div");
@@ -211,36 +277,53 @@ class EditorItem {
             this.#value.innerHTML = parseValue(value, type);
         }
 
-        this.#root.appendChild(this.#value);
+        this.#root.append(this.#value);
 
         // Type-specific items
         if (type === "boolean") {
             this.#checkbox = document.createElement("input");
             this.#checkbox.type = "checkbox";
             this.#checkbox.checked = this.value === "true";
-            this.#icon.className = EditorItem.#iconMap[this.value];
+            this.#icon.className = codiconMap[this.value];
             this.#value.before(this.#checkbox);
         }
+        else if (type === "object" || type === "array") {
+            this.#addItem = document.createElement("button");
+            this.#addItem.type = "button";
+            this.#addItem.innerHTML = '<i class="codicon codicon-plus"></i>';
+            this.#addItem.className = "item-btn";
+            this.#buttons.append(this.#addItem);
+        }
 
-        parent.appendChild(this.#root);
+        // TODO: temp items
+        this.#whoAmI = document.createElement("button");
+        this.#whoAmI.type = "button";
+        this.#whoAmI.innerHTML = '<i class="codicon codicon-search"></i>';
+        this.#whoAmI.className = "item-btn";
+        this.#buttons.append(this.#whoAmI);
+
+        parent.append(this.#root);
     }
 
-    /** Whether the parent is an obj or array. Needed for renaming
-     *  @type {string} */ #parentType;
+/** Whether the parent is an obj or array. Needed for renaming
+ *  @type {string} */ #parentType;
 
-    // The HTML comprising this item:
-    /** @type {HTMLDetailsElement} */ #root;
-    /** @type {HTMLElement} */ #label;
-    /** @type {HTMLElement} */ #icon;
-    /** @type {HTMLSpanElement} */ #name;
-    /** @type {HTMLSpanElement} */ #type;
-    /** @type {HTMLDivElement} */ #value;
+// The HTML comprising this item:
+/** @type {HTMLDetailsElement} */ #root;
+/** @type {HTMLElement} */ #label;
+/** @type {HTMLElement} */ #icon;
+/** @type {HTMLSpanElement} */ #name;
+/** @type {HTMLSpanElement} */ #type;
+/** @type {HTMLElement} */ #dirty;
+/** @type {HTMLDivElement} */ #buttons;
+/** @type {HTMLDivElement} */ #value;
 
-    // Type-specific items
-    /** @type {HTMLInputElement} */ #checkbox;
+// Type-specific items
+/** @type {HTMLInputElement} */ #checkbox;
+/** @type {HTMLButtonElement} */ #addItem;
 
-    // TODO: temp items
-    /** @type {HTMLButtonElement} */ #whoAmI;
+// TODO: temp items
+/** @type {HTMLButtonElement} */ #whoAmI;
 
     #setupEvents() {
 
@@ -265,14 +348,15 @@ class EditorItem {
             }
         };
 
+        // Bool specific events
         if (this.#checkbox) {
             this.#checkbox.onchange = event => {
                 const tf = this.#checkbox.checked.toString();
                 this.#value.textContent = tf;
 
-                this.#root.classList.add("changed");
+                this.makeDirty();
 
-                this.#icon.className = EditorItem.#iconMap[tf];
+                this.#icon.className = codiconMap[tf];
 
                 vscode.postMessage({
                     type: "edit",
@@ -289,6 +373,16 @@ class EditorItem {
                 event.preventDefault();
                 this.#checkbox.checked = !this.#checkbox.checked;
                 this.#checkbox.dispatchEvent(new Event("change"));
+            };
+        }
+        // Add button (object/array)
+        else if (this.#addItem) {
+            this.#addItem.onclick = event => {
+                const count = this.#value.childElementCount;
+                const nextItem = count.toString();
+                const name = this.type === "object" ? `New Item ${nextItem}` : nextItem;
+                // TODO: (QOL) Intelligent type detect? (Type of most other children)
+                this.#addChild("string", name, "Edit me!");
             };
         }
 
@@ -313,31 +407,31 @@ class EditorItem {
     #makeStringEditable(element, allowNewline = true) {
         element.hidden = true;
         element.style.display = "none";
-        
+
         // TODO: May be mildly overengineered now that it's using fake-input.
         // Putting the cursor at the click position also doesn't work b/c of this
         const input = document.createElement("span");
         input.textContent = element.textContent ?? "";
         input.contentEditable = "plaintext-only";
 
-        if (this.type === "number"){
+        if (this.type === "number") {
             allowNewline = false;
             input.addEventListener("keydown", typeNumbersOnly);
             input.addEventListener("paste", pasteNumbersOnly);
         }
 
-        if (allowNewline && input.textContent.includes("\n")){
+        if (allowNewline && input.textContent.includes("\n")) {
             input.className = "fake-textarea value editor string";
         } else {
             input.className = "fake-input value editor string";
             input.style.display = "initial";
         }
-        
+
         element.after(input);
         input.focus();
 
         let wasClosed = false;
-        
+
         const onClose = () => {
             if (wasClosed) { return; }  // Run once
             element.hidden = false;
@@ -349,7 +443,7 @@ class EditorItem {
             if (element.textContent !== input.textContent) {
                 element.textContent = input.textContent;
 
-                this.#root.classList.add("changed");
+                this.makeDirty();
 
                 vscode.postMessage({
                     type: "edit",
@@ -395,14 +489,14 @@ class EditorItem {
         const oldName = this.#name.textContent;
 
         let wasClosed = false;
-        
+
         const onClose = () => {
             if (wasClosed) { return; }
             this.#name.classList.remove("fake-input");
             this.#name.contentEditable = "false";
 
             if (this.#name.textContent !== oldName) {
-                this.#root.classList.add("changed");
+                this.makeDirty();
 
                 // Strip newlines that get pasted in
                 this.#name.textContent = (this.#name.textContent?.replace("\n", "") ?? null);
@@ -436,6 +530,31 @@ class EditorItem {
             }
         };
     }
+
+    /**
+     * 
+     * @param {String} type 
+     * @param {String} name 
+     * @param {any} value 
+     */
+    #addChild(type, name, value) {
+        const newChild = new EditorItem(type, name, value, this.#value, this.type ?? "");
+
+        vscode.postMessage({
+            type: "edit",
+            body: {
+                path: newChild.path,
+                type: "add",
+                change: newChild
+            }
+        });
+
+        this.makeDirty();
+        newChild.makeDirty();
+        newChild.highlightAndScroll();
+    }
+
+    //#endregion Private Stuff
 }
 
 /**
@@ -545,7 +664,7 @@ function getItemFromPath(path) {
  * @returns {string[]} Path to the item
  */
 function getPathToItem(item, path = []) {
-    
+
     const name = getItemName(item);
     if (name) {
         path.unshift(name); // prepend
@@ -559,7 +678,7 @@ function getPathToItem(item, path = []) {
     else {
         parent = item.parentElement;
     }
-    
+
     if (item.parentElement === jsonContainer) {
         return path;
     }
@@ -570,10 +689,14 @@ function getPathToItem(item, path = []) {
     return path;
 }
 
-/** Remove the "changed" indicator from everything that has it */
+/** Remove the "changed" indicators from everything that has it */
 function cleanChanged() {
     document.querySelectorAll(".item.changed").forEach(
         item => item.classList.remove("changed"));
+
+    document.querySelectorAll(".dirty-indicator").forEach(
+        //@ts-ignore
+        item => item.style.display = "none");
 }
 
 //#region Messaging

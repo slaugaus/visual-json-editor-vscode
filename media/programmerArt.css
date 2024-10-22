@@ -6,15 +6,18 @@ html {
     font-weight: bold;
 }
 
-.value,
-.debug-btn {
+.value {
     margin-left: 30px;
     display: block;
     white-space: pre;
 }
 
+.item-btns {
+    margin-left: 30px;
+}
+
 /* The Codicon in the location test button was too big */
-.debug-btn i {
+.item-btn i {
     font-size: 0.8em !important;
 }
 
@@ -27,7 +30,7 @@ html {
     font-style: italic;
     font-weight: normal;
     font-size: 0.85em;
-    margin-left: 0.3em; 
+    margin: auto 0.3em;
 }
 
 .item {
@@ -63,4 +66,25 @@ html {
     display: inline;
     /* FYI: Spaces are usually 1/4em wide */
     margin-left: 0.25em;
+}
+
+.highlighted {
+    border-color: yellow;
+    background-color: yellow;
+}
+
+.flash {
+    animation: flash-animation 1s ease-out;
+}
+
+@keyframes flash-animation {
+    0% {
+        border-color: yellow;
+        background-color: yellow;
+    }
+
+    100% {
+        border-color: default;
+        background-color: default;
+    }
 }
