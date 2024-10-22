@@ -147,10 +147,13 @@ class EditorItem {
     static #iconMap = {
         string: "codicon codicon-quote",
         number: "codicon codicon-symbol-number",
-        boolean: "codicon codicon-getting-started-item-checked",
+        boolean: "codicon codicon-primitive-square",
         null: "codicon codicon-question",
         array: "codicon codicon-array",
-        object: "codicon codicon-symbol-object"
+        object: "codicon codicon-symbol-object",
+
+        true: "codicon codicon-pass-filled",
+        false: "codicon codicon-circle-large-outline",
     };
 
     /**
@@ -169,8 +172,12 @@ class EditorItem {
         // <summary> (key and type)
         this.#label = document.createElement("summary");
         this.#label.className = "key";
-        this.#label.innerHTML = `<i class="${EditorItem.#iconMap[type]}"></i> `;
         this.#root.appendChild(this.#label);
+
+        // <i> (Codicon inside label)
+        this.#icon = document.createElement("i");
+        this.#icon.className = EditorItem.#iconMap[type];
+        this.#label.appendChild(this.#icon);
 
         // name/key of item (inside label)
         this.#name = document.createElement("span");
@@ -211,6 +218,7 @@ class EditorItem {
             this.#checkbox = document.createElement("input");
             this.#checkbox.type = "checkbox";
             this.#checkbox.checked = this.value === "true";
+            this.#icon.className = EditorItem.#iconMap[this.value];
             this.#value.before(this.#checkbox);
         }
 
@@ -223,6 +231,7 @@ class EditorItem {
     // The HTML comprising this item:
     /** @type {HTMLDetailsElement} */ #root;
     /** @type {HTMLElement} */ #label;
+    /** @type {HTMLElement} */ #icon;
     /** @type {HTMLSpanElement} */ #name;
     /** @type {HTMLSpanElement} */ #type;
     /** @type {HTMLDivElement} */ #value;
@@ -258,9 +267,12 @@ class EditorItem {
 
         if (this.#checkbox) {
             this.#checkbox.onchange = (event) => {
-                this.#value.textContent = this.#checkbox.checked.toString();
+                const tf = this.#checkbox.checked.toString();
+                this.#value.textContent = tf;
 
                 this.#root.classList.add("changed");
+
+                this.#icon.className = EditorItem.#iconMap[tf];
 
                 vscode.postMessage({
                     type: "edit",
@@ -270,6 +282,13 @@ class EditorItem {
                         change: this.#value.textContent
                     }
                 });
+            };
+
+            this.#icon.onclick = (event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                this.#checkbox.checked = !this.#checkbox.checked;
+                this.#checkbox.dispatchEvent(new Event("change"));
             };
         }
 
@@ -323,6 +342,8 @@ class EditorItem {
             if (wasClosed) { return; }  // Run once
             element.hidden = false;
             element.style.display = "block";
+
+            // TODO: Validate number
 
             // Did it actually change?
             if (element.textContent !== input.textContent) {

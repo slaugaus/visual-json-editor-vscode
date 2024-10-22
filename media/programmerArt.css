@@ -18,12 +18,16 @@ html {
     font-size: 0.8em !important;
 }
 
+/* Codicon in each .item */
+.key i {
+    margin-right: 0.25em;
+}
+
 .type {
     font-style: italic;
     font-weight: normal;
-    font-size: 0.8em;
-    /* Spaces are usually 1/4em wide */
-    margin-left: 0.25em; 
+    font-size: 0.85em;
+    margin-left: 0.3em; 
 }
 
 .item {
@@ -57,5 +61,6 @@ html {
 
 .boolean .value {
     display: inline;
+    /* FYI: Spaces are usually 1/4em wide */
     margin-left: 0.25em;
 }
