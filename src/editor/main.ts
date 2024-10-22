@@ -1,10 +1,3 @@
-//@ts-check
-// (JS but TypeScript-ness is in the comments...)
-"use strict";
-
-// Limit scope/namespacing(?)
-(function () {
-
 // Grab the VS Code API for messaging
 //@ts-ignore
 const vscode = acquireVsCodeApi();
@@ -15,7 +8,7 @@ const vscode = acquireVsCodeApi();
  * @param  {String} str  The user-submitted string
  * @return {String} The sanitized string
  */
-function sanitizeHTML(str) {
+function sanitizeHTML(str: string): string {
     const temp = document.createElement("div");
     temp.textContent = str;
     return temp.innerHTML;
@@ -40,7 +33,7 @@ const codiconMap = {
  * @param {String} key 
  * @returns {HTMLElement} \<i class="key">\</i>
  */
-function codicon(key) {
+function codicon(key: string): HTMLElement {
     const icon = document.createElement("i");
     icon.className = codiconMap[key];
     return icon;
@@ -57,13 +50,13 @@ function codicon(key) {
 
 /** @type {HTMLDivElement} */
 //@ts-ignore
-var jsonContainer = document.querySelector("#jsonContainer");
+var jsonContainer: HTMLDivElement = document.querySelector("#jsonContainer");
 
 /** 
  * typeof null or Array is object. Handle that case and fall back to typeof.
  * @param {any} val 
  */
-function jsonType(val) {
+function jsonType(val: any) {
     switch (typeof val) {
         case "object":
             if (val instanceof Array) {
@@ -83,9 +76,9 @@ function jsonType(val) {
  * (Because I want to use the fancy fake inputs)
  * @param {KeyboardEvent} event 
  */
-function typeNumbersOnly(event) {
+function typeNumbersOnly(event: KeyboardEvent) {
     /** @type Element */ //@ts-ignore
-    const caller = event.target;
+    const caller: Element = event.target;
     const currentText = caller.textContent ?? "";
 
     if (event.key === "Backspace"
@@ -109,9 +102,9 @@ function typeNumbersOnly(event) {
  * For paste events, block anything that's not a number.
  * @param {ClipboardEvent} event 
  */
-function pasteNumbersOnly(event) {
+function pasteNumbersOnly(event: ClipboardEvent) {
     /** @type Element */ //@ts-ignore
-    const caller = event.target;
+    const caller: Element = event.target;
 
     const currentText = caller.textContent ?? "";
     const paste = event.clipboardData?.getData('text') ?? "";
@@ -131,7 +124,7 @@ class EditorItem {
      * @param {HTMLElement} parent
      * @param {String} parentType 
     */
-    constructor(type, name, value, parent, parentType) {
+    constructor(type: string, name: string, value: any, parent: HTMLElement, parentType: string) {
         this.#parentType = parentType;
 
         this.#createHtml(type, name, value, parent);
@@ -227,7 +220,7 @@ class EditorItem {
      * @param {any} value
      * @param {HTMLElement} parent
      */
-    #createHtml(type, name, value, parent) {
+    #createHtml(type: string, name: string, value: any, parent: HTMLElement) {
         // <details> (main container)
         this.#root = document.createElement("details");
         this.#root.className = `item ${type}`;
@@ -306,24 +299,24 @@ class EditorItem {
     }
 
 /** Whether the parent is an obj or array. Needed for renaming
- *  @type {string} */ #parentType;
+ *  @type {string} */ #parentType: string;
 
 // The HTML comprising this item:
-/** @type {HTMLDetailsElement} */ #root;
-/** @type {HTMLElement} */ #label;
-/** @type {HTMLElement} */ #icon;
-/** @type {HTMLSpanElement} */ #name;
-/** @type {HTMLSpanElement} */ #type;
-/** @type {HTMLElement} */ #dirty;
-/** @type {HTMLDivElement} */ #buttons;
-/** @type {HTMLDivElement} */ #value;
+/** @type {HTMLDetailsElement} */ #root: HTMLDetailsElement;
+/** @type {HTMLElement} */ #label: HTMLElement;
+/** @type {HTMLElement} */ #icon: HTMLElement;
+/** @type {HTMLSpanElement} */ #name: HTMLSpanElement;
+/** @type {HTMLSpanElement} */ #type: HTMLSpanElement;
+/** @type {HTMLElement} */ #dirty: HTMLElement;
+/** @type {HTMLDivElement} */ #buttons: HTMLDivElement;
+/** @type {HTMLDivElement} */ #value: HTMLDivElement;
 
 // Type-specific items
-/** @type {HTMLInputElement} */ #checkbox;
-/** @type {HTMLButtonElement} */ #addItem;
+/** @type {HTMLInputElement} */ #checkbox: HTMLInputElement;
+/** @type {HTMLButtonElement} */ #addItem: HTMLButtonElement;
 
 // TODO: temp items
-/** @type {HTMLButtonElement} */ #whoAmI;
+/** @type {HTMLButtonElement} */ #whoAmI: HTMLButtonElement;
 
     #setupEvents() {
 
@@ -404,7 +397,7 @@ class EditorItem {
      * @param {HTMLElement} element
      * @param {boolean} [allowNewline=true]
      */
-    #makeStringEditable(element, allowNewline = true) {
+    #makeStringEditable(element: HTMLElement, allowNewline: boolean = true) {
         element.hidden = true;
         element.style.display = "none";
 
@@ -537,7 +530,7 @@ class EditorItem {
      * @param {String} name 
      * @param {any} value 
      */
-    #addChild(type, name, value) {
+    #addChild(type: string, name: string, value: any) {
         const newChild = new EditorItem(type, name, value, this.#value, this.type ?? "");
 
         vscode.postMessage({
@@ -562,7 +555,7 @@ class EditorItem {
  * @param {any} obj Deserialized JSON
  * @param {HTMLElement} target Container to hold the object
  */
-function parseObject(obj, target) {
+function parseObject(obj: any, target: HTMLElement) {
     const objType = jsonType(obj);
     // The root object can be an array [] or object {}
     if (target.id === "jsonContainer") {
@@ -589,7 +582,7 @@ function parseObject(obj, target) {
  * @param {string|null} type 
  * @returns {string|number|boolean|HTMLDivElement|void}
  */
-function parseValue(value, type = null) {
+function parseValue(value: any, type: string | null = null): string | number | boolean | HTMLDivElement | void {
     // In case we haven't typed it already
     if (type === null) {
         type = jsonType(value);
@@ -616,7 +609,7 @@ function parseValue(value, type = null) {
  * @param {Element} item 
  * @returns {string | null | undefined}
  */
-function getItemName(item) {
+function getItemName(item: Element): string | null | undefined {
     // :scope> means "must be a direct child"
     return item.querySelector(":scope>.key")?.querySelector(":scope>.name")?.textContent;
 }
@@ -628,9 +621,9 @@ function getItemName(item) {
  * @todo Consider optimizing?
  * @todo Is the deepest item it finds a good failsafe?
  */
-function getItemFromPath(path) {
+function getItemFromPath(path: string[]): Element {
     /** @type {Element} */
-    let target = jsonContainer;
+    let target: Element = jsonContainer;
     // Advance through the item names
     for (const itemName of path) {
 
@@ -663,7 +656,7 @@ function getItemFromPath(path) {
  * @param {string[]} path Used in recursion
  * @returns {string[]} Path to the item
  */
-function getPathToItem(item, path = []) {
+function getPathToItem(item: Element, path: string[] = []): string[] {
 
     const name = getItemName(item);
     if (name) {
@@ -702,7 +695,7 @@ function cleanChanged() {
 //#region Messaging
 
 // Message Handler
-window.addEventListener('message', (/** @type {MessageEvent<{type: String, requestId?: Number, body: any}>} */ event) => {
+window.addEventListener('message', (/** @type {MessageEvent<{type: String, requestId?: Number, body: any}>} */ event: MessageEvent<{ type: string; requestId?: number; body: any; }>) => {
     const message = event.data;
     switch (message.type) {
         case "doc":
@@ -760,5 +753,3 @@ document.getElementById("rootPlus").onclick = event => {
 };
 
 vscode.postMessage({ type: "ready" });
-
-}());

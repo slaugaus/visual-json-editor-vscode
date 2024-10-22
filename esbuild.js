@@ -23,10 +23,10 @@ const esbuildProblemMatcherPlugin = {
 	},
 };
 
-async function main() {
+async function buildExtension() {
 	const ctx = await esbuild.context({
 		entryPoints: [
-			'src/extension.ts'
+			'src/extension/main.ts',
 		],
 		bundle: true,
 		format: 'cjs',
@@ -48,6 +48,38 @@ async function main() {
 		await ctx.rebuild();
 		await ctx.dispose();
 	}
+}
+
+async function buildEditor() {
+	const ctx = await esbuild.context({
+		entryPoints: [
+			'src/editor/main.ts',
+		],
+		bundle: true,
+		format: 'iife',
+		minify: production,
+		sourcemap: !production,
+		sourcesContent: false,
+		platform: 'browser',
+		outfile: 'media/editor.js',
+		// external: ['vscode'],
+		logLevel: 'silent',
+		plugins: [
+			/* add to the end of plugins array */
+			esbuildProblemMatcherPlugin,
+		],
+	});
+	if (watch) {
+		await ctx.watch();
+	} else {
+		await ctx.rebuild();
+		await ctx.dispose();
+	}
+}
+
+async function main() {
+	await buildExtension();
+	await buildEditor();
 }
 
 main().catch(e => {
