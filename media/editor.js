@@ -244,7 +244,7 @@ class EditorItem {
 
     #setupEvents() {
 
-        this.#name.addEventListener("click", (event) => {
+        this.#name.addEventListener("click", event => {
             if (this.#parentType === "object") {
                 event.stopPropagation();
                 event.preventDefault();
@@ -252,7 +252,7 @@ class EditorItem {
             }
         });
 
-        this.#value.onclick = (event) => {
+        this.#value.onclick = event => {
             switch (this.type) {
                 case "string":
                 case "number":
@@ -266,7 +266,7 @@ class EditorItem {
         };
 
         if (this.#checkbox) {
-            this.#checkbox.onchange = (event) => {
+            this.#checkbox.onchange = event => {
                 const tf = this.#checkbox.checked.toString();
                 this.#value.textContent = tf;
 
@@ -284,7 +284,7 @@ class EditorItem {
                 });
             };
 
-            this.#icon.onclick = (event) => {
+            this.#icon.onclick = event => {
                 event.stopPropagation();
                 event.preventDefault();
                 this.#checkbox.checked = !this.#checkbox.checked;
@@ -292,7 +292,7 @@ class EditorItem {
             };
         }
 
-        this.#whoAmI.onclick = (event) => {
+        this.#whoAmI.onclick = event => {
             const identity = this.path.join(".");
 
             const myself = getItemFromPath(this.path);
@@ -367,8 +367,8 @@ class EditorItem {
         // On focus lost (click something else or tab away)
         input.onblur = onClose;
 
-        input.addEventListener("keydown", (e) => {
-            switch (e.key) {
+        input.addEventListener("keydown", event => {
+            switch (event.key) {
                 case "Escape":
                     onClose();
                     break;
@@ -422,15 +422,15 @@ class EditorItem {
 
         this.#name.onblur = onClose;
 
-        this.#name.onkeydown = (e) => {
-            switch (e.key) {
+        this.#name.onkeydown = event => {
+            switch (event.key) {
                 case "Escape":
                     onClose();
                     break;
                 // Prevent newlines from Enter
                 case "Enter":
-                    e.preventDefault();
-                    e.stopPropagation();
+                    event.preventDefault();
+                    event.stopPropagation();
                     onClose();
                     break;
             }
@@ -450,7 +450,7 @@ function parseObject(obj, target) {
         jsonContainer.classList.add(objType);
     }
 
-    Object.getOwnPropertyNames(obj).forEach((key) => {
+    Object.getOwnPropertyNames(obj).forEach(key => {
         // Ignore array's length property (pretend we're not just treating it like an object)
         if (key === "length" && obj instanceof Array) {
             return;
@@ -624,7 +624,7 @@ window.addEventListener('message', (/** @type {MessageEvent<{type: String, reque
 let newThingId = 0;
 
 //@ts-ignore
-document.getElementById("rootPlus").onclick = (e) => {
+document.getElementById("rootPlus").onclick = event => {
     const newThing = new EditorItem("string", `New Thing ${newThingId++}`, "I'm new!", jsonContainer, "object");
     vscode.postMessage({
         type: "edit",

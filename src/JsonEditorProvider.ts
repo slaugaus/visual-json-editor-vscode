@@ -68,21 +68,21 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
         const docListeners: vscode.Disposable[] = [];
 
         // Event telling VS Code that edits were made
-        docListeners.push(document.onDidChange(e => {
+        docListeners.push(document.onDidChange(event => {
             this._onDidChangeCustomDocument.fire({
                 document,
-                ...e    // remaining items = contents of e
+                ...event    // remaining items = contents of event
             });
         }));
 
         // Event telling all the webviews that the document changed
-        docListeners.push(document.onDidChangeContent(e => {
+        docListeners.push(document.onDidChangeContent(event => {
             for (const panel of this.webviews.get(document.uri)) {
                 this.sendMessage(panel, {
                     type: "change",
                     body: {
-                        edits: e.edits,
-                        content: e.content
+                        edits: event.edits,
+                        content: event.content
                     }
                 });
             }
@@ -110,11 +110,11 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
         webviewPanel.webview.html = this.buildViewHtml(webviewPanel.webview);
 
         // Subscribe to messages from this webview
-        webviewPanel.webview.onDidReceiveMessage(e => this.onGetMessage(document, e));
+        webviewPanel.webview.onDidReceiveMessage(event => this.onGetMessage(document, event));
 
         // Wait for the webview to be properly ready before we init
-        webviewPanel.webview.onDidReceiveMessage(e => {
-            if (e.type === 'ready') {
+        webviewPanel.webview.onDidReceiveMessage(event => {
+            if (event.type === 'ready') {
                 if (document.uri.scheme === 'untitled') {
                     // Handle any setup necessary for new documents (probably none?)
                 } else {
