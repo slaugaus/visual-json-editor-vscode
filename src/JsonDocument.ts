@@ -108,6 +108,11 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         const doc: vscode.TextDocument = await vscode.workspace.openTextDocument(uri);
         const text: string = doc.getText();
 
+        // Don't parse and throw errors if file is nothing or whitespace
+        if (/^\s*$/.test(text)) {
+            return {};
+        }
+
         let jsonObject;
         try {
             jsonObject = JSON.parse(text);
