@@ -56,13 +56,11 @@ async function buildEditor() {
 			'src/editor/main.ts',
 		],
 		bundle: true,
-		format: 'iife',
+		format: 'iife',	// Immediately-Invoked Function Expression - limits scope
 		minify: production,
-		sourcemap: !production,
 		sourcesContent: false,
 		platform: 'browser',
 		outfile: 'media/editor.js',
-		// external: ['vscode'],
 		logLevel: 'silent',
 		plugins: [
 			/* add to the end of plugins array */
