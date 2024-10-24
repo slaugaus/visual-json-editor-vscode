@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
 import { Disposable, disposeAll } from './disposal';
 import { JsonDocument } from "./JsonDocument";
-import { Message, OutputHTML, WebviewCollection } from "./helperTypes";
+import { WebviewCollection } from "./helpers";
 import { randomBytes } from "crypto";
+import { OutputHTML, Message } from "../common";
 
 export class JsonEditorProvider implements vscode.CustomEditorProvider {
 

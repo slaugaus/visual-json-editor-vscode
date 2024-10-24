@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { Disposable } from "./disposal";
-import { JsonDocumentDelegate, JsonEdit, OutputHTML } from "./helperTypes";
+import { JsonDocumentDelegate } from "./helpers";
+import { JsonEdit, OutputHTML } from "../common";
 import { HTMLElement, parse } from "node-html-parser";
 
 /**
