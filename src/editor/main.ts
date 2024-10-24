@@ -1,5 +1,5 @@
 import { vscode } from "./vscode-webview";
-import { Message } from "../common";
+import { EditAddition, JsonEdit, Message, OutputHTML } from "../common";
 import { EditorItem } from "./EditorItem";
 import { Helpers } from "./Helpers";
 
@@ -23,7 +23,7 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
             return;
 
         case "getData":
-            vscode.postMessage({
+            vscode.postMessage<OutputHTML>({
                 type: "responseReady",
                 requestId: message.requestId,
                 body: {
@@ -37,13 +37,13 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
             Helpers.cleanChanged();
             return;
 
-        // TODO: change
+        // TODO: "change"
+        case "change":
+            Helpers.debugMsg("Changes (undo, redo, revert...) are not supported yet.");
+            return;
 
         default:
-            vscode.postMessage({
-                type: "debug",
-                body: `Editor received unknown message: ${message.type}`
-            });
+            Helpers.debugMsg(`Editor received unknown message: ${message.type}`);
             return;
     }
 });
@@ -53,18 +53,18 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
 // const lastState = vscode.getState();
 // if (lastState) {}
 
-let newThingId = 0;
-
 document.getElementById("rootPlus")!.onclick = event => {
-    const newThing = new EditorItem("string", `New Thing ${newThingId++}`, "I'm new!", Helpers.jsonContainer, "object");
-    vscode.postMessage({
-        type: "edit",
-        body: {
-            path: newThing.path,
-            type: "add",
-            change: newThing
-        }
+    const numRootItems = Helpers.jsonContainer.childElementCount;
+    const newThing = new EditorItem("string", `New Thing ${numRootItems}`, "I'm new!", Helpers.jsonContainer, Helpers.jsonContainer.className);
+
+    Helpers.sendEdit<EditAddition>(newThing.path, "add", {
+        itemType: newThing.type,
+        value: newThing.value,
+        parentType: Helpers.jsonContainer.className,
     });
+
+    newThing.makeDirty();
+    newThing.highlightAndScroll();
 };
 
 vscode.postMessage({ type: "ready" });

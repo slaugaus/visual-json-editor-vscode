@@ -9,16 +9,16 @@ import { Message } from "../common";
 /**
  * API that VS Code exposes to webviews.
  *
- * @template MessageType Type of messages postMessage sends.
  * @template StateType Type of the persisted state stored for the webview.
  */
-interface WebviewApi<MessageType, StateType> {
+interface WebviewApi<StateType> {
     /**
      * Post a message to the owner of the webview.
      *
      * @param message Data to post. Must be JSON serializable.
+     * @template TBody Type of the message's body. Not in the JS, obviously
      */
-    postMessage(message: MessageType): void;
+    postMessage<TBody = any>(message: Message<TBody>): void;
 
     /**
      * Get the persistent state stored for this webview.
@@ -38,5 +38,5 @@ interface WebviewApi<MessageType, StateType> {
     setState<T extends StateType | undefined>(newState: T): T;
 }
 
-declare function acquireVsCodeApi<MessageType, StateType = unknown>(): WebviewApi<MessageType, StateType>;
-export const vscode = acquireVsCodeApi<Message<any>, unknown>();
+declare function acquireVsCodeApi<StateType = unknown>(): WebviewApi<StateType>;
+export const vscode = acquireVsCodeApi<unknown>();

@@ -8,7 +8,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// Register the main editor & whatever else is in there
 	context.subscriptions.push(JsonEditorProvider.register(context));
 
-	console.log('Visual JSON Editor loaded!');
+	// console.log('Visual JSON Editor loaded!');
 }
 
 // This method is called when your extension is deactivated

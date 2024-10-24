@@ -1,4 +1,4 @@
-import { Message } from "../common";
+import { EditAddition, JsonEdit, Message } from "../common";
 import { vscode } from "./vscode-webview";
 import { Helpers } from "./Helpers";
 
@@ -19,19 +19,19 @@ export class EditorItem {
         // but I may want to reuse setupHtml for stuff like retyping, undo
         this.setupHtml(initType, initName, initValue, parent);
 
-        this.setupEvents();
+        this.setupEvents(parent);
     }
 
     //#region Public Methods/Properties
     get name() {
-        return this.hName.textContent;
+        return this.hName.textContent ?? "unknown";
     }
 
     // set name(val) {
     //     this.hName.textContent = val;
     // }
     get type() {
-        return this.hType.textContent;
+        return this.hType.textContent ?? "unknown";
     }
 
     // set type(val) {
@@ -98,21 +98,13 @@ export class EditorItem {
     /**
      *
      */
-    addChild(type: string, name: string, value: any) {
-        const newChild = new EditorItem(type, name, value, this.hValue, this.type ?? "");
+    addChild(itemType: string, name: string, value: any) {
+        const newChild = new EditorItem(itemType, name, value, this.hValue, this.type);
 
-        vscode.postMessage({
-            type: "edit",
-            body: {
-                path: newChild.path,
-                type: "add",
-                change: {
-                    // Name and parent name are already in the path
-                    type,
-                    value,
-                    parentType: this.type
-                },
-            }
+        Helpers.sendEdit<EditAddition>(newChild.path, "add", {
+            itemType,
+            value,
+            parentType: this.type
         });
 
         this.makeDirty();
@@ -121,7 +113,7 @@ export class EditorItem {
     }
 
     //#endregion
-    
+
     //#region Private Stuff
 
     // The HTML comprising this item:
@@ -132,6 +124,8 @@ export class EditorItem {
     private hDirty: HTMLElement = Helpers.codicon("dirty");
     private hButtons: HTMLDivElement = document.createElement("div");
     private hValue: HTMLDivElement = document.createElement("div");
+
+    private hDelete: HTMLButtonElement = document.createElement("button");
 
     // Type-specific items
     private hCheckbox: HTMLInputElement | undefined;
@@ -173,16 +167,15 @@ export class EditorItem {
         this.hButtons.className = "item-btns";
         this.root.append(this.hButtons);
 
+        this.hDelete.type = "button";
+        this.hDelete.append(Helpers.codicon("trash"));
+        this.hDelete.className = "item-btn";
+        this.hButtons.append(this.hDelete);
+
         // value (could be another object/array)
         this.hValue.className = "value";
-
-        // Preserve the events of child object/arrays
-        if (type === "object" || type === "array") {
-            this.hValue.append(...Array.from((Helpers.parseValue(value, type) as HTMLDivElement).children));
-        } else {
-            this.hValue.innerHTML = Helpers.parseValue(value, type) as string;
-        }
-
+        // Parse and place inside
+        Helpers.parseValueInto(this.hValue, value, type);
         this.root.append(this.hValue);
 
         // Type-specific items
@@ -196,22 +189,21 @@ export class EditorItem {
         else if (type === "object" || type === "array") {
             this.hAddItem = document.createElement("button");
             this.hAddItem.type = "button";
-            this.hAddItem.innerHTML = '<i class="codicon codicon-plus"></i>';
+            this.hAddItem.append(Helpers.codicon("plus"));
             this.hAddItem.className = "item-btn";
             this.hButtons.append(this.hAddItem);
         }
 
         // TODO: temp items
-        this.hWhoAmI = document.createElement("button");
         this.hWhoAmI.type = "button";
-        this.hWhoAmI.innerHTML = '<i class="codicon codicon-search"></i>';
+        this.hWhoAmI.append(Helpers.codicon("search"));
         this.hWhoAmI.className = "item-btn";
         this.hButtons.append(this.hWhoAmI);
 
         parent.append(this.root);
     }
 
-    private setupEvents() {
+    private setupEvents(parent: HTMLElement) {
 
         this.hName.addEventListener("click", event => {
             if (this.parentType === "object") {
@@ -234,6 +226,14 @@ export class EditorItem {
             }
         };
 
+        this.hDelete.onclick = event => {
+            Helpers.sendEdit(this.path, "delete");
+            parent.dispatchEvent(new Event("make-dirty"));
+            this.root.remove();
+        };
+
+        this.hValue.addEventListener("make-dirty", event => this.makeDirty());
+
         // Bool specific events
         if (this.hCheckbox) {
             this.hCheckbox.onchange = event => {
@@ -244,14 +244,7 @@ export class EditorItem {
 
                 this.hIcon.className = Helpers.codiconMap[tf];
 
-                vscode.postMessage({
-                    type: "edit",
-                    body: {
-                        path: this.path,
-                        type: "contents",
-                        change: this.hValue.textContent
-                    }
-                });
+                Helpers.sendEdit(this.path, "contents", this.hValue.textContent);
             };
 
             this.hIcon.onclick = event => {
@@ -279,10 +272,7 @@ export class EditorItem {
             const myself = Helpers.getItemFromPath(this.path);
             const itWorked = myself === this.root;
 
-            vscode.postMessage({
-                type: "debug",
-                body: `You clicked on ${identity}!\n  Did getItemFromPath work? ${itWorked}`
-            });
+            Helpers.debugMsg(`You clicked on ${identity}!\n  Did getItemFromPath work? ${itWorked}`);
         };
     }
 
@@ -329,14 +319,7 @@ export class EditorItem {
 
                 this.makeDirty();
 
-                vscode.postMessage({
-                    type: "edit",
-                    body: {
-                        path: this.path,
-                        type: "contents",
-                        change: element.textContent
-                    }
-                });
+                Helpers.sendEdit(this.path, "contents", element.textContent);
             }
             wasClosed = true;
             input.remove();
@@ -385,14 +368,7 @@ export class EditorItem {
                 // Strip newlines that get pasted in
                 this.hName.textContent = (this.hName.textContent?.replace("\n", "") ?? null);
 
-                vscode.postMessage({
-                    type: "edit",
-                    body: {
-                        path: this.path,
-                        type: "rename",
-                        change: this.hName.textContent
-                    }
-                });
+                Helpers.sendEdit(this.path, "rename", this.hName.textContent);
             }
 
             wasClosed = true;

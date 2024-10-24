@@ -1,4 +1,6 @@
+import { JsonEdit } from "../common";
 import { EditorItem } from "./EditorItem";
+import { vscode } from "./vscode-webview";
 
 /**
  * Items originally in the global scope of editor.js.
@@ -9,6 +11,51 @@ import { EditorItem } from "./EditorItem";
 export abstract class Helpers {
 
     static readonly jsonContainer = document.getElementById("jsonContainer")!;
+
+    static readonly codiconMap: { [key: string]: string } = {
+        // JSON Types
+        string: "codicon codicon-quote",
+        number: "codicon codicon-symbol-number",
+        boolean: "codicon codicon-primitive-square",
+        null: "codicon codicon-question",
+        // array: "codicon codicon-array",
+        object: "codicon codicon-symbol-object",
+        // Other Useful
+        true: "codicon codicon-pass-filled",
+        false: "codicon codicon-circle-large-outline",
+        dirty: "codicon codicon-close-dirty",
+    };
+
+    //#region Messaging Shorthand
+
+    /**
+     * Notify the extension that an edit was made.
+     * @param path Path to the modified item (getPathToItem return value)
+     * @param type Type of the edit
+     * @param change Info about the change made
+     */
+    static sendEdit<T = any>(
+        path: string[],
+        type: "contents" | "add" | "delete" | "rename",
+        change?: T,
+    ): void {
+        vscode.postMessage<JsonEdit<T>>({
+            type: "edit",
+            body: { path, type, change }
+        });
+    }
+
+    /**
+     * Send the extension a message with debugging info (which it displays and prints).
+     */
+    static debugMsg(msg: string): void {
+        vscode.postMessage({
+            type: "debug",
+            body: msg,
+        });
+    }
+
+    //#endregion
 
     /**
      * Sanitize and encode all HTML in a user-submitted string
@@ -22,28 +69,18 @@ export abstract class Helpers {
         return temp.innerHTML;
     }
 
-    static readonly codiconMap: { [key: string]: string } = {
-        // JSON Types
-        string: "codicon codicon-quote",
-        number: "codicon codicon-symbol-number",
-        boolean: "codicon codicon-primitive-square",
-        null: "codicon codicon-question",
-        array: "codicon codicon-array",
-        object: "codicon codicon-symbol-object",
-        // Other Useful
-        true: "codicon codicon-pass-filled",
-        false: "codicon codicon-circle-large-outline",
-        dirty: "codicon codicon-close-dirty"
-    };
-
     /**
-     * Create a Codicon <i> from the map.
-     * @param {String} key 
+     * Create a Codicon <i> from the map or the string directly.
+     * @param {String} name 
      * @returns {HTMLElement} \<i class="key">\</i>
      */
-    static codicon(key: string): HTMLElement {
+    static codicon(name: string): HTMLElement {
         const icon = document.createElement("i");
-        icon.className = this.codiconMap[key];
+        if (this.codiconMap.hasOwnProperty(name)) {
+            icon.className = this.codiconMap[name];
+        } else {
+            icon.className = `codicon codicon-${name}`;
+        }
         return icon;
     }
 
@@ -131,34 +168,67 @@ export abstract class Helpers {
         });
     }
 
+    // /**
+    //  * Where more of the magic happens! (Parse a value for parseObject)
+    //  */
+    // static parseValue(value: any, type: string | null = null): string | number | boolean | HTMLDivElement | void {
+    //     // In case we haven't typed it already
+    //     if (type === null) {
+    //         type = this.jsonType(value);
+    //     }
+
+    //     switch (type) {
+    //         case "string":
+    //             return this.sanitizeHTML(value);
+    //         case "number":
+    //         case "boolean":
+    //             return value;
+    //         case "null":
+    //             return "(null)";
+    //         // Woo recursion!
+    //         case "array":
+    //         case "object":
+    //             const childObj = document.createElement("div");
+    //             this.parseObject(value, childObj);
+    //             return childObj;
+    //     }
+    // }
+
     /**
-     * Where more of the magic happens! (Parse a value for parseObject)
-     * @param {any} value
-     * @param {string|null} type 
-     * @returns {string|number|boolean|HTMLDivElement|void}
+     * Parse value based on its type, then place it inside target
      */
-    static parseValue(value: any, type: string | null = null): string | number | boolean | HTMLDivElement | void {
+    static parseValueInto(target: HTMLElement, value: any, type?: string): void {
         // In case we haven't typed it already
-        if (type === null) {
+        if (!type) {
             type = this.jsonType(value);
         }
 
+        let returnVal;
+
         switch (type) {
             case "string":
-                return this.sanitizeHTML(value);
+                returnVal =  this.sanitizeHTML(value);
+                break;
             case "number":
             case "boolean":
-                return value;
+                returnVal = value;
+                break;
             case "null":
-                return "(null)";
+                returnVal = "(null)";
+                break;
             // Woo recursion!
             case "array":
             case "object":
-                const childObj = document.createElement("div");
-                this.parseObject(value, childObj);
-                return childObj;
+                this.parseObject(value, target);
+                return;
+        }
+
+        if (returnVal) {
+            target.innerHTML = returnVal as string;
         }
     }
+
+    //#region Item Paths
 
     /** 
      * @param {Element} item 
@@ -226,6 +296,8 @@ export abstract class Helpers {
 
         return path;
     }
+
+    //#endregion
 
     /** Remove the "changed" indicators from everything that has it */
     static cleanChanged() {
