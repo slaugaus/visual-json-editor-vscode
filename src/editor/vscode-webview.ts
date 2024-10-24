@@ -1,3 +1,9 @@
+/**
+ * Slightly modified from the DefinitelyTyped declaration.
+ * (https://www.npmjs.com/package/@types/vscode-webview)
+ * MIT License
+ */
+
 import { Message } from "../common";
 
 /**

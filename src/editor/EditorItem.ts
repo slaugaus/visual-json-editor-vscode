@@ -106,7 +106,12 @@ export class EditorItem {
             body: {
                 path: newChild.path,
                 type: "add",
-                change: newChild
+                change: {
+                    // Name and parent name are already in the path
+                    type,
+                    value,
+                    parentType: this.type
+                },
             }
         });
 
