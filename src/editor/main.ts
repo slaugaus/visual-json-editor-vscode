@@ -55,7 +55,7 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
 
 document.getElementById("rootPlus")!.onclick = event => {
     const numRootItems = Helpers.jsonContainer.childElementCount;
-    const newThing = new EditorItem("string", `New Thing ${numRootItems}`, "I'm new!", Helpers.jsonContainer, Helpers.jsonContainer.className);
+    const newThing = new EditorItem("null", `New Thing ${numRootItems}`, null, Helpers.jsonContainer, Helpers.jsonContainer.className);
 
     Helpers.sendEdit<EditAddition>(newThing.path, "add", {
         itemType: newThing.type,

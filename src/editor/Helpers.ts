@@ -1,4 +1,4 @@
-import { JsonEdit } from "../common";
+import { editorTypes, JsonEdit } from "../common";
 import { EditorItem } from "./EditorItem";
 import { vscode } from "./vscode-webview";
 
@@ -16,14 +16,24 @@ export abstract class Helpers {
         // JSON Types
         string: "codicon codicon-quote",
         number: "codicon codicon-symbol-number",
-        boolean: "codicon codicon-primitive-square",
+        boolean: "codicon codicon-circle-large-outline",
         null: "codicon codicon-question",
-        // array: "codicon codicon-array",
+        array: "codicon codicon-array",
         object: "codicon codicon-symbol-object",
         // Other Useful
         true: "codicon codicon-pass-filled",
         false: "codicon codicon-circle-large-outline",
         dirty: "codicon codicon-close-dirty",
+    };
+
+    /** What types (self included) can a given type safely convert to? */
+    static readonly validConversions: { [key: string]: readonly string[]} = {
+        string: ["string"],
+        number: ["number", "string"],
+        boolean: ["boolean", "string"],
+        array: ["array", /*"import"*/],
+        object: ["object", /*"import"*/],
+        null: editorTypes,  // any
     };
 
     //#region Messaging Shorthand
@@ -214,7 +224,7 @@ export abstract class Helpers {
                 returnVal = value;
                 break;
             case "null":
-                returnVal = "(null)";
+                // returnVal = "(null)";
                 break;
             // Woo recursion!
             case "array":
