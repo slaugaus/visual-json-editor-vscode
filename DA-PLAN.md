@@ -2,10 +2,6 @@
 
 ## SCRATCHPAD
 
-BUG: fake-input dies if you delete everything in it
-
-BUG: When editing names, space toggles the details
-
 BUG: **SNEAKY DATA LOSS PROBLEM: Objects can't have 2 items w/ the same name (on the same level), so don't allow this in the editor!**
 
 - Checking on (name) save is probably the way to go here

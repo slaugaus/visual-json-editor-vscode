@@ -68,7 +68,8 @@ html {
     margin-left: 0.25em;
 }
 
-.string .value:empty::before {
+.string .value:empty::before,
+.name:empty::before {
     content: "(empty)";
 }
 

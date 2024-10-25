@@ -393,5 +393,10 @@ export class EditorItem {
                     break;
             }
         };
+
+        // Don't fold the details
+        this.hName.onkeyup = event => {
+            if (event.key === " ") { event.preventDefault(); }
+        };
     }
 }
