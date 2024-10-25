@@ -20,7 +20,8 @@
     min-height: 40px;
 }
 
+.fake-input[contenteditable]:empty::before,
 .fake-textarea[contenteditable]:empty::before {
-    content: "(Demo of placeholders)";
+    content: "(empty)";
     color: gray;
 }

@@ -68,6 +68,10 @@ html {
     margin-left: 0.25em;
 }
 
+.string .value:empty::before {
+    content: "(empty)";
+}
+
 .highlighted {
     border-color: yellow;
     background-color: yellow;

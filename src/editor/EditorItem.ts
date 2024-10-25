@@ -288,6 +288,7 @@ export class EditorItem {
         const input = document.createElement("span");
         input.textContent = element.textContent ?? "";
         input.contentEditable = "plaintext-only";
+        input.role = "textbox";
 
         if (this.type === "number") {
             allowNewline = false;
@@ -303,6 +304,8 @@ export class EditorItem {
         }
 
         element.after(input);
+        // Empty spans lose their editability if there's nothing else in their parent
+        input.after(document.createTextNode(" "));
         input.focus();
 
         let wasClosed = false;
@@ -351,6 +354,7 @@ export class EditorItem {
     private makeNameEditable() {
         this.hName.classList.add("fake-input");
         this.hName.contentEditable = "plaintext-only";
+        this.hName.role = "textbox";
         this.hName.focus();
 
         const oldName = this.hName.textContent;
