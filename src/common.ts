@@ -35,7 +35,13 @@ export type OutputHTML = {
 /** Edits made to a JsonDocument */
 export interface JsonEdit<T = any> {
     readonly path: string[],
-    readonly type: "contents" | "add" | "delete" | "rename",
+    readonly type: "contents" | "add" | "delete" | "rename" | "swap",
+
+    // CONTENTS: The new value
+    // ADD: An EditAddition
+    // DELETE: Nothing
+    // RENAME: The new name
+    // SWAP: Path to what was swapped with
     readonly change?: T,
 }
 

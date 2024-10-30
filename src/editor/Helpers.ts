@@ -46,7 +46,7 @@ export abstract class Helpers {
      */
     static sendEdit<T = any>(
         path: string[],
-        type: "contents" | "add" | "delete" | "rename",
+        type: "contents" | "add" | "delete" | "rename" | "swap",
         change?: T,
     ): void {
         vscode.postMessage<JsonEdit<T>>({

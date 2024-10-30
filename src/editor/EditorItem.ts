@@ -129,6 +129,8 @@ export class EditorItem {
 
     private hBtnDelete: HTMLButtonElement = document.createElement("button");
     private hBtnClear: HTMLButtonElement = document.createElement("button");
+    private hBtnMoveDown: HTMLButtonElement = document.createElement("button");
+    private hBtnMoveUp: HTMLButtonElement = document.createElement("button");
 
     // Type-specific items
     private hCheckbox: HTMLInputElement | undefined;
@@ -192,6 +194,18 @@ export class EditorItem {
         this.hBtnClear.append(Helpers.codicon("close"));
         this.hBtnClear.className = "item-btn";
         this.hButtons.append(this.hBtnClear);
+
+        this.hBtnMoveDown.type = "button";
+        this.hBtnMoveDown.title = "Switch places with the item below me";
+        this.hBtnMoveDown.append(Helpers.codicon("arrow-down"));
+        this.hBtnMoveDown.className = "item-btn";
+        this.hButtons.append(this.hBtnMoveDown);
+
+        this.hBtnMoveUp.type = "button";
+        this.hBtnMoveUp.title = "Switch places with the item above me";
+        this.hBtnMoveUp.append(Helpers.codicon("arrow-up"));
+        this.hBtnMoveUp.className = "item-btn";
+        this.hButtons.append(this.hBtnMoveUp);
 
         // value (could be another object/array)
         this.hValue.className = "value";
@@ -280,6 +294,29 @@ export class EditorItem {
             }
         };
 
+        this.hBtnMoveDown.onclick = event => {
+            const next = this.rootElement.nextElementSibling;
+            next?.after(this.rootElement);
+            if (next) {
+                this.makeDirty();
+                next.dispatchEvent(new Event("make-dirty"));
+                this.highlightAndScroll();
+
+                Helpers.sendEdit(this.path, "swap", Helpers.getPathToItem(next));
+            }
+        };
+
+        this.hBtnMoveUp.onclick = event => {
+            const prev = this.rootElement.previousElementSibling;
+            prev?.before(this.rootElement);
+            if (prev) {
+                this.makeDirty();
+                prev.dispatchEvent(new Event("make-dirty"));
+                this.highlightAndScroll();
+            }
+        };
+
+        this.rootElement.addEventListener("make-dirty", event => this.makeDirty());
         this.hValue.addEventListener("make-dirty", event => this.makeDirty());
 
         // Bool specific events
