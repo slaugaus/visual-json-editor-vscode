@@ -28,7 +28,7 @@ export type Message<T = any> = {
 
 /** HTML contents of jsonContainer and what type the loaded file was */
 export type OutputHTML = {
-    type: "object" | "array" | string,
+    type: "object" | "array",
     html: string
 }
 
@@ -48,5 +48,5 @@ export interface JsonEdit<T = any> {
 export type EditAddition = {
     itemType: string,
     value: any,
-    parentType: "object" | "array" | string,
+    parentType: "object" | "array",
 }

@@ -174,7 +174,7 @@ export abstract class Helpers {
             const valueType = this.jsonType(value);
 
             // TODO: You made this a class, but is there a good reason for it to be one?
-            new EditorItem(valueType, key, value, target, objType);
+            new EditorItem(valueType, key, value, target, objType as ("object" | "array"));
         });
     }
 

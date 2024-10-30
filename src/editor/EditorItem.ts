@@ -13,7 +13,7 @@ export class EditorItem {
         initialValue: any,
         parent: HTMLElement,
         /** Whether the parent is an obj or array. Needed for renaming */
-        private parentType: string
+        private parentType: "object" | "array"
     ) {
         // Don't strictly need to pass the init values,
         // but I may want to reuse setupHtml for stuff like retyping, undo
@@ -101,12 +101,12 @@ export class EditorItem {
      *
      */
     addChild(itemType: string, name: string, value: any) {
-        const newChild = new EditorItem(itemType, name, value, this.hValue, this.type);
+        const newChild = new EditorItem(itemType, name, value, this.hValue, this.type as ("object" | "array"));
 
         Helpers.sendEdit<EditAddition>(newChild.path, "add", {
             itemType,
             value,
-            parentType: this.type
+            parentType: this.type as ("object" | "array"),
         });
 
         this.makeDirty();
@@ -219,10 +219,10 @@ export class EditorItem {
         }
 
         // TODO: temp items
-        this.hBtnWhoAmI.type = "button";
-        this.hBtnWhoAmI.append(Helpers.codicon("search"));
-        this.hBtnWhoAmI.className = "item-btn";
-        this.hButtons.append(this.hBtnWhoAmI);
+        // this.hBtnWhoAmI.type = "button";
+        // this.hBtnWhoAmI.append(Helpers.codicon("search"));
+        // this.hBtnWhoAmI.className = "item-btn";
+        // this.hButtons.append(this.hBtnWhoAmI);
     }
 
     private setupEvents(parent: HTMLElement) {

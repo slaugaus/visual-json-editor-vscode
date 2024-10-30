@@ -27,7 +27,7 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
                 type: "responseReady",
                 requestId: message.requestId,
                 body: {
-                    "type": Helpers.jsonContainer.className,
+                    "type": Helpers.jsonContainer.className as ("object" | "array"),
                     "html": Helpers.jsonContainer.innerHTML
                 }
             });
@@ -60,7 +60,7 @@ document.getElementById("rootPlus")!.onclick = event => {
     Helpers.sendEdit<EditAddition>(newThing.path, "add", {
         itemType: newThing.type,
         value: newThing.value,
-        parentType: Helpers.jsonContainer.className,
+        parentType: Helpers.jsonContainer.className as ("object" | "array"),
     });
 
     newThing.makeDirty();
