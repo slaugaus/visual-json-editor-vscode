@@ -304,36 +304,12 @@ export class EditorItem {
 
         this.hBtnMoveDown.onclick = event => {
             const next = this.rootElement.nextElementSibling;
-            if (next) {
-                next.after(this.rootElement);
-                this.makeDirty();
-                next.dispatchEvent(new Event("make-dirty"));
-
-                if (this.parentType === "array") {
-                    this.rootElement.dispatchEvent(new Event("renumber"));
-                    next.dispatchEvent(new Event("renumber"));
-                }
-
-                this.highlightAndScroll();
-
-                Helpers.sendEdit(this.path, "swap", Helpers.getPathToItem(next));
-            }
+            this.moveNextTo(next, next?.after.bind(next));
         };
 
         this.hBtnMoveUp.onclick = event => {
             const prev = this.rootElement.previousElementSibling;
-            if (prev) {
-                prev.before(this.rootElement);
-                this.makeDirty();
-                prev.dispatchEvent(new Event("make-dirty"));
-
-                if (this.parentType === "array") {
-                    this.rootElement.dispatchEvent(new Event("renumber"));
-                    prev.dispatchEvent(new Event("renumber"));
-                }
-
-                this.highlightAndScroll();
-            }
+            this.moveNextTo(prev, prev?.before.bind(prev));
         };
 
         // Bool specific events
@@ -500,5 +476,27 @@ export class EditorItem {
         this.hName.onkeyup = event => {
             if (event.key === " ") { event.preventDefault(); }
         };
+    }
+
+    /**
+     * Swap this item with a neighbor using its "after" or "before" methods.
+     * @param neighbor An Element, likely acquired by next/previousElementSibling
+     * @param inserter neighbor's "before" or "after" method, with .bind(neighbor) called on it to preserve context
+     */
+    private moveNextTo(neighbor: Element | null, inserter: ((...nodes: (string | Node)[]) => void) | undefined) {
+        if (neighbor && inserter) {
+            inserter(this.rootElement);
+
+            this.makeDirty();
+            neighbor.dispatchEvent(new Event("make-dirty"));
+
+            if (this.parentType === "array") {
+                this.rootElement.dispatchEvent(new Event("renumber"));
+                neighbor.dispatchEvent(new Event("renumber"));
+            }
+
+            this.highlightAndScroll();
+            Helpers.sendEdit(this.path, "swap", Helpers.getPathToItem(neighbor));
+        }
     }
 }
