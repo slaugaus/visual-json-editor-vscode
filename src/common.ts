@@ -2,6 +2,14 @@
  * Types used in the Editor and Extension
  */
 
+/** Map of "special" types to their base type */
+export const editorSubTypes = Object.freeze({
+    datetime: "string", // input type="date"
+    color: "string",    // input type="color"
+    rawJson: "string",  // paste JSON here (Monaco)
+    upload: "string"    // convert to base64
+});
+
 /** Possible types of one item in the editor */
 export const editorTypes = Object.freeze([
     "null",
@@ -10,11 +18,8 @@ export const editorTypes = Object.freeze([
     "boolean",
     "object",
     "array",
-
-    // "datetime",   // input type="date"
-    // "color",  // input type="color"
-    // "import",   // paste JSON here (Monaco)
-    // "upload", // convert to base64
+    // unroll special types
+    ...(Object.keys(editorSubTypes))
 ]);
 
 // TODO: extend this when messaging system is better defined?
@@ -26,9 +31,11 @@ export type Message<T = any> = {
     body?: T
 };
 
+export type ObjectOrArray = "object" | "array";
+
 /** HTML contents of jsonContainer and what type the loaded file was */
 export type OutputHTML = {
-    type: "object" | "array",
+    type: ObjectOrArray,
     html: string
 }
 
@@ -54,5 +61,5 @@ export interface JsonEdit<T = any> {
 export type EditAddition = {
     itemType: string,
     value: any,
-    parentType: "object" | "array",
+    parentType: ObjectOrArray,
 }

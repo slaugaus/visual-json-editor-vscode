@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Disposable } from "./disposal";
 import { JsonDocumentDelegate } from "./helpers";
-import { JsonEdit, OutputHTML } from "../common";
+import { editorSubTypes, editorTypes, JsonEdit, OutputHTML } from "../common";
 import { HTMLElement, parse } from "node-html-parser";
 
 /**
@@ -16,11 +16,12 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
      *      access to the webviews and I don't.
      */
     static async create(uri: vscode.Uri, backupId: string | undefined, delegate: JsonDocumentDelegate)
-        : Promise<JsonDocument | PromiseLike<JsonDocument>> {
+        : Promise<JsonDocument | PromiseLike<JsonDocument>>
+    {
         // Read the backup if it exists, otherwise get the file at uri
-        const actualUri = typeof(backupId) === "string" ? vscode.Uri.parse(backupId) : uri;
+        const actualUri = typeof backupId === "string" ? vscode.Uri.parse(backupId) : uri;
 
-        if (typeof(backupId) === "string") {
+        if (typeof backupId === "string") {
             console.log(`Loaded a backup from ${backupId}`);
         }
 
@@ -28,23 +29,22 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         return new JsonDocument(uri, fileObj, delegate);
     }
 
-    private constructor(uri: vscode.Uri, fileObj: any, delegate: JsonDocumentDelegate) {
-        super();
-        this._uri = uri;
-        this._object = fileObj;
-        this._delegate = delegate;
-    }
-
-    private readonly _uri: vscode.Uri;
-    private _object: any;
-    private _freshEdits: JsonEdit[] = [];
-    private _savedEdits: JsonEdit[] = [];
-
-    private readonly _delegate: JsonDocumentDelegate;
-
     public get uri() { return this._uri; }
 
     public get object(): any { return this._object; }
+
+
+
+    private constructor(
+        private readonly _uri: vscode.Uri,
+        private _object: any,
+        private readonly _delegate: JsonDocumentDelegate
+    ) {
+        super();
+    }
+
+    private _freshEdits: JsonEdit[] = [];
+    private _savedEdits: JsonEdit[] = [];
 
     //#region Editing
 
@@ -190,7 +190,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
                 try {
                     await vscode.workspace.fs.delete(destination);
                 } catch {
-                    // ignore errors
+                    // ignore errors; we don't care whether the delete worked
                 }
             }
         };
@@ -200,6 +200,11 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
     //#region HTML -> Object Logic
 
+    /**
+     * Entrypoint for parsing HTML from the editor.
+     * @param data Contents of #jsonContainer
+     * @returns A JSON-serializable object
+     */
     private static readHtml(data: OutputHTML): any {
         const container = parse(data.html);
 
@@ -260,20 +265,15 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         parent[childKey] = childValue;
     }
 
-    private static readonly _validBaseTypes = [
-        "string",
-        "number",
-        "boolean",
-        "null",
-        "array",
-        "object"
-    ];
-
-    // Read ele.classList and return the JSON type it contains
-    // Theoretically the type will always be class #2, but don't make that assumption
+    /**
+     * Read ele.classList and return the JSON type it contains.
+     * 
+     * Theoretically the type will always be class #2, but don't make that assumption.
+     */
     private static getTypeOfElement(ele: HTMLElement): string {
-        // Get the class(es) that indicate type
-        const result = ele.classList.value.filter(val => this._validBaseTypes.includes(val));
+        // Get the class(es) that indicate base type - ignore the subtypes
+        const result = ele.classList.value.filter(
+            val => editorTypes.includes(val) && !Object.keys(editorSubTypes).includes(val));
 
         if (result.length > 1) {
             vscode.window.showErrorMessage(`Element ${ele.outerHTML} has multiple base types (${result})! Returning the first one.`);

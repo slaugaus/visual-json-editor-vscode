@@ -2,8 +2,9 @@ html {
     font-family: sans-serif;
 }
 
-.key {
+.name {
     font-weight: bold;
+    white-space: pre;
 }
 
 .value {

@@ -18,7 +18,7 @@ export class WebviewCollection {
     }>();
 
     /**
-     * Get all known webviews for a given URI.
+     * Get all known webviews for a given URI. Produces an iterable.
      */
     public *get(uri: vscode.Uri): Iterable<vscode.WebviewPanel> {
         const key = uri.toString();

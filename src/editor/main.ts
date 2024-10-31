@@ -1,5 +1,5 @@
 import { vscode } from "./vscode-webview";
-import { EditAddition, JsonEdit, Message, OutputHTML } from "../common";
+import { EditAddition, Message, ObjectOrArray, OutputHTML } from "../common";
 import { EditorItem } from "./EditorItem";
 import { Helpers } from "./Helpers";
 
@@ -27,7 +27,7 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
                 type: "responseReady",
                 requestId: message.requestId,
                 body: {
-                    "type": Helpers.jsonContainer.className as ("object" | "array"),
+                    "type": Helpers.jsonContainer.className as ObjectOrArray,
                     "html": Helpers.jsonContainer.innerHTML
                 }
             });
@@ -59,13 +59,13 @@ document.getElementById("rootPlus")!.onclick = event => {
         "null",
         `New Thing ${numRootItems}`,
         null, Helpers.jsonContainer, 
-        Helpers.jsonContainer.className as ("object" | "array")
+        Helpers.jsonContainer.className as ObjectOrArray
     );
 
     Helpers.sendEdit<EditAddition>(newThing.path, "add", {
         itemType: newThing.type,
         value: newThing.value,
-        parentType: Helpers.jsonContainer.className as ("object" | "array"),
+        parentType: Helpers.jsonContainer.className as ObjectOrArray,
     });
 
     newThing.makeDirty();

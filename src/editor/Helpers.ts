@@ -1,4 +1,4 @@
-import { editorTypes, JsonEdit } from "../common";
+import { editorTypes, JsonEdit, ObjectOrArray } from "../common";
 import { EditorItem } from "./EditorItem";
 import { vscode } from "./vscode-webview";
 
@@ -12,7 +12,7 @@ export abstract class Helpers {
 
     static readonly jsonContainer = document.getElementById("jsonContainer")!;
 
-    static readonly codiconMap: { [key: string]: string } = {
+    static readonly codiconMap: { [key: string]: string } = Object.freeze({
         // JSON Types
         string: "codicon codicon-quote",
         number: "codicon codicon-symbol-number",
@@ -24,17 +24,17 @@ export abstract class Helpers {
         true: "codicon codicon-pass-filled",
         false: "codicon codicon-circle-large-outline",
         dirty: "codicon codicon-close-dirty",
-    };
+    });
 
     /** What types (self included) can a given type safely convert to? */
-    static readonly validConversions: { [key: string]: readonly string[]} = {
+    static readonly validConversions: { [key: string]: readonly string[]} = Object.freeze({
         string: ["string"],
         number: ["number", "string"],
         boolean: ["boolean", "string"],
         array: ["array", /*"import"*/],
         object: ["object", /*"import"*/],
         null: editorTypes,  // any
-    };
+    });
 
     //#region Messaging Shorthand
 
@@ -97,7 +97,7 @@ export abstract class Helpers {
     /** 
      * typeof null or Array is object. Handle that case and fall back to typeof.
      */
-    static jsonType(val: any) {
+    static jsonTypeOf(val: any) {
         switch (typeof val) {
             case "object":
                 if (val instanceof Array) {
@@ -146,19 +146,24 @@ export abstract class Helpers {
         const currentText = caller.textContent ?? "";
         const paste = event.clipboardData?.getData('text') ?? "";
 
-        // Prevent paste if it contains non-numeric characters or more than one decimal point
-        if (!/^\d*\.?\d*$/.test(paste) || (paste.includes('.') && currentText.includes('.'))) {
+        // Prevent paste if it contains non-numeric characters
+        // or more than one special char (decimal point/exponent)
+        if (!/^\d*\.?\d*$/.test(paste)
+            || (paste.includes('.') && currentText.includes('.'))
+            || (paste.includes('e') && currentText.includes('e'))
+            || (paste.includes('+') && currentText.includes('+'))
+        ) {
             event.preventDefault();
         }
     }
 
     /**
-     * Where the magic (object -> HTML) happens
+     * Where the magic (object -> HTML) happens!
      * @param {any} obj Deserialized JSON
      * @param {HTMLElement} target Container to hold the object
      */
     static parseObject(obj: any, target: HTMLElement) {
-        const objType = this.jsonType(obj);
+        const objType = this.jsonTypeOf(obj);
         // The root object can be an array [] or object {}
         if (target.id === "jsonContainer") {
             target.classList.add(objType);
@@ -171,38 +176,11 @@ export abstract class Helpers {
             }
 
             const value = obj[key];
-            const valueType = this.jsonType(value);
+            const valueType = this.jsonTypeOf(value);
 
-            // TODO: You made this a class, but is there a good reason for it to be one?
-            new EditorItem(valueType, key, value, target, objType as ("object" | "array"));
+            new EditorItem(valueType, key, value, target, objType as ObjectOrArray);
         });
     }
-
-    // /**
-    //  * Where more of the magic happens! (Parse a value for parseObject)
-    //  */
-    // static parseValue(value: any, type: string | null = null): string | number | boolean | HTMLDivElement | void {
-    //     // In case we haven't typed it already
-    //     if (type === null) {
-    //         type = this.jsonType(value);
-    //     }
-
-    //     switch (type) {
-    //         case "string":
-    //             return this.sanitizeHTML(value);
-    //         case "number":
-    //         case "boolean":
-    //             return value;
-    //         case "null":
-    //             return "(null)";
-    //         // Woo recursion!
-    //         case "array":
-    //         case "object":
-    //             const childObj = document.createElement("div");
-    //             this.parseObject(value, childObj);
-    //             return childObj;
-    //     }
-    // }
 
     /**
      * Parse value based on its type, then place it inside target
@@ -210,7 +188,7 @@ export abstract class Helpers {
     static parseValueInto(target: HTMLElement, value: any, type?: string): void {
         // In case we haven't typed it already
         if (!type) {
-            type = this.jsonType(value);
+            type = this.jsonTypeOf(value);
         }
 
         let returnVal;
@@ -309,7 +287,7 @@ export abstract class Helpers {
 
     //#endregion
 
-    /** Remove the "changed" indicators from everything that has it */
+    /** Remove the "changed"/"dirty" indicators from everything that has it */
     static cleanChanged() {
         document.querySelectorAll(".item.changed").forEach(
             item => item.classList.remove("changed"));

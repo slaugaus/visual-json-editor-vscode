@@ -1,5 +1,5 @@
-import { EditAddition, JsonEdit, Message } from "../common";
-import { vscode } from "./vscode-webview";
+import { EditAddition, ObjectOrArray } from "../common";
+// import { vscode } from "./vscode-webview";
 import { Helpers } from "./Helpers";
 
 /**
@@ -13,7 +13,7 @@ export class EditorItem {
         initialValue: any,
         parent: HTMLElement,
         /** Whether the parent is an obj or array. Needed for renaming */
-        private parentType: "object" | "array"
+        private parentType: ObjectOrArray
     ) {
         // Don't strictly need to pass the init values,
         // but I may want to reuse setupHtml for stuff like retyping, undo
@@ -32,6 +32,7 @@ export class EditorItem {
     // set name(val) {
     //     this.hName.textContent = val;
     // }
+
     get type() {
         return this.hType.value ?? "unknown";
     }
@@ -39,6 +40,7 @@ export class EditorItem {
     // set type(val) {
     //     this.hType.textContent = val;
     // }
+
     get value() {
         return this.hValue.innerHTML;
     }
@@ -47,6 +49,7 @@ export class EditorItem {
     //     // Don't do it this way
     //     this.hValue.innerHTML = val;
     // }
+
     // I wanted to cache this after the final append of setupHtml,
     // but that doesn't work for no clear reason
     get path() {
@@ -98,15 +101,15 @@ export class EditorItem {
     }
 
     /**
-     *
+     * Create a child value for me (assumes I'm a collection)
      */
     addChild(itemType: string, name: string, value: any) {
-        const newChild = new EditorItem(itemType, name, value, this.hValue, this.type as ("object" | "array"));
+        const newChild = new EditorItem(itemType, name, value, this.hValue, this.type as ObjectOrArray);
 
         Helpers.sendEdit<EditAddition>(newChild.path, "add", {
             itemType,
             value,
-            parentType: this.type as ("object" | "array"),
+            parentType: this.type as ObjectOrArray,
         });
 
         this.makeDirty();
@@ -137,10 +140,10 @@ export class EditorItem {
     private hAddItem: HTMLButtonElement | undefined;
 
     // TODO: temp items
-    private hBtnWhoAmI: HTMLButtonElement = document.createElement("button");
+    // private hBtnWhoAmI: HTMLButtonElement = document.createElement("button");
 
     /**
-     * Initialize my HTML. Reusable.
+     * Initialize my HTML. Reusable for type changer.
      */
     private setupHtml(type: string, name: string, value: any) {
         // <details> (main container)
@@ -239,24 +242,31 @@ export class EditorItem {
         // this.hButtons.append(this.hBtnWhoAmI);
     }
 
+    /**
+     * Define all of my interactivity. Reusable for type changer.
+     */
     private setupEvents(parent: HTMLElement) {
 
+        // Allow other instances to call my makeDirty()
         this.rootElement.addEventListener("make-dirty", event => this.makeDirty());
         this.hValue.addEventListener("make-dirty", event => this.makeDirty());
 
+        // Dispatch this after repositioning in an array to fix my index (name field).
         this.rootElement.addEventListener("renumber", event => {
             const idx = new Array(...parent.children).indexOf(this.rootElement);
             this.hName.textContent = idx.toString();
         });
 
-        this.hName.addEventListener("click", event => {
+        // Name editability (except for array members)
+        this.hName.onclick = event => {
             if (this.parentType === "object") {
                 event.stopPropagation();
                 event.preventDefault();
                 this.makeNameEditable();
             }
-        });
+        };
 
+        // Value editability
         this.hValue.onclick = event => {
             switch (this.type) {
                 case "string":
@@ -264,12 +274,14 @@ export class EditorItem {
                     this.makeStringEditable(this.hValue);
                     break;
                 case "boolean":
+                    // Toggle the checkbox and trigger its change event
                     this.hCheckbox!.checked = !this.hCheckbox!.checked;
                     this.hCheckbox!.dispatchEvent(new Event("change"));
                     break;
             }
         };
 
+        // Type change logic
         this.hType.onchange = event => {
             // If converting to obj or array, parse an empty object instead of an empty string
             // so the "length" property doesn't appear
@@ -293,6 +305,7 @@ export class EditorItem {
 
         this.hBtnClear.onclick = event => {
             if (this.type !== "null") {
+                // Reset to a null object (so type can be freely changed)
                 this.hType.disabled = false;
                 this.hValue.innerHTML = "";
                 this.setupHtml("null", this.name, null);
@@ -314,17 +327,19 @@ export class EditorItem {
 
         // Bool specific events
         if (this.hCheckbox) {
+            // On checkbox toggle
             this.hCheckbox.onchange = event => {
-                const tf = this.hCheckbox!.checked.toString();
-                this.hValue.textContent = tf;
+                const boxVal = this.hCheckbox!.checked.toString();
+                this.hValue.textContent = boxVal;
 
                 this.makeDirty();
 
-                this.hIcon.className = Helpers.codiconMap[tf];
+                this.hIcon.className = Helpers.codiconMap[boxVal];
 
                 Helpers.sendEdit(this.path, "contents", this.hValue.textContent);
             };
 
+            // Icon also toggles value
             this.hIcon.onclick = event => {
                 event.stopPropagation();
                 event.preventDefault();
@@ -333,7 +348,7 @@ export class EditorItem {
             };
         }
 
-        // Add button (object/array)
+        // Add button (object/array only)
         else if (this.hAddItem) {
             this.hAddItem.onclick = event => {
                 const count = this.hValue.childElementCount;
@@ -344,14 +359,14 @@ export class EditorItem {
             };
         }
 
-        this.hBtnWhoAmI.onclick = event => {
-            const identity = this.path.join(".");
+        // this.hBtnWhoAmI.onclick = event => {
+        //     const identity = this.path.join(".");
 
-            const myself = Helpers.getItemFromPath(this.path);
-            const itWorked = myself === this.rootElement;
+        //     const myself = Helpers.getItemFromPath(this.path);
+        //     const itWorked = myself === this.rootElement;
 
-            Helpers.debugMsg(`You clicked on ${identity}!\n  Did getItemFromPath work? ${itWorked}`);
-        };
+        //     Helpers.debugMsg(`You clicked on ${identity}!\n  Did getItemFromPath work? ${itWorked}`);
+        // };
     }
 
     /**
@@ -429,6 +444,9 @@ export class EditorItem {
     }
 
     // TODO: Common reusable makeEditable function
+    /**
+     * Editability for name (except for array members)
+     */
     private makeNameEditable() {
         this.hName.classList.add("fake-input");
         this.hName.contentEditable = "plaintext-only";
