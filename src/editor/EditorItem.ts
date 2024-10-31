@@ -241,6 +241,14 @@ export class EditorItem {
 
     private setupEvents(parent: HTMLElement) {
 
+        this.rootElement.addEventListener("make-dirty", event => this.makeDirty());
+        this.hValue.addEventListener("make-dirty", event => this.makeDirty());
+
+        this.rootElement.addEventListener("renumber", event => {
+            const idx = new Array(...parent.children).indexOf(this.rootElement);
+            this.hName.textContent = idx.toString();
+        });
+
         this.hName.addEventListener("click", event => {
             if (this.parentType === "object") {
                 event.stopPropagation();
@@ -296,10 +304,16 @@ export class EditorItem {
 
         this.hBtnMoveDown.onclick = event => {
             const next = this.rootElement.nextElementSibling;
-            next?.after(this.rootElement);
             if (next) {
+                next.after(this.rootElement);
                 this.makeDirty();
                 next.dispatchEvent(new Event("make-dirty"));
+
+                if (this.parentType === "array") {
+                    this.rootElement.dispatchEvent(new Event("renumber"));
+                    next.dispatchEvent(new Event("renumber"));
+                }
+
                 this.highlightAndScroll();
 
                 Helpers.sendEdit(this.path, "swap", Helpers.getPathToItem(next));
@@ -308,16 +322,19 @@ export class EditorItem {
 
         this.hBtnMoveUp.onclick = event => {
             const prev = this.rootElement.previousElementSibling;
-            prev?.before(this.rootElement);
             if (prev) {
+                prev.before(this.rootElement);
                 this.makeDirty();
                 prev.dispatchEvent(new Event("make-dirty"));
+
+                if (this.parentType === "array") {
+                    this.rootElement.dispatchEvent(new Event("renumber"));
+                    prev.dispatchEvent(new Event("renumber"));
+                }
+
                 this.highlightAndScroll();
             }
         };
-
-        this.rootElement.addEventListener("make-dirty", event => this.makeDirty());
-        this.hValue.addEventListener("make-dirty", event => this.makeDirty());
 
         // Bool specific events
         if (this.hCheckbox) {
