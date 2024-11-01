@@ -25,7 +25,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
             console.log(`Loaded a backup from ${backupId}`);
         }
 
-        const fileObj = await this.readFile(actualUri);
+        const fileObj = await this._readFile(actualUri);
         return new JsonDocument(uri, fileObj, delegate);
     }
 
@@ -101,7 +101,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
     /**
      * Attempt to parse the file at (uri) as JSON. Return the object if successful.
      */
-    private static async readFile(uri: vscode.Uri): Promise<any> {
+    private static async _readFile(uri: vscode.Uri): Promise<any> {
         if (uri.scheme === "untitled") {
             return {};
         }
@@ -142,7 +142,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
         const data = await this._delegate.getData();
 
-        const dataObject = JsonDocument.readHtml(data);
+        const dataObject = JsonDocument._readHtml(data);
 
         // Avoid data loss - catch readHtml returning empty
         if (data.html.length > 0) {
@@ -170,7 +170,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
     /** Revert to the state of the file at its last save */
     async revert(cancellation: vscode.CancellationToken): Promise<void> {
-        const fileOnDisk = JsonDocument.readFile(this.uri);
+        const fileOnDisk = JsonDocument._readFile(this.uri);
         if (cancellation.isCancellationRequested) { return; }
         this._object = fileOnDisk;
         this._freshEdits = this._savedEdits;
@@ -205,7 +205,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
      * @param data Contents of #jsonContainer
      * @returns A JSON-serializable object
      */
-    private static readHtml(data: OutputHTML): any {
+    private static _readHtml(data: OutputHTML): any {
         const container = parse(data.html);
 
         let outputObject;
@@ -214,7 +214,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         else { outputObject = {}; }
 
         for (const child of container.childNodes) {
-            this.addFromNode(child as HTMLElement, outputObject);
+            this._addFromNode(child as HTMLElement, outputObject);
         }
 
         return outputObject;
@@ -224,7 +224,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
      * Given child (the value as a <details> key/value pair), extract the key+value
      * and add them to parent (possibly recurring to do it fully).
      */
-    private static addFromNode(child: HTMLElement, parent: any) {
+    private static _addFromNode(child: HTMLElement, parent: any) {
         const keyElement = child.querySelector(".key")!;
         const valElement = child.querySelector(".value")!;
 
@@ -233,7 +233,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
         // TODO: Detect and ignore (or fill in?) incomplete elements
 
-        switch (this.getTypeOfElement(child)) {
+        switch (this._getTypeOfElement(child)) {
             case "string":
                 childValue = valElement.textContent;
                 break;
@@ -249,13 +249,13 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
             case "object":
                 childValue = {};
                 for (const grandchild of valElement.childNodes) {
-                    this.addFromNode(grandchild as HTMLElement, childValue);
+                    this._addFromNode(grandchild as HTMLElement, childValue);
                 }
                 break;
             case "array":
                 childValue = [];
                 for (const grandchild of valElement.childNodes) {
-                    this.addFromNode(grandchild as HTMLElement, childValue);
+                    this._addFromNode(grandchild as HTMLElement, childValue);
                 }
                 break;
         }
@@ -270,7 +270,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
      * 
      * Theoretically the type will always be class #2, but don't make that assumption.
      */
-    private static getTypeOfElement(ele: HTMLElement): string {
+    private static _getTypeOfElement(ele: HTMLElement): string {
         // Get the class(es) that indicate base type - ignore the subtypes
         const result = ele.classList.value.filter(
             val => editorTypes.includes(val) && !Object.keys(editorSubTypes).includes(val));

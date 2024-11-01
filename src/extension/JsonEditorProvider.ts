@@ -11,13 +11,13 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
     constructor(private readonly _context: vscode.ExtensionContext) { }
 
     /** Name/ID of the custom editor - reference this in commands that open it */
-    private static readonly viewType = "visual-json.mainEditor";
+    private static readonly _viewType = "visual-json.mainEditor";
 
     static register(context: vscode.ExtensionContext) {
         // Register any commands here
 
         return vscode.window.registerCustomEditorProvider(
-            JsonEditorProvider.viewType,
+            JsonEditorProvider._viewType,
             new JsonEditorProvider(context),
             // Add'l options object
             {
@@ -37,7 +37,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
     }
 
     /** Tracks all webviews (editors) the extension has open. */
-    private readonly webviews = new WebviewCollection();
+    private readonly _webviews = new WebviewCollection();
 
     //#region CustomEditorProvider Implementation
 
@@ -52,14 +52,14 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
             // Implement retrieving data from the webview here, as JsonDocument
             // doesn't get to access it. Hooray for delegates!
             getData: async () => {
-                const webviewsForThisDoc = Array.from(this.webviews.get(document.uri));
+                const webviewsForThisDoc = Array.from(this._webviews.get(document.uri));
                 if (webviewsForThisDoc.length === 0) {
                     throw new Error("Could not find a webview for this document");
                 }
                 else if (webviewsForThisDoc.length > 1) {
                     throw new Error("Doc is somehow open in multiple tabs...");
                 }
-                return await this.sendMessageWithResponse<OutputHTML>(webviewsForThisDoc[0], {
+                return await this._sendMessageWithResponse<OutputHTML>(webviewsForThisDoc[0], {
                     type: "getData",
                     body: null
                 });
@@ -78,8 +78,8 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 
         // Event telling all the webviews that the document changed
         docListeners.push(document.onDidChangeContent(event => {
-            for (const panel of this.webviews.get(document.uri)) {
-                this.sendMessage(panel, {
+            for (const panel of this._webviews.get(document.uri)) {
+                this._sendMessage(panel, {
                     type: "change",
                     body: {
                         edits: event.edits,
@@ -102,16 +102,16 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
         _token: vscode.CancellationToken
     ): Promise<void> {
         // Add the webview to our internal set of active webviews
-        this.webviews.add(document.uri, webviewPanel);
+        this._webviews.add(document.uri, webviewPanel);
 
         webviewPanel.webview.options = {
             enableScripts: true,
         };
 
-        webviewPanel.webview.html = this.buildViewHtml(webviewPanel.webview);
+        webviewPanel.webview.html = this._buildViewHtml(webviewPanel.webview);
 
         // Subscribe to messages from this webview
-        webviewPanel.webview.onDidReceiveMessage(event => this.onGetMessage(document, event));
+        webviewPanel.webview.onDidReceiveMessage(event => this._onGetMessage(document, event));
 
         // Wait for the webview to be properly ready before we init
         webviewPanel.webview.onDidReceiveMessage(event => {
@@ -119,7 +119,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
                 if (document.uri.scheme === 'untitled') {
                     // Handle any setup necessary for new documents (probably none?)
                 } else {
-                    this.sendMessage(webviewPanel, {
+                    this._sendMessage(webviewPanel, {
                         type: "doc", body: document.object
                     });
                 }
@@ -132,13 +132,13 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 
     public saveCustomDocument(document: JsonDocument, cancellation: vscode.CancellationToken): Thenable<void> {
         const save = document.save(cancellation);
-        this.sendMessageAll(document, { type: "saved" });
+        this._sendMessageAll(document, { type: "saved" });
         return save;
     }
 
     public saveCustomDocumentAs(document: JsonDocument, destination: vscode.Uri, cancellation: vscode.CancellationToken): Thenable<void> {
         const saveAs = document.saveAs(destination, cancellation);
-        this.sendMessageAll(document, { type: "saved" });
+        this._sendMessageAll(document, { type: "saved" });
         return saveAs;
     }
 
@@ -154,13 +154,13 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 
     //#region Messaging
 
-    private sendMessage(panel: vscode.WebviewPanel, message: Message<any>): void {
+    private _sendMessage(panel: vscode.WebviewPanel, message: Message<any>): void {
         panel.webview.postMessage(message);
     }
 
     /** Message all webviews belonging to a JsonDocument */
-    private sendMessageAll(document: JsonDocument, message: Message<any>): void {
-        for (const panel of this.webviews.get(document.uri)) {
+    private _sendMessageAll(document: JsonDocument, message: Message<any>): void {
+        for (const panel of this._webviews.get(document.uri)) {
             panel.webview.postMessage(message);
         }
     }
@@ -169,7 +169,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
     private readonly _callbacks = new Map<number, (response: any) => void>();
 
     /** Send a message to panel expecting a response (the Promise returned). */
-    private sendMessageWithResponse<R = unknown>(
+    private _sendMessageWithResponse<R = unknown>(
         panel: vscode.WebviewPanel,
         message: Message<R | null>
     ): Promise<R> {
@@ -181,7 +181,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
         return p;
     }
 
-    private onGetMessage(document: JsonDocument, message: Message<any>): void {
+    private _onGetMessage(document: JsonDocument, message: Message<any>): void {
         switch (message.type) {
 
             case "responseReady":
@@ -211,7 +211,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
     /**
      * Returns the static HTML for the webview.
      */
-    private buildViewHtml(view: vscode.Webview): string {
+    private _buildViewHtml(view: vscode.Webview): string {
         // Get paths to CSS/JS (media folder) that the webview can reach
         const scriptUri = view.asWebviewUri(vscode.Uri.joinPath(
             this._context.extensionUri, "media", "editor.js"));

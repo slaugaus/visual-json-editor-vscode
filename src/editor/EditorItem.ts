@@ -8,25 +8,25 @@ import { Helpers } from "./Helpers";
 export class EditorItem {
 
     constructor(
-        private initialType: string,
+        private readonly _initialType: string,
         initialName: string,
         initialValue: any,
         parent: HTMLElement,
         /** Whether the parent is an obj or array. Needed for renaming */
-        private parentType: ObjectOrArray
+        private readonly _parentType: ObjectOrArray
     ) {
         // Don't strictly need to pass the init values,
         // but I may want to reuse setupHtml for stuff like retyping, undo
-        this.setupHtml(initialType, initialName, initialValue);
+        this._setupHtml(_initialType, initialName, initialValue);
 
-        this.setupEvents(parent);
+        this._setupEvents(parent);
 
         parent.append(this.rootElement);
     }
 
     //#region Public Methods/Properties
     get name() {
-        return this.hName.textContent ?? "unknown";
+        return this._name.textContent ?? "unknown";
     }
 
     // set name(val) {
@@ -34,7 +34,7 @@ export class EditorItem {
     // }
 
     get type() {
-        return this.hType.value ?? "unknown";
+        return this._type.value ?? "unknown";
     }
 
     // set type(val) {
@@ -42,7 +42,7 @@ export class EditorItem {
     // }
 
     get value() {
-        return this.hValue.innerHTML;
+        return this._value.innerHTML;
     }
 
     // set value(val) {
@@ -64,7 +64,7 @@ export class EditorItem {
      */
     makeDirty() {
         this.rootElement.classList.add("changed");
-        this.hDirty.style.display = "unset";
+        this._dirty.style.display = "unset";
     }
 
     /**
@@ -104,7 +104,7 @@ export class EditorItem {
      * Create a child value for me (assumes I'm a collection)
      */
     addChild(itemType: string, name: string, value: any) {
-        const newChild = new EditorItem(itemType, name, value, this.hValue, this.type as ObjectOrArray);
+        const newChild = new EditorItem(itemType, name, value, this._value, this.type as ObjectOrArray);
 
         Helpers.sendEdit<EditAddition>(newChild.path, "add", {
             itemType,
@@ -122,22 +122,22 @@ export class EditorItem {
     //#region Private Stuff
 
     // The HTML comprising this item:
-    private hLabel: HTMLElement = document.createElement("summary");
-    private hIcon: HTMLElement = Helpers.codicon(this.initialType);
-    private hName: HTMLSpanElement = document.createElement("span");
-    private hType: HTMLSelectElement = document.createElement("select");
-    private hDirty: HTMLElement = Helpers.codicon("dirty");
-    private hButtons: HTMLDivElement = document.createElement("div");
-    private hValue: HTMLDivElement = document.createElement("div");
+    private _label: HTMLElement = document.createElement("summary");
+    private _icon: HTMLElement = Helpers.codicon(this._initialType);
+    private _name: HTMLSpanElement = document.createElement("span");
+    private _type: HTMLSelectElement = document.createElement("select");
+    private _dirty: HTMLElement = Helpers.codicon("dirty");
+    private _buttons: HTMLDivElement = document.createElement("div");
+    private _value: HTMLDivElement = document.createElement("div");
 
-    private hBtnDelete: HTMLButtonElement = document.createElement("button");
-    private hBtnClear: HTMLButtonElement = document.createElement("button");
-    private hBtnMoveDown: HTMLButtonElement = document.createElement("button");
-    private hBtnMoveUp: HTMLButtonElement = document.createElement("button");
+    private _btnDelete: HTMLButtonElement = document.createElement("button");
+    private _btnClear: HTMLButtonElement = document.createElement("button");
+    private _btnMoveDown: HTMLButtonElement = document.createElement("button");
+    private _btnMoveUp: HTMLButtonElement = document.createElement("button");
 
     // Type-specific items
-    private hCheckbox: HTMLInputElement | undefined;
-    private hAddItem: HTMLButtonElement | undefined;
+    private _checkbox: HTMLInputElement | undefined;
+    private _btnAddItem: HTMLButtonElement | undefined;
 
     // TODO: temp items
     // private hBtnWhoAmI: HTMLButtonElement = document.createElement("button");
@@ -145,94 +145,94 @@ export class EditorItem {
     /**
      * Initialize my HTML. Reusable for type changer.
      */
-    private setupHtml(type: string, name: string, value: any) {
+    private _setupHtml(type: string, name: string, value: any) {
         // <details> (main container)
         this.rootElement.className = `item ${type}`;
         this.rootElement.open = true;
 
         // <summary> (key and type)
-        this.hLabel.className = "key";
-        this.rootElement.append(this.hLabel);
+        this._label.className = "key";
+        this.rootElement.append(this._label);
 
         // <i> (Codicon inside label)
-        this.hIcon.className = Helpers.codiconMap[type];
-        this.hLabel.append(this.hIcon);
+        this._icon.className = Helpers.codiconMap[type];
+        this._label.append(this._icon);
 
         // name/key of item (inside label)
-        this.hName.className = "name clickable";
-        this.hName.textContent = name;
-        this.hLabel.append(this.hName);
+        this._name.className = "name clickable";
+        this._name.textContent = name;
+        this._label.append(this._name);
 
         // type of item (inside label)
-        this.hType.className = "type clickable";
-        this.hType.innerHTML = "";
+        this._type.className = "type clickable";
+        this._type.innerHTML = "";
         for (const t of Helpers.validConversions[type]) {
             const option = document.createElement("option");
             option.value = t;
             option.textContent = t;
-            this.hType.append(option);
+            this._type.append(option);
         }
-        if (this.hType.childElementCount <= 1) { this.hType.disabled = true; }
-        this.hLabel.append(this.hType);
+        if (this._type.childElementCount <= 1) { this._type.disabled = true; }
+        this._label.append(this._type);
 
         // Dirty (changed) indicator that doesn't rely on color
-        this.hDirty.classList.add("dirty-indicator");
-        this.hDirty.style.display = "none";
-        this.hLabel.append(this.hDirty);
+        this._dirty.classList.add("dirty-indicator");
+        this._dirty.style.display = "none";
+        this._label.append(this._dirty);
 
-        this.hButtons.className = "item-btns";
-        for (const btn of this.hButtons.children) {
+        this._buttons.className = "item-btns";
+        for (const btn of this._buttons.children) {
             if (btn.childElementCount > 0) { btn.innerHTML = ""; }
         }
-        this.rootElement.append(this.hButtons);
+        this.rootElement.append(this._buttons);
 
-        this.hBtnDelete.type = "button";
-        this.hBtnDelete.title = "Delete this item"; // Tooltip
-        this.hBtnDelete.append(Helpers.codicon("trash"));
-        this.hBtnDelete.className = "item-btn";
-        this.hButtons.append(this.hBtnDelete);
+        this._btnDelete.type = "button";
+        this._btnDelete.title = "Delete this item"; // Tooltip
+        this._btnDelete.append(Helpers.codicon("trash"));
+        this._btnDelete.className = "item-btn";
+        this._buttons.append(this._btnDelete);
 
-        this.hBtnClear.type = "button";
-        this.hBtnClear.title = "Delete *the contents of* this item so you can change its type";
-        this.hBtnClear.append(Helpers.codicon("close"));
-        this.hBtnClear.className = "item-btn";
-        this.hButtons.append(this.hBtnClear);
+        this._btnClear.type = "button";
+        this._btnClear.title = "Delete *the contents of* this item so you can change its type";
+        this._btnClear.append(Helpers.codicon("close"));
+        this._btnClear.className = "item-btn";
+        this._buttons.append(this._btnClear);
 
-        this.hBtnMoveDown.type = "button";
-        this.hBtnMoveDown.title = "Switch places with the item below me";
-        this.hBtnMoveDown.append(Helpers.codicon("arrow-down"));
-        this.hBtnMoveDown.className = "item-btn";
-        this.hButtons.append(this.hBtnMoveDown);
+        this._btnMoveDown.type = "button";
+        this._btnMoveDown.title = "Switch places with the item below me";
+        this._btnMoveDown.append(Helpers.codicon("arrow-down"));
+        this._btnMoveDown.className = "item-btn";
+        this._buttons.append(this._btnMoveDown);
 
-        this.hBtnMoveUp.type = "button";
-        this.hBtnMoveUp.title = "Switch places with the item above me";
-        this.hBtnMoveUp.append(Helpers.codicon("arrow-up"));
-        this.hBtnMoveUp.className = "item-btn";
-        this.hButtons.append(this.hBtnMoveUp);
+        this._btnMoveUp.type = "button";
+        this._btnMoveUp.title = "Switch places with the item above me";
+        this._btnMoveUp.append(Helpers.codicon("arrow-up"));
+        this._btnMoveUp.className = "item-btn";
+        this._buttons.append(this._btnMoveUp);
 
         // value (could be another object/array)
-        this.hValue.className = "value";
+        this._value.className = "value";
         // Parse and place inside
-        Helpers.parseValueInto(this.hValue, value, type);
-        this.rootElement.append(this.hValue);
+        Helpers.parseValueInto(this._value, value, type);
+        this.rootElement.append(this._value);
 
-        if (this.hCheckbox) { this.hCheckbox.remove(); }
-        if (this.hAddItem) { this.hAddItem.remove(); }
+        if (this._checkbox) { this._checkbox.remove(); }
+        if (this._btnAddItem) { this._btnAddItem.remove(); }
 
         // Type-specific items
         if (type === "boolean") {
-            this.hCheckbox = document.createElement("input");
-            this.hCheckbox.type = "checkbox";
-            this.hCheckbox.checked = this.value === "true";
-            this.hIcon.className = Helpers.codiconMap[this.hCheckbox.checked.toString()];
-            this.hValue.before(this.hCheckbox);
+            this._checkbox = document.createElement("input");
+            this._checkbox.type = "checkbox";
+            this._checkbox.checked = this.value === "true";
+            this._icon.className = Helpers.codiconMap[this._checkbox.checked.toString()];
+            this._value.before(this._checkbox);
         }
         else if (type === "object" || type === "array") {
-            this.hAddItem = document.createElement("button");
-            this.hAddItem.type = "button";
-            this.hAddItem.append(Helpers.codicon("plus"));
-            this.hAddItem.className = "item-btn";
-            this.hButtons.append(this.hAddItem);
+            this._btnAddItem = document.createElement("button");
+            this._btnAddItem.type = "button";
+            this._btnAddItem.append(Helpers.codicon("plus"));
+            this._btnAddItem.className = "item-btn";
+            this._buttons.append(this._btnAddItem);
         }
 
         // TODO: temp items
@@ -245,113 +245,113 @@ export class EditorItem {
     /**
      * Define all of my interactivity. Reusable for type changer.
      */
-    private setupEvents(parent: HTMLElement) {
+    private _setupEvents(parent: HTMLElement) {
 
         // Allow other instances to call my makeDirty()
         this.rootElement.addEventListener("make-dirty", event => this.makeDirty());
-        this.hValue.addEventListener("make-dirty", event => this.makeDirty());
+        this._value.addEventListener("make-dirty", event => this.makeDirty());
 
         // Dispatch this after repositioning in an array to fix my index (name field).
         this.rootElement.addEventListener("renumber", event => {
             const idx = new Array(...parent.children).indexOf(this.rootElement);
-            this.hName.textContent = idx.toString();
+            this._name.textContent = idx.toString();
         });
 
         // Name editability (except for array members)
-        this.hName.onclick = event => {
-            if (this.parentType === "object") {
+        this._name.onclick = event => {
+            if (this._parentType === "object") {
                 event.stopPropagation();
                 event.preventDefault();
-                this.makeNameEditable();
+                this._makeNameEditable();
             }
         };
 
         // Value editability
-        this.hValue.onclick = event => {
+        this._value.onclick = event => {
             switch (this.type) {
                 case "string":
                 case "number":
-                    this.makeStringEditable(this.hValue);
+                    this._makeStringEditable(this._value);
                     break;
                 case "boolean":
                     // Toggle the checkbox and trigger its change event
-                    this.hCheckbox!.checked = !this.hCheckbox!.checked;
-                    this.hCheckbox!.dispatchEvent(new Event("change"));
+                    this._checkbox!.checked = !this._checkbox!.checked;
+                    this._checkbox!.dispatchEvent(new Event("change"));
                     break;
             }
         };
 
         // Type change logic
-        this.hType.onchange = event => {
+        this._type.onchange = event => {
             // If converting to obj or array, parse an empty object instead of an empty string
             // so the "length" property doesn't appear
             let realValue: any = this.value;
             if (realValue === ""
-                && (this.hType.value === "object" || this.hType.value === "array")
+                && (this._type.value === "object" || this._type.value === "array")
             ) { realValue = {}; }
 
-            this.setupHtml(this.hType.value, this.name, realValue);
-            this.setupEvents(parent);
+            this._setupHtml(this._type.value, this.name, realValue);
+            this._setupEvents(parent);
             this.makeDirty();
 
             Helpers.sendEdit(this.path, "contents", this.value);
         };
 
-        this.hBtnDelete.onclick = event => {
+        this._btnDelete.onclick = event => {
             Helpers.sendEdit(this.path, "delete");
             parent.dispatchEvent(new Event("make-dirty"));
             this.rootElement.remove();
         };
 
-        this.hBtnClear.onclick = event => {
+        this._btnClear.onclick = event => {
             if (this.type !== "null") {
                 // Reset to a null object (so type can be freely changed)
-                this.hType.disabled = false;
-                this.hValue.innerHTML = "";
-                this.setupHtml("null", this.name, null);
-                this.setupEvents(parent);
+                this._type.disabled = false;
+                this._value.innerHTML = "";
+                this._setupHtml("null", this.name, null);
+                this._setupEvents(parent);
                 this.makeDirty();
                 Helpers.sendEdit(this.path, "contents", this.value);
             }
         };
 
-        this.hBtnMoveDown.onclick = event => {
+        this._btnMoveDown.onclick = event => {
             const next = this.rootElement.nextElementSibling;
-            this.moveNextTo(next, next?.after.bind(next));
+            this._moveNextTo(next, next?.after.bind(next));
         };
 
-        this.hBtnMoveUp.onclick = event => {
+        this._btnMoveUp.onclick = event => {
             const prev = this.rootElement.previousElementSibling;
-            this.moveNextTo(prev, prev?.before.bind(prev));
+            this._moveNextTo(prev, prev?.before.bind(prev));
         };
 
         // Bool specific events
-        if (this.hCheckbox) {
+        if (this._checkbox) {
             // On checkbox toggle
-            this.hCheckbox.onchange = event => {
-                const boxVal = this.hCheckbox!.checked.toString();
-                this.hValue.textContent = boxVal;
+            this._checkbox.onchange = event => {
+                const boxVal = this._checkbox!.checked.toString();
+                this._value.textContent = boxVal;
 
                 this.makeDirty();
 
-                this.hIcon.className = Helpers.codiconMap[boxVal];
+                this._icon.className = Helpers.codiconMap[boxVal];
 
-                Helpers.sendEdit(this.path, "contents", this.hValue.textContent);
+                Helpers.sendEdit(this.path, "contents", this._value.textContent);
             };
 
             // Icon also toggles value
-            this.hIcon.onclick = event => {
+            this._icon.onclick = event => {
                 event.stopPropagation();
                 event.preventDefault();
-                this.hCheckbox!.checked = !this.hCheckbox!.checked;
-                this.hCheckbox!.dispatchEvent(new Event("change"));
+                this._checkbox!.checked = !this._checkbox!.checked;
+                this._checkbox!.dispatchEvent(new Event("change"));
             };
         }
 
         // Add button (object/array only)
-        else if (this.hAddItem) {
-            this.hAddItem.onclick = event => {
-                const count = this.hValue.childElementCount;
+        else if (this._btnAddItem) {
+            this._btnAddItem.onclick = event => {
+                const count = this._value.childElementCount;
                 const nextItem = count.toString();
                 const name = this.type === "object" ? `New Item ${nextItem}` : nextItem;
                 // TODO: (QOL) Intelligent type detect? (Type of most other children)
@@ -372,7 +372,7 @@ export class EditorItem {
     /**
      * Editability for string and number
      */
-    private makeStringEditable(element: HTMLElement, allowNewline: boolean = true) {
+    private _makeStringEditable(element: HTMLElement, allowNewline: boolean = true) {
         element.hidden = true;
         element.style.display = "none";
 
@@ -447,36 +447,36 @@ export class EditorItem {
     /**
      * Editability for name (except for array members)
      */
-    private makeNameEditable() {
-        this.hName.classList.add("fake-input");
-        this.hName.contentEditable = "plaintext-only";
-        this.hName.role = "textbox";
-        this.hName.focus();
+    private _makeNameEditable() {
+        this._name.classList.add("fake-input");
+        this._name.contentEditable = "plaintext-only";
+        this._name.role = "textbox";
+        this._name.focus();
 
-        const oldName = this.hName.textContent;
+        const oldName = this._name.textContent;
 
         let wasClosed = false;
 
         const onClose = () => {
             if (wasClosed) { return; }
-            this.hName.classList.remove("fake-input");
-            this.hName.contentEditable = "false";
+            this._name.classList.remove("fake-input");
+            this._name.contentEditable = "false";
 
-            if (this.hName.textContent !== oldName) {
+            if (this._name.textContent !== oldName) {
                 this.makeDirty();
 
                 // Strip newlines that get pasted in
-                this.hName.textContent = (this.hName.textContent?.replace("\n", "") ?? null);
+                this._name.textContent = (this._name.textContent?.replace("\n", "") ?? null);
 
-                Helpers.sendEdit(this.path, "rename", this.hName.textContent);
+                Helpers.sendEdit(this.path, "rename", this._name.textContent);
             }
 
             wasClosed = true;
         };
 
-        this.hName.onblur = onClose;
+        this._name.onblur = onClose;
 
-        this.hName.onkeydown = event => {
+        this._name.onkeydown = event => {
             switch (event.key) {
                 case "Escape":
                     onClose();
@@ -491,24 +491,24 @@ export class EditorItem {
         };
 
         // Don't fold the details
-        this.hName.onkeyup = event => {
+        this._name.onkeyup = event => {
             if (event.key === " ") { event.preventDefault(); }
         };
     }
 
     /**
-     * Swap this item with a neighbor using its "after" or "before" methods.
+     * Swap this item with a neighbor using its "after" or "before" method.
      * @param neighbor An Element, likely acquired by next/previousElementSibling
      * @param inserter neighbor's "before" or "after" method, with .bind(neighbor) called on it to preserve context
      */
-    private moveNextTo(neighbor: Element | null, inserter: ((...nodes: (string | Node)[]) => void) | undefined) {
+    private _moveNextTo(neighbor: Element | null, inserter: ((...nodes: (string | Node)[]) => void) | undefined) {
         if (neighbor && inserter) {
             inserter(this.rootElement);
 
             this.makeDirty();
             neighbor.dispatchEvent(new Event("make-dirty"));
 
-            if (this.parentType === "array") {
+            if (this._parentType === "array") {
                 this.rootElement.dispatchEvent(new Event("renumber"));
                 neighbor.dispatchEvent(new Event("renumber"));
             }
@@ -517,4 +517,6 @@ export class EditorItem {
             Helpers.sendEdit(this.path, "swap", Helpers.getPathToItem(neighbor));
         }
     }
+
+    //#endregion
 }
