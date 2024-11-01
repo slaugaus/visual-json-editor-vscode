@@ -65,6 +65,16 @@ export abstract class Helpers {
         });
     }
 
+    /**
+     * Send the extension an error message to display.
+     */
+    static errorMsg(msg: string): void {
+        vscode.postMessage({
+            type: "error",
+            body: msg,
+        });
+    }
+
     //#endregion
 
     /**
@@ -126,9 +136,12 @@ export abstract class Helpers {
             || event.key === 'Escape'
             || event.key === "ArrowLeft"
             || event.key === "ArrowRight"
+            || event.key === "Home"
+            || event.key === "End"
             || (event.key === '.' && !currentText.includes('.'))
             || (event.key === 'e' && !currentText.includes('e'))
             || (event.key === '+' && !currentText.includes('+'))
+            || (event.key === '-' && !currentText.includes('-'))
         ) { return; }
 
         // If it's not a number (0-9) or the key is not allowed, prevent input
@@ -149,9 +162,10 @@ export abstract class Helpers {
         // Prevent paste if it contains non-numeric characters
         // or more than one special char (decimal point/exponent)
         if (!/^\d*\.?\d*$/.test(paste)
-            || (paste.includes('.') && currentText.includes('.'))
-            || (paste.includes('e') && currentText.includes('e'))
-            || (paste.includes('+') && currentText.includes('+'))
+            || (paste.includes('.') && !currentText.includes('.'))
+            || (paste.includes('e') && !currentText.includes('e'))
+            || (paste.includes('+') && !currentText.includes('+'))
+            || (paste.includes('-') && !currentText.includes('-'))
         ) {
             event.preventDefault();
         }

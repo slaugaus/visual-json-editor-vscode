@@ -2,10 +2,6 @@
 
 ## SCRATCHPAD
 
-BUG: **SNEAKY DATA LOSS PROBLEM: Objects can't have 2 items w/ the same name (on the same level), so don't allow this in the editor!**
-
-- Checking on (name) save is probably the way to go here
-
 **Syncing per edit isn't THAT hard, just fire an event with the change and the item's ancestry. There will be snags and renaming will need to be handled, but it's not as bad as you made it out to be.**
 
 - This opens a path to Undo/Redo

@@ -19,7 +19,7 @@ export const editorTypes = Object.freeze([
     "object",
     "array",
     // unroll special types
-    ...(Object.keys(editorSubTypes))
+    // ...(Object.keys(editorSubTypes))
 ]);
 
 // TODO: extend this when messaging system is better defined?

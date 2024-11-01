@@ -200,6 +200,11 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
                 console.log(message.body);
                 return;
 
+            case "error":
+                vscode.window.showErrorMessage(message.body);
+                console.error(message.body);
+                return;
+
             default:
                 vscode.window.showErrorMessage(`What am I supposed to do with a ${message.type}?!`);
                 return;

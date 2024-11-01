@@ -11,7 +11,7 @@ export class EditorItem {
         private readonly _initialType: string,
         initialName: string,
         initialValue: any,
-        parent: HTMLElement,
+        private readonly _parent: HTMLElement,
         /** Whether the parent is an obj or array. Needed for renaming */
         private readonly _parentType: ObjectOrArray
     ) {
@@ -19,9 +19,9 @@ export class EditorItem {
         // but I may want to reuse setupHtml for stuff like retyping, undo
         this._setupHtml(_initialType, initialName, initialValue);
 
-        this._setupEvents(parent);
+        this._setupEvents();
 
-        parent.append(this.rootElement);
+        this._parent.append(this.rootElement);
     }
 
     //#region Public Methods/Properties
@@ -245,7 +245,7 @@ export class EditorItem {
     /**
      * Define all of my interactivity. Reusable for type changer.
      */
-    private _setupEvents(parent: HTMLElement) {
+    private _setupEvents() {
 
         // Allow other instances to call my makeDirty()
         this.rootElement.addEventListener("make-dirty", event => this.makeDirty());
@@ -253,7 +253,7 @@ export class EditorItem {
 
         // Dispatch this after repositioning in an array to fix my index (name field).
         this.rootElement.addEventListener("renumber", event => {
-            const idx = new Array(...parent.children).indexOf(this.rootElement);
+            const idx = new Array(...this._parent.children).indexOf(this.rootElement);
             this._name.textContent = idx.toString();
         });
 
@@ -291,7 +291,7 @@ export class EditorItem {
             ) { realValue = {}; }
 
             this._setupHtml(this._type.value, this.name, realValue);
-            this._setupEvents(parent);
+            this._setupEvents();
             this.makeDirty();
 
             Helpers.sendEdit(this.path, "contents", this.value);
@@ -299,8 +299,13 @@ export class EditorItem {
 
         this._btnDelete.onclick = event => {
             Helpers.sendEdit(this.path, "delete");
-            parent.dispatchEvent(new Event("make-dirty"));
+            this._parent.dispatchEvent(new Event("make-dirty"));
             this.rootElement.remove();
+            if (this._parentType === "array") {
+                for (const child of this._parent.children) {
+                    child.dispatchEvent(new Event("renumber"));
+                }
+            }
         };
 
         this._btnClear.onclick = event => {
@@ -309,7 +314,7 @@ export class EditorItem {
                 this._type.disabled = false;
                 this._value.innerHTML = "";
                 this._setupHtml("null", this.name, null);
-                this._setupEvents(parent);
+                this._setupEvents();
                 this.makeDirty();
                 Helpers.sendEdit(this.path, "contents", this.value);
             }
@@ -398,19 +403,39 @@ export class EditorItem {
 
         element.after(input);
         // Empty spans lose their editability if there's nothing else in their parent
+        // TODO: This has side effects and needs to be disposed (?)
         input.after(document.createTextNode(" "));
         input.focus();
 
         let wasClosed = false;
 
         const onClose = () => {
-            if (wasClosed) { return; } // Run once
+            if (wasClosed) { return; } // Run once - multiple events can trigger this
             element.hidden = false;
             element.style.display = "block";
 
-            // TODO: Validate number
             // Did it actually change?
             if (element.textContent !== input.textContent) {
+
+                // Number validation and conversion
+                if (this.type === "number") {
+                    let asNumber = Number.parseFloat(input.textContent ?? "0");
+
+                    // Whitespace (empty) can convert fine to 0
+                    if (/^\s*$/.test(input.textContent ?? "")) {
+                        asNumber = 0;
+                    }
+
+                    if (Number.isNaN(asNumber)) {
+                        Helpers.errorMsg(`${input.textContent} couldn't be converted to a number. Canceling edit.`);
+                        wasClosed = true;
+                        input.remove();
+                        return;
+                    }
+
+                    input.textContent = asNumber.toString();
+                }
+
                 element.textContent = input.textContent;
 
                 this.makeDirty();
@@ -463,6 +488,14 @@ export class EditorItem {
             this._name.contentEditable = "false";
 
             if (this._name.textContent !== oldName) {
+
+                if (!this._nameIsUnique(this._name.textContent)) {
+                    Helpers.errorMsg(`Something else on the same layer is already named "${this._name.textContent}." Canceling edit.`);
+                    this._name.textContent = oldName;
+                    wasClosed = true;
+                    return;
+                }
+
                 this.makeDirty();
 
                 // Strip newlines that get pasted in
@@ -516,6 +549,23 @@ export class EditorItem {
             this.highlightAndScroll();
             Helpers.sendEdit(this.path, "swap", Helpers.getPathToItem(neighbor));
         }
+    }
+
+    /**
+     * Figure out if a proposed name is taken by something else on the same layer.
+     * 
+     * Two items within the same collection can't have the same name.
+     */
+    private _nameIsUnique(name: string | null): boolean {
+        let count = 0;
+
+        for (const child of this._parent.children) {
+            if (Helpers.getItemName(child) === name) {
+                count++;
+            }
+        }
+
+        return count <= 1;  // self gets counted
     }
 
     //#endregion

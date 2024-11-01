@@ -70,6 +70,7 @@ html {
 }
 
 .string .value:empty::before,
+.number .value:empty::before,
 .name:empty::before {
     content: "(empty)";
 }
