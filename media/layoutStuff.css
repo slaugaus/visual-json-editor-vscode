@@ -1,0 +1,42 @@
+/*
+ * Important functionality/layout styles that are needed regardless of visuals.
+ */
+
+.name, .value {
+    white-space: pre;
+}
+
+.value {
+    display: block;
+}
+
+.clickable {
+    pointer-events: all;
+}
+
+.boolean input, .boolean .value {
+    display: inline;
+}
+
+/* Give empty editable fields something to click on */
+.string .value:empty::before,
+.number .value:empty::before,
+.name:empty::before,
+.fake-input[contenteditable]:empty::before,
+.fake-textarea[contenteditable]:empty::before {
+    content: "(empty)";
+    color: gray;
+}
+
+/* 
+ * Auto-growing input fields using contenteditable spans.
+ * Originally by Chris Coyier.
+ * https://codepen.io/chriscoyier/pen/XWbqpzP
+ * MIT License
+ */
+.fake-textarea {
+    display: block;
+    overflow: hidden;
+    /* resize: both; */
+    min-height: 40px;
+}

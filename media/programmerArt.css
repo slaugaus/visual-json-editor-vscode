@@ -4,20 +4,15 @@ html {
 
 .name {
     font-weight: bold;
-    white-space: pre;
 }
 
-.value {
-    margin-left: 30px;
-    display: block;
-    white-space: pre;
-}
-
-.item-btns {
+.value,
+.item-btns,
+.boolean input {
     margin-left: 30px;
 }
 
-/* The Codicon in the location test button was too big */
+/* The Codicon in buttons was too big */
 .item-btn i {
     font-size: 0.8em !important;
 }
@@ -51,30 +46,32 @@ html {
 }
 
 .item.changed {
-    border: 2px solid #808000;
-}
-
-.clickable {
-    pointer-events: all;
-}
-
-.boolean input {
-    margin-left: 30px;
-    display: inline;
+    border: 2px solid #aaaa00;
 }
 
 .boolean .value {
-    display: inline;
     /* FYI: Spaces are usually 1/4em wide */
     margin-left: 0.25em;
 }
 
-.string .value:empty::before,
-.number .value:empty::before,
-.name:empty::before {
-    content: "(empty)";
+/* 
+ * Auto-growing input fields using contenteditable spans.
+ * Originally by Chris Coyier.
+ * https://codepen.io/chriscoyier/pen/XWbqpzP
+ * MIT License
+ */
+.fake-input,
+.fake-textarea {
+    /* TODO: Give these VS Code styling */
+    border: 1px solid #ccc;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 1px 6px;
 }
 
+/*
+ * Highlight and flash animation for EditorItem.highlightAndScroll()
+ */
 .highlighted {
     border-color: yellow;
     background-color: yellow;

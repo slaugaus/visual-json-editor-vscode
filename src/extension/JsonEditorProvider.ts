@@ -221,14 +221,15 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
         const scriptUri = view.asWebviewUri(vscode.Uri.joinPath(
             this._context.extensionUri, "media", "editor.js"));
 
+        // TODO: Swap this with vscode.css eventually
         const styleUri = view.asWebviewUri(vscode.Uri.joinPath(
             this._context.extensionUri, "media", "programmerArt.css"));
 
         const codiconsUri = view.asWebviewUri(vscode.Uri.joinPath(
             this._context.extensionUri, "node_modules", "@vscode", "codicons", "dist", "codicon.css"));
 
-        const fakeInputsUri = view.asWebviewUri(vscode.Uri.joinPath(
-            this._context.extensionUri, "media", "autoGrowingInputs.css"));
+        const layoutUri = view.asWebviewUri(vscode.Uri.joinPath(
+            this._context.extensionUri, "media", "layoutStuff.css"));
 
         // "Number Used Once" for preventing script injection
         const nonce = randomBytes(32).toString("base64");
@@ -248,7 +249,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 
                 <link rel="stylesheet" href="${styleUri}"> 
                 <link rel="stylesheet" href="${codiconsUri}">
-                <link rel="stylesheet" href="${fakeInputsUri}">
+                <link rel="stylesheet" href="${layoutUri}">
                 <script defer src="${scriptUri}" nonce="${nonce}"></script>
             </head>
             <body>
