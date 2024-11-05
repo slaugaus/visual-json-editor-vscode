@@ -7,7 +7,26 @@ import { Helpers } from "./Helpers";
  */
 export class EditorItem {
 
-    constructor(
+    // TODO: Not needed after changing your mind about inheritance
+    // This causes circular dependency problems
+    static create(
+        type: string,
+        name: string,
+        value: any,
+        parent: HTMLElement,
+        parentType: ObjectOrArray
+    ) {
+        switch (type) {
+            case "string":
+                return new EditorString(name, value, parent, parentType);
+            case "number":
+                return new EditorNumber(name, value, parent, parentType);
+        }
+        // else
+        return new EditorItem(type, name, value, parent, parentType);
+    }
+
+    protected constructor(
         private readonly _initialType: string,
         initialName: string,
         initialValue: any,
@@ -26,7 +45,7 @@ export class EditorItem {
 
     //#region Public Methods/Properties
     get name() {
-        return this._name.textContent ?? "unknown";
+        return this._hName.textContent ?? "unknown";
     }
 
     // set name(val) {
@@ -34,7 +53,7 @@ export class EditorItem {
     // }
 
     get type() {
-        return this._type.value ?? "unknown";
+        return this._hType.value ?? "unknown";
     }
 
     // set type(val) {
@@ -42,7 +61,7 @@ export class EditorItem {
     // }
 
     get value() {
-        return this._value.innerHTML;
+        return this._hValue.innerHTML;
     }
 
     // set value(val) {
@@ -64,7 +83,7 @@ export class EditorItem {
      */
     makeDirty() {
         this.rootElement.classList.add("changed");
-        this._dirty.style.display = "unset";
+        this._hDirty.style.display = "unset";
     }
 
     /**
@@ -102,9 +121,11 @@ export class EditorItem {
 
     /**
      * Create a child value for me (assumes I'm a collection)
+     * 
+     * @todo Move to object/array subclasses
      */
     addChild(itemType: string, name: string, value: any) {
-        const newChild = new EditorItem(itemType, name, value, this._value, this.type as ObjectOrArray);
+        const newChild = new EditorItem(itemType, name, value, this._hValue, this.type as ObjectOrArray);
 
         Helpers.sendEdit<EditAddition>(newChild.path, "add", {
             itemType,
@@ -122,13 +143,14 @@ export class EditorItem {
     //#region Private Stuff
 
     // The HTML comprising this item:
-    private _label: HTMLElement = document.createElement("summary");
-    private _icon: HTMLElement = Helpers.codicon(this._initialType);
-    private _name: HTMLSpanElement = document.createElement("span");
-    private _type: HTMLSelectElement = document.createElement("select");
-    private _dirty: HTMLElement = Helpers.codicon("dirty");
-    private _buttons: HTMLDivElement = document.createElement("div");
-    private _value: HTMLDivElement = document.createElement("div");
+    private _hLabel: HTMLElement = document.createElement("summary");
+    private _hIcon: HTMLElement = Helpers.codicon(this._initialType);
+    private _hName: HTMLSpanElement = document.createElement("span");
+    private _hType: HTMLSelectElement = document.createElement("select");
+    private _hDirty: HTMLElement = Helpers.codicon("dirty");
+
+    protected _hButtons: HTMLDivElement = document.createElement("div");
+    protected _hValue: HTMLDivElement = document.createElement("div");
 
     private _btnDelete: HTMLButtonElement = document.createElement("button");
     private _btnClear: HTMLButtonElement = document.createElement("button");
@@ -140,81 +162,81 @@ export class EditorItem {
     private _btnAddItem: HTMLButtonElement | undefined;
 
     // TODO: temp items
-    // private hBtnWhoAmI: HTMLButtonElement = document.createElement("button");
+    private _btnWhoAmI: HTMLButtonElement = document.createElement("button");
 
     /**
      * Initialize my HTML. Reusable for type changer.
      */
-    private _setupHtml(type: string, name: string, value: any) {
+    protected _setupHtml(type: string, name: string, value: any) {
         // <details> (main container)
         this.rootElement.className = `item ${type}`;
         this.rootElement.open = true;
 
         // <summary> (key and type)
-        this._label.className = "key";
-        this.rootElement.append(this._label);
+        this._hLabel.className = "key";
+        this.rootElement.append(this._hLabel);
 
         // <i> (Codicon inside label)
-        this._icon.className = Helpers.codiconMap[type];
-        this._label.append(this._icon);
+        this._hIcon.className = Helpers.codiconMap[type];
+        this._hLabel.append(this._hIcon);
 
         // name/key of item (inside label)
-        this._name.className = "name clickable";
-        this._name.textContent = name;
-        this._label.append(this._name);
+        this._hName.className = "name clickable";
+        this._hName.textContent = name;
+        this._hLabel.append(this._hName);
 
         // type of item (inside label)
-        this._type.className = "type clickable";
-        this._type.innerHTML = "";
+        this._hType.className = "type clickable";
+        this._hType.innerHTML = "";
         for (const t of Helpers.validConversions[type]) {
             const option = document.createElement("option");
             option.value = t;
             option.textContent = t;
-            this._type.append(option);
+            this._hType.append(option);
         }
-        if (this._type.childElementCount <= 1) { this._type.disabled = true; }
-        this._label.append(this._type);
+        if (this._hType.childElementCount <= 1) { this._hType.disabled = true; }
+        this._hLabel.append(this._hType);
 
         // Dirty (changed) indicator that doesn't rely on color
-        this._dirty.classList.add("dirty-indicator");
-        this._dirty.style.display = "none";
-        this._label.append(this._dirty);
+        this._hDirty.classList.add("dirty-indicator");
+        this._hDirty.style.display = "none";
+        this._hLabel.append(this._hDirty);
 
-        this._buttons.className = "item-btns";
-        for (const btn of this._buttons.children) {
+        this._hButtons.className = "item-btns";
+        for (const btn of this._hButtons.children) {
             if (btn.childElementCount > 0) { btn.innerHTML = ""; }
         }
-        this.rootElement.append(this._buttons);
+        this.rootElement.append(this._hButtons);
 
         this._btnDelete.type = "button";
         this._btnDelete.title = "Delete this item"; // Tooltip
         this._btnDelete.append(Helpers.codicon("trash"));
         this._btnDelete.className = "item-btn";
-        this._buttons.append(this._btnDelete);
+        this._hButtons.append(this._btnDelete);
 
         this._btnClear.type = "button";
         this._btnClear.title = "Delete *the contents of* this item so you can change its type";
         this._btnClear.append(Helpers.codicon("close"));
         this._btnClear.className = "item-btn";
-        this._buttons.append(this._btnClear);
+        this._hButtons.append(this._btnClear);
 
         this._btnMoveDown.type = "button";
         this._btnMoveDown.title = "Switch places with the item below me";
         this._btnMoveDown.append(Helpers.codicon("arrow-down"));
         this._btnMoveDown.className = "item-btn";
-        this._buttons.append(this._btnMoveDown);
+        this._hButtons.append(this._btnMoveDown);
 
         this._btnMoveUp.type = "button";
         this._btnMoveUp.title = "Switch places with the item above me";
         this._btnMoveUp.append(Helpers.codicon("arrow-up"));
         this._btnMoveUp.className = "item-btn";
-        this._buttons.append(this._btnMoveUp);
+        this._hButtons.append(this._btnMoveUp);
 
         // value (could be another object/array)
-        this._value.className = "value";
+        this._hValue.className = "value";
         // Parse and place inside
-        Helpers.parseValueInto(this._value, value, type);
-        this.rootElement.append(this._value);
+        Helpers.parseValueInto(this._hValue, value, type);
+        this.rootElement.append(this._hValue);
 
         if (this._checkbox) { this._checkbox.remove(); }
         if (this._btnAddItem) { this._btnAddItem.remove(); }
@@ -224,15 +246,15 @@ export class EditorItem {
             this._checkbox = document.createElement("input");
             this._checkbox.type = "checkbox";
             this._checkbox.checked = this.value === "true";
-            this._icon.className = Helpers.codiconMap[this._checkbox.checked.toString()];
-            this._value.before(this._checkbox);
+            this._hIcon.className = Helpers.codiconMap[this._checkbox.checked.toString()];
+            this._hValue.before(this._checkbox);
         }
         else if (type === "object" || type === "array") {
             this._btnAddItem = document.createElement("button");
             this._btnAddItem.type = "button";
             this._btnAddItem.append(Helpers.codicon("plus"));
             this._btnAddItem.className = "item-btn";
-            this._buttons.append(this._btnAddItem);
+            this._hButtons.append(this._btnAddItem);
         }
 
         // TODO: temp items
@@ -245,20 +267,20 @@ export class EditorItem {
     /**
      * Define all of my interactivity. Reusable for type changer.
      */
-    private _setupEvents() {
+    protected _setupEvents() {
 
         // Allow other instances to call my makeDirty()
         this.rootElement.addEventListener("make-dirty", event => this.makeDirty());
-        this._value.addEventListener("make-dirty", event => this.makeDirty());
+        this._hValue.addEventListener("make-dirty", event => this.makeDirty());
 
         // Dispatch this after repositioning in an array to fix my index (name field).
         this.rootElement.addEventListener("renumber", event => {
             const idx = new Array(...this._parent.children).indexOf(this.rootElement);
-            this._name.textContent = idx.toString();
+            this._hName.textContent = idx.toString();
         });
 
         // Name editability (except for array members)
-        this._name.onclick = event => {
+        this._hName.onclick = event => {
             if (this._parentType === "object") {
                 event.stopPropagation();
                 event.preventDefault();
@@ -267,12 +289,8 @@ export class EditorItem {
         };
 
         // Value editability
-        this._value.onclick = event => {
+        this._hValue.onclick = event => {
             switch (this.type) {
-                case "string":
-                case "number":
-                    this._makeStringEditable(this._value);
-                    break;
                 case "boolean":
                     // Toggle the checkbox and trigger its change event
                     this._checkbox!.checked = !this._checkbox!.checked;
@@ -282,20 +300,21 @@ export class EditorItem {
         };
 
         // Type change logic
-        this._type.onchange = event => {
-            // If converting to obj or array, parse an empty object instead of an empty string
-            // so the "length" property doesn't appear
-            let realValue: any = this.value;
-            if (realValue === ""
-                && (this._type.value === "object" || this._type.value === "array")
-            ) { realValue = {}; }
+        // TODO: Disabled until types are refactored
+        // this._hType.onchange = event => {
+        //     // If converting to obj or array, parse an empty object instead of an empty string
+        //     // so the "length" property doesn't appear
+        //     let realValue: any = this.value;
+        //     if (realValue === ""
+        //         && (this._hType.value === "object" || this._hType.value === "array")
+        //     ) { realValue = {}; }
 
-            this._setupHtml(this._type.value, this.name, realValue);
-            this._setupEvents();
-            this.makeDirty();
+        //     this._setupHtml(this._hType.value, this.name, realValue);
+        //     this._setupEvents();
+        //     this.makeDirty();
 
-            Helpers.sendEdit(this.path, "contents", this.value);
-        };
+        //     Helpers.sendEdit(this.path, "contents", this.value);
+        // };
 
         this._btnDelete.onclick = event => {
             Helpers.sendEdit(this.path, "delete");
@@ -311,8 +330,8 @@ export class EditorItem {
         this._btnClear.onclick = event => {
             if (this.type !== "null") {
                 // Reset to a null object (so type can be freely changed)
-                this._type.disabled = false;
-                this._value.innerHTML = "";
+                this._hType.disabled = false;
+                this._hValue.innerHTML = "";
                 this._setupHtml("null", this.name, null);
                 this._setupEvents();
                 this.makeDirty();
@@ -335,17 +354,17 @@ export class EditorItem {
             // On checkbox toggle
             this._checkbox.onchange = event => {
                 const boxVal = this._checkbox!.checked.toString();
-                this._value.textContent = boxVal;
+                this._hValue.textContent = boxVal;
 
                 this.makeDirty();
 
-                this._icon.className = Helpers.codiconMap[boxVal];
+                this._hIcon.className = Helpers.codiconMap[boxVal];
 
-                Helpers.sendEdit(this.path, "contents", this._value.textContent);
+                Helpers.sendEdit(this.path, "contents", this._hValue.textContent);
             };
 
             // Icon also toggles value
-            this._icon.onclick = event => {
+            this._hIcon.onclick = event => {
                 event.stopPropagation();
                 event.preventDefault();
                 this._checkbox!.checked = !this._checkbox!.checked;
@@ -356,7 +375,7 @@ export class EditorItem {
         // Add button (object/array only)
         else if (this._btnAddItem) {
             this._btnAddItem.onclick = event => {
-                const count = this._value.childElementCount;
+                const count = this._hValue.childElementCount;
                 const nextItem = count.toString();
                 const name = this.type === "object" ? `New Item ${nextItem}` : nextItem;
                 // TODO: (QOL) Intelligent type detect? (Type of most other children)
@@ -375,123 +394,29 @@ export class EditorItem {
     }
 
     /**
-     * Editability for string and number
-     */
-    private _makeStringEditable(element: HTMLElement, allowNewline: boolean = true) {
-        element.hidden = true;
-        element.style.display = "none";
-
-        // TODO: May be mildly overengineered now that it's using fake-input.
-        // Putting the cursor at the click position also doesn't work b/c of this
-        const input = document.createElement("span");
-        input.textContent = element.textContent ?? "";
-        input.contentEditable = "plaintext-only";
-        input.role = "textbox";
-
-        if (this.type === "number") {
-            allowNewline = false;
-            input.addEventListener("keydown", Helpers.typeNumbersOnly);
-            input.addEventListener("paste", Helpers.pasteNumbersOnly);
-        }
-
-        if (allowNewline && input.textContent.includes("\n")) {
-            input.className = "fake-textarea value editor string";
-        } else {
-            input.className = "fake-input value editor string";
-            input.style.display = "initial";
-        }
-
-        element.after(input);
-        // Empty spans lose their editability if there's nothing else in their parent
-        // TODO: This has side effects and needs to be disposed (?)
-        input.after(document.createTextNode(" "));
-        input.focus();
-
-        let wasClosed = false;
-
-        const onClose = () => {
-            if (wasClosed) { return; } // Run once - multiple events can trigger this
-            element.hidden = false;
-            element.style.display = "block";
-
-            // Did it actually change?
-            if (element.textContent !== input.textContent) {
-
-                // Number validation and conversion
-                if (this.type === "number") {
-                    let asNumber = Number.parseFloat(input.textContent ?? "0");
-
-                    // Whitespace (empty) can convert fine to 0
-                    if (/^\s*$/.test(input.textContent ?? "")) {
-                        asNumber = 0;
-                    }
-
-                    if (Number.isNaN(asNumber)) {
-                        Helpers.errorMsg(`${input.textContent} couldn't be converted to a number. Canceling edit.`);
-                        wasClosed = true;
-                        input.remove();
-                        return;
-                    }
-
-                    input.textContent = asNumber.toString();
-                }
-
-                element.textContent = input.textContent;
-
-                this.makeDirty();
-
-                Helpers.sendEdit(this.path, "contents", element.textContent);
-            }
-            wasClosed = true;
-            input.remove();
-        };
-
-        // On focus lost (click something else or tab away)
-        input.onblur = onClose;
-
-        input.addEventListener("keydown", event => {
-            switch (event.key) {
-                case "Escape":
-                    onClose();
-                    break;
-                // Become a fake textarea if newlines are introduced
-                case "Enter":
-                    if (allowNewline && input.classList.contains("fake-input")) {
-                        input.classList.remove("fake-input");
-                        input.style.display = "block";
-                        input.classList.add("fake-textarea");
-                    } else if (!allowNewline) {
-                        onClose();
-                    }
-                    break;
-            }
-        });
-    }
-
-    // TODO: Common reusable makeEditable function
-    /**
      * Editability for name (except for array members)
      */
     private _makeNameEditable() {
-        this._name.classList.add("fake-input");
-        this._name.contentEditable = "plaintext-only";
-        this._name.role = "textbox";
-        this._name.focus();
+        this._hName.classList.add("fake-input");
+        this._hName.contentEditable = "plaintext-only";
+        this._hName.role = "textbox";
+        this._hName.focus();
 
-        const oldName = this._name.textContent;
+        const oldName = this._hName.textContent;
 
         let wasClosed = false;
 
         const onClose = () => {
             if (wasClosed) { return; }
-            this._name.classList.remove("fake-input");
-            this._name.contentEditable = "false";
+            this._hName.classList.remove("fake-input");
+            this._hName.contentEditable = "false";
+            this._hName.role = null;
 
-            if (this._name.textContent !== oldName) {
+            if (this._hName.textContent !== oldName) {
 
-                if (!this._nameIsUnique(this._name.textContent)) {
-                    Helpers.errorMsg(`Something else on the same layer is already named "${this._name.textContent}." Canceling edit.`);
-                    this._name.textContent = oldName;
+                if (!this._nameIsUnique(this._hName.textContent)) {
+                    Helpers.errorMsg(`Something else on the same layer is already named "${this._hName.textContent}." Canceling edit.`);
+                    this._hName.textContent = oldName;
                     wasClosed = true;
                     return;
                 }
@@ -499,17 +424,17 @@ export class EditorItem {
                 this.makeDirty();
 
                 // Strip newlines that get pasted in
-                this._name.textContent = (this._name.textContent?.replace("\n", "") ?? null);
+                this._hName.textContent = (this._hName.textContent?.replace("\n", "") ?? null);
 
-                Helpers.sendEdit(this.path, "rename", this._name.textContent);
+                Helpers.sendEdit(this.path, "rename", this._hName.textContent);
             }
 
             wasClosed = true;
         };
 
-        this._name.onblur = onClose;
+        this._hName.onblur = onClose;
 
-        this._name.onkeydown = event => {
+        this._hName.onkeydown = event => {
             switch (event.key) {
                 case "Escape":
                     onClose();
@@ -524,7 +449,7 @@ export class EditorItem {
         };
 
         // Don't fold the details
-        this._name.onkeyup = event => {
+        this._hName.onkeyup = event => {
             if (event.key === " ") { event.preventDefault(); }
         };
     }
@@ -569,4 +494,182 @@ export class EditorItem {
     }
 
     //#endregion
+}
+
+
+// TODO: You changed your mind. These should be separate classes that message(?) EditorItem.
+// TODO: These should be in separate files, but there's a circular dependency issue
+
+interface EditorValue {
+    /** 
+     * Pass in an EditorItem's _hValue.
+     * Dispatching custom events onto me allows for messaging the EditorItem if necessary.
+     */
+    rootElement: HTMLDivElement;
+    
+    /**
+     * If defined, this element's textContent is the value to be used for serialization
+     * instead of rootElement's.
+     */
+    realValue?: HTMLElement;
+
+    setupMyHtml(): void;
+    setupMyEvents(): void;
+}
+
+class EditorString extends EditorItem {
+
+    constructor(
+        initialName: string,
+        initialValue: any,
+        parent: HTMLElement,
+        /** Whether the parent is an obj or array. Needed for renaming */
+        parentType: ObjectOrArray
+    ) {
+        super("string", initialName, initialValue, parent, parentType);
+
+        // this._setupMyHtml(initialName, initialValue);
+
+        this._setupMyEvents();
+    }
+
+    // private _setupMyHtml(name: string, value: any) {
+    // No additional elements
+    // }
+
+    private _setupMyEvents() {
+        // Editability
+        // Reassigning onclick overrides base (which eventually shouldn't have one)
+        this._hValue.onclick = () => {
+            const oldValue = this._hValue.textContent;
+
+            if (oldValue?.includes("\n")) {
+                this._hValue.classList.add("fake-textarea");
+            } else {
+                this._hValue.classList.add("fake-input");
+            }
+
+            this._hValue.contentEditable = "plaintext-only";
+            this._hValue.role = "textbox";  // A11y feature?
+
+            let wasClosed = false;
+
+            this._hValue.focus();
+
+            const onClose = () => {
+                if (wasClosed) { return; }
+                this._hValue.classList.remove("fake-input", "fake-textarea");
+                this._hValue.contentEditable = "false";
+                this._hValue.role = null;
+
+                if (this._hValue.textContent !== oldValue) {
+                    this.makeDirty();
+                    Helpers.sendEdit(this.path, "contents", this._hValue.textContent);
+                }
+
+                wasClosed = true;
+            };
+
+            this._hValue.onblur = onClose;
+
+            this._hValue.onkeydown = event => {
+                switch (event.key) {
+                    case "Escape":
+                        onClose();
+                        break;
+                    case "Enter":
+                        if (this._hValue.classList.contains("fake-input")) {
+                            this._hValue.classList.remove("fake-input");
+                            // this._hValue.style.display = "block";
+                            this._hValue.classList.add("fake-textarea");
+                        }
+                        break;
+                }
+            };
+        };
+    };
+}
+
+class EditorNumber extends EditorItem {
+
+    constructor(
+        initialName: string,
+        initialValue: any,
+        parent: HTMLElement,
+        parentType: ObjectOrArray
+    ) {
+        super("number", initialName, initialValue, parent, parentType);
+
+        this._setupMyEvents();
+    }
+
+    private _setupMyEvents() {
+        // Editability
+        // Reassigning onclick overrides base (which eventually shouldn't have one)
+        this._hValue.onclick = () => {
+            const oldValue = this._hValue.textContent;
+            this._hValue.classList.add("fake-input");
+            this._hValue.contentEditable = "plaintext-only";
+            this._hValue.role = "textbox";  // A11y feature?
+
+            this._hValue.addEventListener("keydown", Helpers.typeNumbersOnly);
+            this._hValue.addEventListener("paste", Helpers.pasteNumbersOnly);
+
+            let wasClosed = false;
+
+            this._hValue.focus();
+
+            const onClose = () => {
+                if (wasClosed) { return; }
+                this._hValue.classList.remove("fake-input");
+                this._hValue.contentEditable = "false";
+                this._hValue.role = null;
+
+                // Nothing happened - done
+                if (this._hValue.textContent === oldValue) {
+                    wasClosed = true;
+                    return;
+                }
+
+                // Number validation and conversion
+                // (Done immediately so editor never contains invalid JSON)
+                let asNumber = Number.parseFloat(this._hValue.textContent ?? "0");
+
+                // While parseFloat returns NaN, we can assume empty/whitespace to be 0
+                if (/^\s*$/.test(this._hValue.textContent ?? "")) {
+                    asNumber = 0;
+                }
+
+                // parseFloat failed
+                if (Number.isNaN(asNumber)) {
+                    Helpers.errorMsg(`${this._hValue.textContent} couldn't be converted to a number. Canceling edit.`);
+                    wasClosed = true;
+                    this._hValue.remove();
+                    return;
+                }
+
+                this._hValue.textContent = asNumber.toString();
+
+                this.makeDirty();
+                Helpers.sendEdit(this.path, "contents", this._hValue.textContent);
+
+                wasClosed = true;
+            };
+
+            this._hValue.onblur = onClose;
+
+            this._hValue.onkeydown = event => {
+                switch (event.key) {
+                    case "Escape":
+                        onClose();
+                        break;
+                    case "Enter":
+                        event.preventDefault();
+                        event.stopPropagation();
+                        onClose();
+                        break;
+                }
+            };
+        };
+    };
 }

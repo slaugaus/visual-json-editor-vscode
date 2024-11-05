@@ -55,7 +55,7 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
 
 document.getElementById("rootPlus")!.onclick = event => {
     const numRootItems = Helpers.jsonContainer.childElementCount;
-    const newThing = new EditorItem(
+    const newThing = EditorItem.create(
         "null",
         `New Thing ${numRootItems}`,
         null, Helpers.jsonContainer, 
