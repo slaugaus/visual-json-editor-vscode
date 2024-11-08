@@ -6,16 +6,8 @@
     white-space: pre;
 }
 
-.value {
-    display: block;
-}
-
 .clickable {
     pointer-events: all;
-}
-
-.boolean input, .boolean .value {
-    display: inline;
 }
 
 /* Give empty editable fields something to click on */
@@ -35,8 +27,7 @@
  * MIT License
  */
 .fake-textarea {
-    display: block;
     overflow: hidden;
-    /* resize: both; */
+    /* resize: both; (Resize control) */
     min-height: 40px;
 }
