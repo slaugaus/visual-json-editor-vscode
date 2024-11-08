@@ -1,4 +1,4 @@
-import { EditAddition, ObjectOrArray } from "../common";
+import { EditAddition, ObjectOrArray, SomethingFromJson } from "../common";
 // import { vscode } from "./vscode-webview";
 import { Helpers } from "./Helpers";
 
@@ -29,7 +29,7 @@ export class EditorItem {
     protected constructor(
         private readonly _initialType: string,
         initialName: string,
-        initialValue: any,
+        initialValue: SomethingFromJson,
         private readonly _parent: HTMLElement,
         /** Whether the parent is an obj or array. Needed for renaming */
         private readonly _parentType: ObjectOrArray

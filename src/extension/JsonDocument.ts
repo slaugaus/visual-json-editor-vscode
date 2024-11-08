@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Disposable } from "./disposal";
 import { JsonDocumentDelegate } from "./helpers";
-import { editorSubTypes, editorTypes, JsonEdit, OutputHTML } from "../common";
+import { editorSubTypes, editorTypes, JsonEdit, OutputHTML, SomethingFromJson } from "../common";
 import { HTMLElement, parse } from "node-html-parser";
 
 /**
@@ -52,14 +52,17 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         readonly content?: any;
         readonly edits: readonly JsonEdit[];
     }>());
+
     /** Fired to notify webviews of a change to the document. */
     public readonly onDidChangeContent = this._onDidChangeDocument.event;
+
 
     private readonly _onDidChange = this._register(new vscode.EventEmitter<{
         readonly label: string;
         undo(): void;
         redo(): void;
     }>());
+
     /** 
      * Fired to tell VS Code that an edit happened, and how to un/redo it.
      * 
@@ -229,7 +232,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         const valElement = child.querySelector(".value")!;
 
         const childKey: string = keyElement.querySelector(".name")?.textContent!;
-        let childValue: any;
+        let childValue: SomethingFromJson;
 
         // TODO: Detect and ignore (or fill in?) incomplete elements
 
@@ -262,7 +265,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
         // Fun fact: Arrays can be indexed by strings of ints!
         // (It doesn't matter that parent: Array is having its "0" set)
-        parent[childKey] = childValue;
+        parent[childKey] = childValue!;
     }
 
     /**

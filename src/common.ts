@@ -2,6 +2,8 @@
  * Types used in the Editor and Extension
  */
 
+export type SomethingFromJson = null | string | number | boolean | object | [];
+
 /** Map of "special" types to their base type */
 export const editorSubTypes = Object.freeze({
     datetime: "string", // input type="date"
