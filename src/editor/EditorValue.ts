@@ -125,15 +125,13 @@ class EditorNumber implements EditorValue {
 
     private _setupEvents() {
         // Editability
-        // Reassigning onclick overrides base (which eventually shouldn't have one)
         this.rootElement.onclick = () => {
             const oldValue = this.rootElement.textContent;
             this.rootElement.classList.add("fake-input");
             this.rootElement.contentEditable = "plaintext-only";
             this.rootElement.role = "textbox";  // A11y feature?
 
-            this.rootElement.addEventListener("keydown", Helpers.typeNumbersOnly);
-            this.rootElement.addEventListener("paste", Helpers.pasteNumbersOnly);
+            this.rootElement.addEventListener("keydown", EditorNumber.typeNumbersOnly);
 
             let wasClosed = false;
 
@@ -153,6 +151,7 @@ class EditorNumber implements EditorValue {
 
                 // Number validation and conversion
                 // (Done immediately so editor never contains invalid JSON)
+                // TODO: Use an alternative to Numbers, probably from lossless-json
                 let asNumber = Number.parseFloat(this.rootElement.textContent ?? "0");
 
                 // While parseFloat returns NaN, we can assume empty/whitespace to be 0
@@ -160,11 +159,12 @@ class EditorNumber implements EditorValue {
                     asNumber = 0;
                 }
 
+
                 // parseFloat failed
                 if (Number.isNaN(asNumber)) {
                     Helpers.errorMsg(`${this.rootElement.textContent} couldn't be converted to a number. Canceling edit.`);
                     wasClosed = true;
-                    this.rootElement.remove();
+                    this.rootElement.textContent = oldValue;
                     return;
                 }
 
@@ -178,7 +178,7 @@ class EditorNumber implements EditorValue {
 
             this.rootElement.onblur = onClose;
 
-            this.rootElement.onkeydown = event => {
+            this.rootElement.addEventListener("keydown", event => {
                 switch (event.key) {
                     case "Escape":
                         onClose();
@@ -189,9 +189,32 @@ class EditorNumber implements EditorValue {
                         onClose();
                         break;
                 }
-            };
+            });
         };
     };
+
+    /** 
+     * For keydown events, block anything that's not a number.
+     * 
+     * (Because I want to use the fancy fake inputs)
+     */
+    static typeNumbersOnly(event: KeyboardEvent) {
+        // Navigation keys allowed
+        if (event.key === "Backspace"
+            || event.key === "Delete"
+            || event.key === "Tab"
+            || event.key === "Escape"
+            || event.key === "ArrowLeft"
+            || event.key === "ArrowRight"
+            || event.key === "Home"
+            || event.key === "End"
+        ) { return; }
+
+        // Block everything else but numbers, e (exponent), signs, and decimal point
+        if (!/^[0-9]|e|E|-|\+|\.$/.test(event.key)) {
+            event.preventDefault();
+        }
+    }
 }
 
 class EditorBool implements EditorValue {

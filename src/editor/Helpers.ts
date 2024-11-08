@@ -121,56 +121,6 @@ export abstract class Helpers {
         }
     }
 
-    /** 
-     * For keydown events, block anything that's not a number.
-     * 
-     * (Because I want to use the fancy fake inputs)
-     */
-    static typeNumbersOnly(event: KeyboardEvent) {
-        const caller = event.target as Element;
-        const currentText = caller.textContent ?? "";
-
-        if (event.key === "Backspace"
-            || event.key === 'Delete'
-            || event.key === 'Tab'
-            || event.key === 'Escape'
-            || event.key === "ArrowLeft"
-            || event.key === "ArrowRight"
-            || event.key === "Home"
-            || event.key === "End"
-            || (event.key === '.' && !currentText.includes('.'))
-            || (event.key === 'e' && !currentText.includes('e'))
-            || (event.key === '+' && !currentText.includes('+'))
-            || (event.key === '-' && !currentText.includes('-'))
-        ) { return; }
-
-        // If it's not a number (0-9) or the key is not allowed, prevent input
-        if (!/^[0-9]$/.test(event.key)) {
-            event.preventDefault();
-        }
-    }
-
-    /**
-     * For paste events, block anything that's not a number.
-     */
-    static pasteNumbersOnly(event: ClipboardEvent) {
-        const caller = event.target as Element;
-
-        const currentText = caller.textContent ?? "";
-        const paste = event.clipboardData?.getData('text') ?? "";
-
-        // Prevent paste if it contains non-numeric characters
-        // or more than one special char (decimal point/exponent)
-        if (!/^\d*\.?\d*$/.test(paste)
-            || (paste.includes('.') && !currentText.includes('.'))
-            || (paste.includes('e') && !currentText.includes('e'))
-            || (paste.includes('+') && !currentText.includes('+'))
-            || (paste.includes('-') && !currentText.includes('-'))
-        ) {
-            event.preventDefault();
-        }
-    }
-
     /**
      * Where the magic (object -> HTML) happens!
      * @param {any} obj Deserialized JSON
