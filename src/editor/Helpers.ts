@@ -1,4 +1,4 @@
-import { editorTypes, JsonEdit, ObjectOrArray } from "../common";
+import { editorTypes, JsonEdit, JsonEditType, ObjectOrArray } from "../common";
 import { EditorItem } from "./EditorItem";
 import { vscode } from "./vscode-webview";
 
@@ -46,7 +46,7 @@ export abstract class Helpers {
      */
     static sendEdit<T = any>(
         path: string[],
-        type: "contents" | "add" | "delete" | "rename" | "swap",
+        type: JsonEditType,
         change?: T,
     ): void {
         vscode.postMessage<JsonEdit<T>>({

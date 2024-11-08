@@ -1,4 +1,4 @@
-import { EditAddition, ObjectOrArray, SomethingFromJson } from "../common";
+import { EditAddition, JsonEditType, ObjectOrArray, SomethingFromJson } from "../common";
 // import { vscode } from "./vscode-webview";
 import { Helpers } from "./Helpers";
 import { EditorValue } from "./EditorValue";
@@ -36,8 +36,8 @@ export class EditorItem {
     //     this.hName.textContent = val;
     // }
 
-    get type() {
-        return this._hType.value ?? "unknown";
+    get type(): SomethingFromJson {
+        return this._hType.value ?? "unknown" as SomethingFromJson;
     }
 
     // set type(val) {
@@ -244,8 +244,10 @@ export class EditorItem {
         this.rootElement.addEventListener("make-dirty", event => this.makeDirty());
         this._hValue.addEventListener("make-dirty", event => this.makeDirty());
 
-        // TODO: Event for EditorValue - Call Helpers.sendEdit here (needs this.path)
-        this._hValue.addEventListener("edit-made", event => this.makeDirty());
+        this._hValue.addEventListener("change-icon", event => {
+            const detail = (event as CustomEvent<string>).detail;
+            this._hIcon.className = Helpers.codiconMap[detail];
+        });
 
         // Dispatch this after repositioning in an array to fix my index (name field).
         this.rootElement.addEventListener("renumber", event => {
@@ -298,7 +300,7 @@ export class EditorItem {
                 this._setupHtml("null", this.name, null);
                 this._setupEvents();
                 this.makeDirty();
-                Helpers.sendEdit(this.path, "contents", this.value);
+                Helpers.sendEdit(this.path, "contents", null);
             }
         };
 
@@ -312,28 +314,14 @@ export class EditorItem {
             this._moveNextTo(prev, prev?.before.bind(prev));
         };
 
-        // TODO: Old Bool specific events for reference
-        // if (this._checkbox) {
-        //     // On checkbox toggle
-        //     this._checkbox.onchange = event => {
-        //         const boxVal = this._checkbox!.checked.toString();
-        //         this._hValue.textContent = boxVal;
-
-        //         this.makeDirty();
-
-        //         this._hIcon.className = Helpers.codiconMap[boxVal];
-
-        //         Helpers.sendEdit(this.path, "contents", this._hValue.textContent);
-        //     };
-
-        //     // Icon also toggles value
-        //     this._hIcon.onclick = event => {
-        //         event.stopPropagation();
-        //         event.preventDefault();
-        //         this._checkbox!.checked = !this._checkbox!.checked;
-        //         this._checkbox!.dispatchEvent(new Event("change"));
-        //     };
-        // }
+        if (this.type === "boolean") {
+            // Icon also toggles value
+            this._hIcon.onclick = event => {
+                event.stopPropagation();
+                event.preventDefault();
+                this._hValue.dispatchEvent(new Event("external-toggle"));
+            };
+        }
 
         // Add button (object/array only)
         if (this._btnAddItem) {
@@ -363,7 +351,12 @@ export class EditorItem {
         this._hValue.innerHTML = "";
         this._hValue.className = "value-container";
 
-        this._value = EditorValue.create(type, value, this._hValue);
+        this._value = EditorValue.create(type, value, this._hValue,
+            // Use a delegate to let value class make edits without knowing path
+            (type: JsonEditType, change?: any) => {
+                Helpers.sendEdit(this.path, type, change);
+            }
+        );
 
         this.rootElement.append(this._hValue);
     }

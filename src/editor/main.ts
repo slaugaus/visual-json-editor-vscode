@@ -63,8 +63,8 @@ document.getElementById("rootPlus")!.onclick = event => {
     );
 
     Helpers.sendEdit<EditAddition>(newThing.path, "add", {
-        itemType: newThing.type,
-        value: newThing.value,
+        itemType: "null",
+        value: null,
         parentType: Helpers.jsonContainer.className as ObjectOrArray,
     });
 

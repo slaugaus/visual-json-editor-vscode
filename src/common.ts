@@ -41,10 +41,12 @@ export type OutputHTML = {
     html: string
 }
 
+export type JsonEditType = "contents" | "add" | "delete" | "rename" | "swap";
+
 /** Edits made to a JsonDocument */
 export interface JsonEdit<T = any> {
     readonly path: string[],
-    readonly type: "contents" | "add" | "delete" | "rename" | "swap",
+    readonly type: JsonEditType,
 
     // CONTENTS: The new value
     // ADD: An EditAddition

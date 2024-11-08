@@ -1,15 +1,20 @@
 import { Helpers } from "./Helpers";
-import { SomethingFromJson } from "../common";
+import { JsonEditType, SomethingFromJson } from "../common";
 
-export class EditorValue {
-    static create(type: string, value: SomethingFromJson, target: HTMLDivElement): EditorValue | undefined {
+export abstract class EditorValue {
+    static create(
+        type: string,
+        value: SomethingFromJson,
+        target: HTMLDivElement,
+        delegate: PartialEditDelegate
+    ): EditorValue | undefined {
         switch (type) {
             case "string":
-                return new EditorString(value as string, target);
+                return new EditorString(value as string, target, delegate);
             case "number":
-                return new EditorNumber(value as number, target);
+                return new EditorNumber(value as number, target, delegate);
             case "boolean":
-                return new EditorBool(value as boolean, target);
+                return new EditorBool(value as boolean, target, delegate);
         }
     }
 }
@@ -29,9 +34,19 @@ export interface EditorValue {
     readonly realValue?: HTMLElement;
 }
 
+/**
+ * The two value-dependent parameters of Helpers.sendEdit. EditorValues shouldn't
+ * be concerned about the path to their parent EditorItem.
+ */
+export type PartialEditDelegate = (type: JsonEditType, change?: any) => void;
+
 class EditorString implements EditorValue {
 
-    constructor(initialValue: string, readonly rootElement: HTMLDivElement) {
+    constructor(
+        initialValue: string,
+        readonly rootElement: HTMLDivElement,
+        readonly _sendEdit: PartialEditDelegate
+    ) {
         this._setupHtml(initialValue);
         this._setupEvents();
     }
@@ -67,7 +82,7 @@ class EditorString implements EditorValue {
 
                 if (this.rootElement.textContent !== oldValue) {
                     this.rootElement.dispatchEvent(new Event("make-dirty"));
-                    // Helpers.sendEdit(this.path, "contents", this.rootElement.textContent);
+                    this._sendEdit("contents", this.rootElement.textContent);
                 }
 
                 wasClosed = true;
@@ -94,7 +109,11 @@ class EditorString implements EditorValue {
 
 class EditorNumber implements EditorValue {
 
-    constructor(initialValue: number, readonly rootElement: HTMLDivElement) {
+    constructor(
+        initialValue: number,
+        readonly rootElement: HTMLDivElement,
+        readonly _sendEdit: PartialEditDelegate
+    ) {
         this._setupHtml(initialValue);
         this._setupEvents();
     }
@@ -152,7 +171,7 @@ class EditorNumber implements EditorValue {
                 this.rootElement.textContent = asNumber.toString();
 
                 this.rootElement.dispatchEvent(new Event("make-dirty"));
-                // Helpers.sendEdit(this.path, "contents", this.rootElement.textContent);
+                this._sendEdit("contents", this.rootElement.textContent);
 
                 wasClosed = true;
             };
@@ -177,7 +196,11 @@ class EditorNumber implements EditorValue {
 
 class EditorBool implements EditorValue {
 
-    constructor(initialValue: boolean, readonly rootElement: HTMLDivElement) {
+    constructor(
+        initialValue: boolean,
+        readonly rootElement: HTMLDivElement,
+        readonly _sendEdit: PartialEditDelegate
+    ) {
         this._setupHtml(initialValue);
         this._setupEvents();
     }
@@ -208,7 +231,9 @@ class EditorBool implements EditorValue {
 
         this.rootElement.append(this._label);
 
-        // TODO: Set parent's icon
+        this.rootElement.dispatchEvent(new CustomEvent("change-icon", {
+            detail: value.toString()
+        }));
     }
 
     private _setupEvents() {
@@ -216,8 +241,19 @@ class EditorBool implements EditorValue {
             const boxVal = this._checkbox.checked.toString();
             this.realValue.textContent = boxVal;
 
+            this._sendEdit("contents", boxVal);
+
             this.rootElement.dispatchEvent(new Event("make-dirty"));
-            // TODO: Toggle icon & Send edit
+
+            this.rootElement.dispatchEvent(new CustomEvent("change-icon", {
+                detail: boxVal
+            }));
         };
+
+        // Allow the parent (clickable icon) to toggle me
+        this.rootElement.addEventListener("external-toggle", event => {
+            this._checkbox.checked = !this._checkbox.checked;
+            this._checkbox.dispatchEvent(new Event("change"));
+        });
     }
 }
