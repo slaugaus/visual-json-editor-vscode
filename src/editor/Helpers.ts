@@ -192,7 +192,7 @@ export abstract class Helpers {
             const value = obj[key];
             const valueType = this.jsonTypeOf(value);
 
-            EditorItem.create(valueType, key, value, target, objType as ObjectOrArray);
+            new EditorItem(valueType, key, value, target, objType as ObjectOrArray);
         });
     }
 

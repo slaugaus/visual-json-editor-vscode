@@ -6,9 +6,8 @@ html {
     font-weight: bold;
 }
 
-.value,
-.item-btns,
-.boolean input {
+.value-container,
+.item-btns {
     margin-left: 30px;
 }
 
