@@ -16,9 +16,7 @@ export class EditorItem {
         /** Whether the parent is an obj or array. Needed for renaming */
         private readonly _parentType: ObjectOrArray
     ) {
-        // Don't strictly need to pass the init values,
-        // but I may want to reuse setupHtml for stuff like retyping, undo
-        this._setupHtml(_initialType, initialName, initialValue);
+        this._setupHtml(_initialType, initialName);
 
         this._setupEvents();
 
@@ -32,26 +30,15 @@ export class EditorItem {
         return this._hName.textContent ?? "unknown";
     }
 
-    // set name(val) {
-    //     this.hName.textContent = val;
-    // }
-
-    get type(): SomethingFromJson {
-        return this._hType.value ?? "unknown" as SomethingFromJson;
+    get type(): string {
+        return this._hType.value ?? "unknown";
     }
-
-    // set type(val) {
-    //     this.hType.textContent = val;
-    // }
 
     get value() {
-        return this._value?.realValue?.innerHTML ?? this._value?.rootElement.innerHTML;
+        const maybeValue: string | undefined = this._value?.realValue?.innerHTML
+            ?? this._value?.rootElement.innerHTML;
+        return maybeValue ?? "";
     }
-
-    // set value(val) {
-    //     // Don't do it this way
-    //     this.hValue.innerHTML = val;
-    // }
 
     // I wanted to cache this after the final append of setupHtml,
     // but that doesn't work for no clear reason
@@ -103,25 +90,6 @@ export class EditorItem {
         }, { threshold: 1.0 }).observe(this.rootElement);
     }
 
-    /**
-     * Create a child value for me (assumes I'm a collection)
-     * 
-     * @todo Move to object/array subclasses
-     */
-    addChild(itemType: string, name: string, value: any) {
-        const newChild = new EditorItem(itemType, name, value, this._hValue, this.type as ObjectOrArray);
-
-        Helpers.sendEdit<EditAddition>(newChild.path, "add", {
-            itemType,
-            value,
-            parentType: this.type as ObjectOrArray,
-        });
-
-        this.makeDirty();
-        newChild.makeDirty();
-        newChild.highlightAndScroll();
-    }
-
     //#endregion
 
     //#region Private Stuff
@@ -143,7 +111,7 @@ export class EditorItem {
     private _btnMoveDown: HTMLButtonElement = document.createElement("button");
     private _btnMoveUp: HTMLButtonElement = document.createElement("button");
 
-    // Type-specific items
+    // Type-specific button(s)
     private _btnAddItem: HTMLButtonElement | undefined;
 
     // TODO: temp items
@@ -152,7 +120,7 @@ export class EditorItem {
     /**
      * Initialize my HTML. Reusable for type changer.
      */
-    private _setupHtml(type: string, name: string, value: any) {
+    private _setupHtml(type: string, name: string) {
         // <details> (main container)
         this.rootElement.className = `item ${type}`;
         this.rootElement.open = true;
@@ -217,9 +185,9 @@ export class EditorItem {
         this._btnMoveUp.className = "item-btn";
         this._hButtons.append(this._btnMoveUp);
 
+        // Type-specific button(s)
         if (this._btnAddItem) { this._btnAddItem.remove(); }
 
-        // Type-specific items
         if (type === "object" || type === "array") {
             this._btnAddItem = document.createElement("button");
             this._btnAddItem.type = "button";
@@ -244,11 +212,6 @@ export class EditorItem {
         this.rootElement.addEventListener("make-dirty", event => this.makeDirty());
         this._hValue.addEventListener("make-dirty", event => this.makeDirty());
 
-        this._hValue.addEventListener("change-icon", event => {
-            const detail = (event as CustomEvent<string>).detail;
-            this._hIcon.className = Helpers.codiconMap[detail];
-        });
-
         // Dispatch this after repositioning in an array to fix my index (name field).
         this.rootElement.addEventListener("renumber", event => {
             const idx = new Array(...this._parent.children).indexOf(this.rootElement);
@@ -266,20 +229,21 @@ export class EditorItem {
 
         // Type change logic
         // TODO: Disabled until types are refactored
-        // this._hType.onchange = event => {
-        //     // If converting to obj or array, parse an empty object instead of an empty string
-        //     // so the "length" property doesn't appear
-        //     let realValue: any = this.value;
-        //     if (realValue === ""
-        //         && (this._hType.value === "object" || this._hType.value === "array")
-        //     ) { realValue = {}; }
+        this._hType.onchange = event => {
+            // If converting to obj or array, parse an empty object instead of an empty string
+            // so the "length" property doesn't appear
+            let realValue: unknown = this.value;
+            if ((realValue === "" || realValue === undefined)
+                && (this._hType.value === "object" || this._hType.value === "array")
+            ) { realValue = {}; }
 
-        //     this._setupHtml(this._hType.value, this.name, realValue);
-        //     this._setupEvents();
-        //     this.makeDirty();
+            this._setupHtml(this.type, this.name);
+            this._setupEvents();
+            this._setupValue(this.type, realValue);
+            this.makeDirty();
 
-        //     Helpers.sendEdit(this.path, "contents", this.value);
-        // };
+            Helpers.sendEdit(this.path, "contents", this.value);
+        };
 
         this._btnDelete.onclick = event => {
             Helpers.sendEdit(this.path, "delete");
@@ -297,8 +261,9 @@ export class EditorItem {
                 // Reset to a null object (so type can be freely changed)
                 this._hType.disabled = false;
                 this._hValue.innerHTML = "";
-                this._setupHtml("null", this.name, null);
+                this._setupHtml("null", this.name);
                 this._setupEvents();
+                this._setupValue("null", null);
                 this.makeDirty();
                 Helpers.sendEdit(this.path, "contents", null);
             }
@@ -314,6 +279,7 @@ export class EditorItem {
             this._moveNextTo(prev, prev?.before.bind(prev));
         };
 
+        // For bools, let the icon act as a checkbox
         if (this.type === "boolean") {
             // Icon also toggles value
             this._hIcon.onclick = event => {
@@ -321,6 +287,12 @@ export class EditorItem {
                 event.preventDefault();
                 this._hValue.dispatchEvent(new Event("external-toggle"));
             };
+
+            // Icon matches checkbox state
+            this._hValue.addEventListener("change-icon", event => {
+                const detail = (event as CustomEvent<string>).detail;
+                this._hIcon.className = Helpers.codiconMap[detail];
+            });
         }
 
         // Add button (object/array only)
@@ -330,7 +302,7 @@ export class EditorItem {
                 const nextItem = count.toString();
                 const name = this.type === "object" ? `New Item ${nextItem}` : nextItem;
                 // TODO: (QOL) Intelligent type detect? (Type of most other children)
-                this.addChild("null", name, null);
+                this._value!.addChild!("null", name, null);
             };
         }
 
@@ -347,16 +319,19 @@ export class EditorItem {
     /**
      * Initialize the value div
      */
-    private _setupValue(type: string, value: any) {
+    private _setupValue(type: string, value: SomethingFromJson | unknown) {
         this._hValue.innerHTML = "";
         this._hValue.className = "value-container";
 
-        this._value = EditorValue.create(type, value, this._hValue,
-            // Use a delegate to let value class make edits without knowing path
-            (type: JsonEditType, change?: any) => {
-                Helpers.sendEdit(this.path, type, change);
-            }
-        );
+        // Null value gets an empty div
+        if (type !== "null") {
+            this._value = EditorValue.create(type, value, this._hValue,
+                // Use a delegate to let value class make edits without knowing path
+                (type: JsonEditType, change?: any) => {
+                    Helpers.sendEdit(this.path, type, change);
+                }
+            );
+        }
 
         this.rootElement.append(this._hValue);
     }
@@ -383,7 +358,7 @@ export class EditorItem {
             if (this._hName.textContent !== oldName) {
 
                 if (!this._nameIsUnique(this._hName.textContent)) {
-                    Helpers.errorMsg(`Something else on the same layer is already named "${this._hName.textContent}." Canceling edit.`);
+                    Helpers.errorMsg(`Something else on the same layer is already named "${this._hName.textContent}". Canceling edit.`);
                     this._hName.textContent = oldName;
                     wasClosed = true;
                     return;

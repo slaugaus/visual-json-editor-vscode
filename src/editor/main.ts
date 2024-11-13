@@ -16,12 +16,14 @@ import { Helpers } from "./Helpers";
 window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
     const message = event.data;
     switch (message.type) {
+        // Entrypoint for object parser (extension has a JsonDocument ready)
         case "doc":
             Helpers.jsonContainer.textContent = null;
             Helpers.parseObject(message.body, Helpers.jsonContainer);
             // vscode.setState(something);
             return;
 
+        // Extension requested a save
         case "getData":
             vscode.postMessage<OutputHTML>({
                 type: "responseReady",
@@ -33,6 +35,7 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
             });
             return;
 
+        // Extension finished saving, clear dirty states
         case "saved":
             Helpers.cleanChanged();
             return;

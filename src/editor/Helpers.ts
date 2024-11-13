@@ -90,7 +90,7 @@ export abstract class Helpers {
     }
 
     /**
-     * Create a Codicon <i> from the map or the string directly.
+     * Create a Codicon \<i> from the map or the string directly.
      * @param {String} name 
      * @returns {HTMLElement} \<i class="key">\</i>
      */
@@ -148,6 +148,7 @@ export abstract class Helpers {
 
     /**
      * Parse value based on its type, then place it inside target
+     * @deprecated by EditorValue implementations
      */
     static parseValueInto(target: HTMLElement, value: any, type?: string): void {
         // In case we haven't typed it already

@@ -1,10 +1,11 @@
 import { Helpers } from "./Helpers";
-import { JsonEditType, SomethingFromJson } from "../common";
+import { EditAddition, JsonEditType, ObjectOrArray, SomethingFromJson } from "../common";
+import { EditorItem } from "./EditorItem";
 
 export abstract class EditorValue {
     static create(
         type: string,
-        value: SomethingFromJson,
+        value: SomethingFromJson | unknown,
         target: HTMLDivElement,
         delegate: PartialEditDelegate
     ): EditorValue | undefined {
@@ -15,6 +16,9 @@ export abstract class EditorValue {
                 return new EditorNumber(value as number, target, delegate);
             case "boolean":
                 return new EditorBool(value as boolean, target, delegate);
+            case "object":
+            case "array":
+                return new EditorCollection(type as ObjectOrArray, value as object|any[], target, delegate);
         }
     }
 }
@@ -32,20 +36,25 @@ export interface EditorValue {
      * instead of rootElement's.
      */
     readonly realValue?: HTMLElement;
+
+    /**
+     * If defined, this value is a collection of EditorItems and can have more added
+     */
+    addChild?(itemType: string, name: string, value: any): void;
 }
 
 /**
  * The two value-dependent parameters of Helpers.sendEdit. EditorValues shouldn't
  * be concerned about the path to their parent EditorItem.
  */
-export type PartialEditDelegate = (type: JsonEditType, change?: any) => void;
+export type PartialEditDelegate= <T=any>(type: JsonEditType, change?: T) => void;
 
 class EditorString implements EditorValue {
 
     constructor(
         initialValue: string,
         readonly rootElement: HTMLDivElement,
-        readonly _sendEdit: PartialEditDelegate
+        private readonly _sendEdit: PartialEditDelegate
     ) {
         this._setupHtml(initialValue);
         this._setupEvents();
@@ -112,7 +121,7 @@ class EditorNumber implements EditorValue {
     constructor(
         initialValue: number,
         readonly rootElement: HTMLDivElement,
-        readonly _sendEdit: PartialEditDelegate
+        private readonly _sendEdit: PartialEditDelegate
     ) {
         this._setupHtml(initialValue);
         this._setupEvents();
@@ -220,10 +229,12 @@ class EditorNumber implements EditorValue {
 class EditorBool implements EditorValue {
 
     constructor(
-        initialValue: boolean,
+        initialValue: boolean | "",
         readonly rootElement: HTMLDivElement,
-        readonly _sendEdit: PartialEditDelegate
+        private readonly _sendEdit: PartialEditDelegate
     ) {
+        // Type change can pass ""
+        if (initialValue === "") { initialValue = false; }
         this._setupHtml(initialValue);
         this._setupEvents();
     }
@@ -278,5 +289,40 @@ class EditorBool implements EditorValue {
             this._checkbox.checked = !this._checkbox.checked;
             this._checkbox.dispatchEvent(new Event("change"));
         });
+    }
+}
+
+/**
+ * Class for both objects and arrays. The one meaningful difference between them
+ * (named vs. indexed children) is handled in EditorItem.
+ */
+class EditorCollection implements EditorValue {
+
+    constructor(
+        private _type: ObjectOrArray,
+        initialValue: any,
+        readonly rootElement: HTMLDivElement,
+        private readonly _sendEdit: PartialEditDelegate
+    ) {
+        this._setupHtml(initialValue);
+    }
+
+    addChild(itemType: string, name: string, value: any) {
+        const newChild = new EditorItem(itemType, name, value, this.rootElement, this._type);
+
+        this._sendEdit<EditAddition>("add", {
+            itemType,
+            value,
+            parentType: this._type,
+        });
+
+        this.rootElement.dispatchEvent(new Event("make-dirty"));
+        newChild.makeDirty();
+        newChild.highlightAndScroll();
+    }
+
+    private _setupHtml(initialValue: any) {
+        Helpers.parseObject(initialValue, this.rootElement);
+        this.rootElement.classList.add("value");
     }
 }

@@ -2,7 +2,7 @@
  * Types used in the Editor and Extension
  */
 
-export type SomethingFromJson = null | string | number | boolean | object | [];
+export type SomethingFromJson = null | string | number | boolean | object | any[];
 
 /** Map of "special" types to their base type */
 export const editorSubTypes = Object.freeze({
