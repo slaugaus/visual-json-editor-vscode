@@ -117,6 +117,8 @@ export class EditorItem {
     // TODO: temp items
     // private _btnWhoAmI: HTMLButtonElement = document.createElement("button");
 
+    //#region Initializers
+
     /**
      * Initialize my HTML. Reusable for type changer.
      */
@@ -335,6 +337,8 @@ export class EditorItem {
 
         this.rootElement.append(this._hValue);
     }
+
+    //#endregion
 
     /**
      * Editability for name (except for array members)

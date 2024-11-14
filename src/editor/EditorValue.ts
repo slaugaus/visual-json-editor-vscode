@@ -18,7 +18,9 @@ export abstract class EditorValue {
                 return new EditorBool(value as boolean, target, delegate);
             case "object":
             case "array":
-                return new EditorCollection(type as ObjectOrArray, value as object|any[], target, delegate);
+                return new EditorCollection(type as ObjectOrArray, value as object | any[], target, delegate);
+            case "color":
+                return new EditorColor(value as string, target, delegate);
         }
     }
 }
@@ -47,7 +49,7 @@ export interface EditorValue {
  * The two value-dependent parameters of Helpers.sendEdit. EditorValues shouldn't
  * be concerned about the path to their parent EditorItem.
  */
-export type PartialEditDelegate= <T=any>(type: JsonEditType, change?: T) => void;
+export type PartialEditDelegate = <T = any>(type: JsonEditType, change?: T) => void;
 
 class EditorString implements EditorValue {
 
@@ -324,5 +326,74 @@ class EditorCollection implements EditorValue {
     private _setupHtml(initialValue: any) {
         Helpers.parseObject(initialValue, this.rootElement);
         this.rootElement.classList.add("value");
+    }
+}
+
+/**
+ * GUIDE TO TYPE ADDITION
+ * (see tags are Ctrl+clickable)
+ * - common.ts: Add to editorSubTypes
+ * - @see {@link Helpers}:
+ *      - Put a Codicon in @see {@link Helpers.codiconMap}
+ *      - Add to @see {@link Helpers.validConversions}
+ *      - Detect your type in @see {@link Helpers.detectType}
+ *        or @see {@link Helpers.detectSpecialString}
+ * 
+ * - Implement a new type class here; @see {@link EditorBool} is a good reference
+ * - Add your type class to @see {@link EditorValue.create}
+ * - If you get yelled at on save, fix JsonDocument._addFromNode
+ */
+
+
+class EditorColor implements EditorValue {
+
+    constructor(
+        initialValue: string,
+        readonly rootElement: HTMLDivElement,
+        private readonly _sendEdit: PartialEditDelegate
+    ) {
+        // Type change can pass ""
+        if (initialValue === "") { initialValue = "#000000"; }
+        this._setupHtml(initialValue);
+        this._setupEvents();
+    }
+
+    readonly realValue: HTMLSpanElement = document.createElement("span");
+
+    private _picker: HTMLInputElement = document.createElement("input");
+
+    private _label: HTMLLabelElement = document.createElement("label");
+
+    /**
+     * \<label>
+     *     \<input type="color" value="$value"/>
+     *     \<span class="value">$value\</span>
+     * \</label>
+     */
+    private _setupHtml(value: string) {
+        this._picker.type = "color";
+        this._picker.value = value;
+
+        this._label.append(this._picker);
+
+        this.realValue.textContent = value;
+        this.realValue.className = "value";
+        this._label.append(this.realValue);
+
+        this.rootElement.append(this._label);
+    }
+
+    private _setupEvents() {
+        this._picker.onchange = event => {
+            const newColor = this._picker.value;
+            this.realValue.textContent = newColor;
+
+            this._sendEdit("contents", newColor);
+
+            this.rootElement.dispatchEvent(new Event("make-dirty"));
+
+            // hehe
+            this.rootElement.parentElement!.style.borderColor = newColor;
+        };
     }
 }

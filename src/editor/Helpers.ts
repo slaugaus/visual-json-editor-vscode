@@ -24,15 +24,18 @@ export abstract class Helpers {
         true: "codicon codicon-pass-filled",
         false: "codicon codicon-circle-large-outline",
         dirty: "codicon codicon-close-dirty",
+        // Extra Types
+        color: "codicon codicon-paintcan",
     });
 
     /** What types (self included) can a given type safely convert to? */
-    static readonly validConversions: { [key: string]: readonly string[]} = Object.freeze({
+    static readonly validConversions: { [key: string]: readonly string[] } = Object.freeze({
         string: ["string"],
         number: ["number", "string"],
         boolean: ["boolean", "string"],
         array: ["array", /*"import"*/],
         object: ["object", /*"import"*/],
+        color: ["color", "string"],
         null: editorTypes,  // any
     });
 
@@ -104,20 +107,35 @@ export abstract class Helpers {
         return icon;
     }
 
-    /** 
-     * typeof null or Array is object. Handle that case and fall back to typeof.
-     */
-    static jsonTypeOf(val: any) {
+    static detectType(val: any) {
         switch (typeof val) {
+            case "string":
+                return this.detectSpecialString(val);
             case "object":
+                // typeof gives "object" for arrays and null
                 if (val instanceof Array) {
                     return "array";
                 } else if (val === null) {
                     return "null";
-                }
-            // else return "object";
+                } // Else, fall through
             default:
                 return typeof val;
+        }
+    }
+
+    static detectSpecialString(val: string)  {
+        // Colors (input type color only supports 6-digit hex)
+        // TODO: Other formats
+        if (/^#([0-9A-Fa-f]){6}$/.test(val)) {
+            return "color";
+        }
+        // TODO: Datetimes
+        // else if (Date.parse(val)) {
+        //     return "datetime";
+        // }
+        // Base64?
+        else {
+            return "string";
         }
     }
 
@@ -127,7 +145,7 @@ export abstract class Helpers {
      * @param {HTMLElement} target Container to hold the object
      */
     static parseObject(obj: any, target: HTMLElement) {
-        const objType = this.jsonTypeOf(obj);
+        const objType = this.detectType(obj);
         // The root object can be an array [] or object {}
         if (target.id === "jsonContainer") {
             target.classList.add(objType);
@@ -140,45 +158,10 @@ export abstract class Helpers {
             }
 
             const value = obj[key];
-            const valueType = this.jsonTypeOf(value);
+            const valueType = this.detectType(value);
 
             new EditorItem(valueType, key, value, target, objType as ObjectOrArray);
         });
-    }
-
-    /**
-     * Parse value based on its type, then place it inside target
-     * @deprecated by EditorValue implementations
-     */
-    static parseValueInto(target: HTMLElement, value: any, type?: string): void {
-        // In case we haven't typed it already
-        if (!type) {
-            type = this.jsonTypeOf(value);
-        }
-
-        let returnVal;
-
-        switch (type) {
-            case "string":
-                returnVal =  this.sanitizeHTML(value);
-                break;
-            case "number":
-            case "boolean":
-                returnVal = value;
-                break;
-            case "null":
-                // returnVal = "(null)";
-                break;
-            // Woo recursion!
-            case "array":
-            case "object":
-                this.parseObject(value, target);
-                return;
-        }
-
-        if (returnVal) {
-            target.innerHTML = returnVal as string;
-        }
     }
 
     //#region Item Paths

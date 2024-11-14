@@ -236,7 +236,10 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
         // TODO: Detect and ignore (or fill in?) incomplete elements
 
-        switch (this._getTypeOfElement(child)) {
+        let type = this._getTypeOfElement(child);
+        type = editorSubTypes[type] ?? type;    // Get base type
+
+        switch (type) {
             case "string":
                 childValue = valElement.textContent;
                 break;
@@ -261,6 +264,8 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
                     this._addFromNode(grandchild as HTMLElement, childValue);
                 }
                 break;
+            default:
+                throw new TypeError(`Tried to save unknown type: ${type}`);
         }
 
         // Fun fact: Arrays can be indexed by strings of ints!
@@ -269,17 +274,16 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
     }
 
     /**
-     * Read ele.classList and return the JSON type it contains.
+     * Read ele.classList and return the type it contains.
      * 
      * Theoretically the type will always be class #2, but don't make that assumption.
      */
     private static _getTypeOfElement(ele: HTMLElement): string {
-        // Get the class(es) that indicate base type - ignore the subtypes
         const result = ele.classList.value.filter(
-            val => editorTypes.includes(val) && !Object.keys(editorSubTypes).includes(val));
+            val => editorTypes.includes(val));
 
         if (result.length > 1) {
-            vscode.window.showErrorMessage(`Element ${ele.outerHTML} has multiple base types (${result})! Returning the first one.`);
+            vscode.window.showErrorMessage(`Element ${ele.outerHTML} has multiple types (${result})! Returning the first one.`);
         }
         return result[0];
     }

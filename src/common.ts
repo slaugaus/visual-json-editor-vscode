@@ -5,11 +5,11 @@
 export type SomethingFromJson = null | string | number | boolean | object | any[];
 
 /** Map of "special" types to their base type */
-export const editorSubTypes = Object.freeze({
-    datetime: "string", // input type="date"
+export const editorSubTypes: Readonly<{ [key: string]: string }> = Object.freeze({
     color: "string",    // input type="color"
-    rawJson: "string",  // paste JSON here (Monaco)
-    upload: "string"    // convert to base64
+    // datetime: "string", // input type="date"
+    // rawJson: "string",  // paste JSON here (Monaco)
+    // upload: "string"    // convert to base64
 });
 
 /** Possible types of one item in the editor */
@@ -21,7 +21,7 @@ export const editorTypes = Object.freeze([
     "object",
     "array",
     // unroll special types
-    // ...(Object.keys(editorSubTypes))
+    ...(Object.keys(editorSubTypes))
 ]);
 
 // TODO: extend this when messaging system is better defined?
