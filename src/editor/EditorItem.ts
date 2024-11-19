@@ -230,7 +230,6 @@ export class EditorItem {
         };
 
         // Type change logic
-        // TODO: Disabled until types are refactored
         this._hType.onchange = event => {
             // If converting to obj or array, parse an empty object instead of an empty string
             // so the "length" property doesn't appear

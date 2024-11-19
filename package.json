@@ -61,11 +61,12 @@
     "@vscode/test-electron": "^2.4.1",
     "esbuild": "^0.24.0",
     "eslint": "^9.11.1",
-    "npm-run-all": "^4.1.5",
+    "npm-run-all": "^2.1.0",
     "typescript": "^5.6.2"
   },
   "dependencies": {
     "@vscode/codicons": "^0.0.36",
+    "lossless-json": "^4.0.2",
     "monaco": "^1.201704190613.0",
     "node-html-parser": "^6.1.13"
   }

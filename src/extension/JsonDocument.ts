@@ -2,7 +2,8 @@ import * as vscode from "vscode";
 import { Disposable } from "./disposal";
 import { JsonDocumentDelegate } from "./helpers";
 import { editorSubTypes, editorTypes, JsonEdit, OutputHTML, SomethingFromJson } from "../common";
-import { HTMLElement, parse } from "node-html-parser";
+import { HTMLElement, parse as parseHtml } from "node-html-parser";
+import { LosslessNumber, parse as parseJson, stringify } from "lossless-json";
 
 /**
  * Handles loading and saving the JSON file, including serialization.
@@ -112,14 +113,14 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         const doc: vscode.TextDocument = await vscode.workspace.openTextDocument(uri);
         const text: string = doc.getText();
 
-        // Don't parse and throw errors if file is nothing or whitespace
+        // Don't throw parsing errors if file is nothing or whitespace
         if (/^\s*$/.test(text)) {
             return {};
         }
 
         let jsonObject;
         try {
-            jsonObject = JSON.parse(text);
+            jsonObject = parseJson(text);
         }
         // TODO: (QOL) Dump all problems with the JSON? + Signal to open a plaintext editor
         //  - Or start as the "paste JSON here" editor
@@ -161,7 +162,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         const prettiness = vscode.workspace.getConfiguration("visual-json")
             .get<number>("outputPrettiness");
 
-        const stringified = JSON.stringify(dataObject, null, prettiness);
+        const stringified = stringify(dataObject, null, prettiness);
 
         // fs.writeFile requires a Uint8Array
         const encoded: Uint8Array = new TextEncoder().encode(stringified);
@@ -209,7 +210,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
      * @returns A JSON-serializable object
      */
     private static _readHtml(data: OutputHTML): any {
-        const container = parse(data.html);
+        const container = parseHtml(data.html);
 
         let outputObject;
         // Handle base object being an array
@@ -244,7 +245,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
                 childValue = valElement.textContent;
                 break;
             case "number":
-                childValue = parseFloat(valElement.textContent!);
+                childValue = new LosslessNumber(valElement.textContent ?? "0");
                 break;
             case "boolean":
                 childValue = valElement.textContent === "true";

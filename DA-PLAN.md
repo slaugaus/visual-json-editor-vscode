@@ -27,11 +27,6 @@ it'd be SO FUNNY if certain editor widgets were just Monacos (i.e. micro instanc
 - https://github.com/microsoft/monaco-editor
 - https://stackoverflow.com/questions/61307979/how-to-import-npm-packages-in-vs-code-webview-extension-development
 
-BUG: FAIRLY IMPORTANT KNOWN ISSUE/LIMITATION: JSON has no size limit on numbers. Anything that becomes Infinity in JS will save as null.
-
-- [Lossless JSON](https://github.com/josdejong/lossless-json) solves this, but is slower
-- Type "number" needs to be a string.
-
 ## EDITING
 
 You have 2 options:

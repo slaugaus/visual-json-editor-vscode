@@ -8,6 +8,7 @@
         "outDir": "../../media",
         "strict": true,
         "forceConsistentCasingInFileNames": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "moduleResolution": "bundler"
     }
 }

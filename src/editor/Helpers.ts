@@ -1,3 +1,4 @@
+import { isLosslessNumber, LosslessNumber } from "lossless-json";
 import { editorTypes, JsonEdit, JsonEditType, ObjectOrArray } from "../common";
 import { EditorItem } from "./EditorItem";
 import { vscode } from "./vscode-webview";
@@ -115,6 +116,8 @@ export abstract class Helpers {
                 // typeof gives "object" for arrays and null
                 if (val instanceof Array) {
                     return "array";
+                } else if (isLosslessNumber(val)) {
+                    return "number";
                 } else if (val === null) {
                     return "null";
                 } // Else, fall through

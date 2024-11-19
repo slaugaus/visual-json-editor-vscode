@@ -1,6 +1,7 @@
 import { Helpers } from "./Helpers";
 import { EditAddition, JsonEditType, ObjectOrArray, SomethingFromJson } from "../common";
 import { EditorItem } from "./EditorItem";
+import { isLosslessNumber, LosslessNumber } from "lossless-json";
 
 export abstract class EditorValue {
     static create(
@@ -13,7 +14,7 @@ export abstract class EditorValue {
             case "string":
                 return new EditorString(value as string, target, delegate);
             case "number":
-                return new EditorNumber(value as number, target, delegate);
+                return new EditorNumber(value as number | LosslessNumber, target, delegate);
             case "boolean":
                 return new EditorBool(value as boolean, target, delegate);
             case "object":
@@ -121,7 +122,7 @@ class EditorString implements EditorValue {
 class EditorNumber implements EditorValue {
 
     constructor(
-        initialValue: number,
+        initialValue: number | LosslessNumber,
         readonly rootElement: HTMLDivElement,
         private readonly _sendEdit: PartialEditDelegate
     ) {
@@ -129,8 +130,12 @@ class EditorNumber implements EditorValue {
         this._setupEvents();
     }
 
-    private _setupHtml(value: number) {
-        this.rootElement.textContent = value.toString();
+    private _setupHtml(value: number | LosslessNumber) {
+        if (isLosslessNumber(value)) {
+            this.rootElement.textContent = value.value;
+        } else {
+            this.rootElement.textContent = value.toString();
+        }
         this.rootElement.classList.add("value");
     }
 
@@ -162,24 +167,21 @@ class EditorNumber implements EditorValue {
 
                 // Number validation and conversion
                 // (Done immediately so editor never contains invalid JSON)
-                // TODO: Use an alternative to Numbers, probably from lossless-json
-                let asNumber = Number.parseFloat(this.rootElement.textContent ?? "0");
 
-                // While parseFloat returns NaN, we can assume empty/whitespace to be 0
-                if (/^\s*$/.test(this.rootElement.textContent ?? "")) {
-                    asNumber = 0;
+                // Empty/whitespace and extra 0s can fall back to 0
+                if (/^[\s0]*$/.test(this.rootElement.textContent ?? "")) {
+                    this.rootElement.textContent = "0";
+                } else {
+                    try {
+                        // Use LosslessNumber's validation
+                        this.rootElement.textContent = new LosslessNumber(this.rootElement.textContent ?? "0").toString();
+                    } catch (e) {
+                        Helpers.errorMsg(`${this.rootElement.textContent} is not a number. Canceling edit.`);
+                        wasClosed = true;
+                        this.rootElement.textContent = oldValue;
+                        return;
+                    }
                 }
-
-
-                // parseFloat failed
-                if (Number.isNaN(asNumber)) {
-                    Helpers.errorMsg(`${this.rootElement.textContent} couldn't be converted to a number. Canceling edit.`);
-                    wasClosed = true;
-                    this.rootElement.textContent = oldValue;
-                    return;
-                }
-
-                this.rootElement.textContent = asNumber.toString();
 
                 this.rootElement.dispatchEvent(new Event("make-dirty"));
                 this._sendEdit("contents", this.rootElement.textContent);
