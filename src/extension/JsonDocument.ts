@@ -17,8 +17,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
      *      access to the webviews and I don't.
      */
     static async create(uri: vscode.Uri, backupId: string | undefined, delegate: JsonDocumentDelegate)
-        : Promise<JsonDocument | PromiseLike<JsonDocument>>
-    {
+        : Promise<JsonDocument | PromiseLike<JsonDocument>> {
         // Read the backup if it exists, otherwise get the file at uri
         const actualUri = typeof backupId === "string" ? vscode.Uri.parse(backupId) : uri;
 
@@ -51,7 +50,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
     private readonly _onDidChangeDocument = this._register(new vscode.EventEmitter<{
         readonly content?: any;
-        readonly edits: readonly JsonEdit[];
+        // readonly edits: readonly JsonEdit[];
     }>());
 
     /** Fired to notify webviews of a change to the document. */
@@ -85,17 +84,81 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
                 // On undo, send open editors the list of edits minus the undone one
                 this._freshEdits.pop();
                 this._onDidChangeDocument.fire({
-                    edits: this._freshEdits,
+                    content: this._playbackEdits(this._freshEdits)
+                    // edits: this._freshEdits,
                 });
             },
             redo: async () => {
                 // On redo, send open editors the new list of edits
                 this._freshEdits.push(edit);
                 this._onDidChangeDocument.fire({
-                    edits: this._freshEdits,
+                    content: this._playbackEdits(this._freshEdits)
+                    // edits: this._freshEdits,
                 });
             },
         });
+    }
+
+    /**
+     * Return the object with a list of edits applied to it.
+     */
+    private _playbackEdits(edits: JsonEdit[]): any {
+        console.log("PLAYING BACK EDITS...");
+
+        const obj = structuredClone(this._object);
+
+        edits.forEach(edit => {
+            // TODO this whole thing is crusty
+            JsonDocument._navigateThen(obj, edit.path, (finalObj, finalKey) => {
+                switch (edit.type) {
+                    case "contents":
+                        console.log(`  CONTENTS - [${edit.path.join(", ")}] -> ${edit.change}`);
+                        finalObj[finalKey] = edit.change;
+                        break;
+                    case "add":
+                        console.log(`  ADD - [${edit.path.join(", ")}] -> ${edit.change}`);
+                        finalObj[finalKey] = edit.change.value;
+                        break;
+                    case "delete":
+                        console.log(`  DELETE - [${edit.path.join(", ")}] -> ${edit.change}`);
+                        delete finalObj[finalKey];
+                        break;
+                    case "rename":
+                        console.log(`  RENAME - [${edit.path.join(", ")}] -> ${edit.change}`);
+                        finalObj[edit.change] = finalObj[finalKey];
+                        delete finalObj[finalKey];
+                        break;
+                    case "swap":
+                        // TODO
+                        console.log(`  SWAP - [${edit.path.join(", ")}] -> ${edit.change}`);
+                        break;
+                }
+            });
+        });
+
+        console.log("END EDIT PLAYBACK\n");
+        return obj;
+    }
+
+    /**
+     * Navigate to the second-to-last object in path, then pass it and the last part of
+     * path to the callback function to do whatever you want.
+     * @param object 
+     * @param path 
+     * @param callback 
+     */
+    private static _navigateThen(object: any, path: string[],
+        callback: (finalObj: any, finalKey: string) => void
+    ) {
+        let pointer = object;
+
+        for (let i = 0; i < path.length - 1; i++) {
+            if (pointer[path[i]]) {
+                pointer = pointer[path[i]];
+            }
+        }
+
+        callback(pointer, path[path.length - 1]);
     }
 
     //#endregion
@@ -179,8 +242,8 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         this._object = fileOnDisk;
         this._freshEdits = this._savedEdits;
         this._onDidChangeDocument.fire({
-            content: fileOnDisk,
-            edits: this._freshEdits,
+            content: await fileOnDisk,
+            // edits: this._freshEdits,
         });
     }
 

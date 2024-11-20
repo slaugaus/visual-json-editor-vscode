@@ -81,10 +81,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
             for (const panel of this._webviews.get(document.uri)) {
                 this._sendMessage(panel, {
                     type: "change",
-                    body: {
-                        edits: event.edits,
-                        content: event.content
-                    }
+                    body: event
                 });
             }
         }));

@@ -42,7 +42,9 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
 
         // TODO: "change"
         case "change":
-            Helpers.debugMsg("Changes (undo, redo, revert...) are not supported yet.");
+            Helpers.jsonContainer.textContent = null;
+            Helpers.parseObject(message.body.content, Helpers.jsonContainer);
+            // Helpers.debugMsg("Changes (undo, redo, revert...) are not supported yet.");
             return;
 
         default:
