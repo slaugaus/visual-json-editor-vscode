@@ -7,7 +7,7 @@ export type SomethingFromJson = null | string | number | boolean | object | any[
 /** Map of "special" types to their base type */
 export const editorSubTypes: Readonly<{ [key: string]: string }> = Object.freeze({
     color: "string",    // input type="color"
-    // datetime: "string", // input type="date"
+    datetime: "string", // input type="date"
     // rawJson: "string",  // paste JSON here (Monaco)
     // upload: "string"    // convert to base64
 });

@@ -27,6 +27,7 @@ export abstract class Helpers {
         dirty: "codicon codicon-close-dirty",
         // Extra Types
         color: "codicon codicon-paintcan",
+        datetime: "codicon codicon-calendar",
     });
 
     /** What types (self included) can a given type safely convert to? */
@@ -37,6 +38,7 @@ export abstract class Helpers {
         array: ["array", /*"import"*/],
         object: ["object", /*"import"*/],
         color: ["color", "string"],
+        datetime: ["datetime", "string"],
         null: editorTypes,  // any
     });
 
@@ -128,14 +130,14 @@ export abstract class Helpers {
 
     static detectSpecialString(val: string)  {
         // Colors (input type color only supports 6-digit hex)
-        // TODO: Other formats
+        // TODO: Other formats?
         if (/^#([0-9A-Fa-f]){6}$/.test(val)) {
             return "color";
         }
-        // TODO: Datetimes
-        // else if (Date.parse(val)) {
-        //     return "datetime";
-        // }
+        // Datetimes specifically YYYY-MM-DDThh:mm:ss.sssZ format
+        else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(val)) {
+            return "datetime";
+        }
         // Base64?
         else {
             return "string";

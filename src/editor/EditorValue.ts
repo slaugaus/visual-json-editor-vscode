@@ -22,6 +22,8 @@ export abstract class EditorValue {
                 return new EditorCollection(type as ObjectOrArray, value as object | any[], target, delegate);
             case "color":
                 return new EditorColor(value as string, target, delegate);
+            case "datetime":
+                return new EditorDateTime(value as string | number, target, delegate);
         }
     }
 }
@@ -319,6 +321,7 @@ class EditorCollection implements EditorValue {
             value,
             parentType: this._type,
         });
+        // TODO: Name of this object needs to be in the path!
 
         this.rootElement.dispatchEvent(new Event("make-dirty"));
         newChild.makeDirty();
@@ -396,6 +399,55 @@ class EditorColor implements EditorValue {
 
             // hehe
             this.rootElement.parentElement!.style.borderColor = newColor;
+        };
+    }
+}
+
+class EditorDateTime implements EditorValue {
+
+    constructor(
+        initialValue: string | number,
+        readonly rootElement: HTMLDivElement,
+        private readonly _sendEdit: PartialEditDelegate
+    ) {
+        // Type change can pass ""
+        if (initialValue === "") { initialValue = Date.now(); }
+        this._setupHtml(initialValue);
+        this._setupEvents();
+    }
+
+    readonly realValue: HTMLSpanElement = document.createElement("span");
+
+    // input type=datetime-local
+    private _picker: HTMLInputElement = document.createElement("input");
+
+    private _label: HTMLLabelElement = document.createElement("label");
+
+    private _setupHtml(value: string | number) {
+        this._picker.type = "datetime-local";
+        this._picker.step = "0.001";  // adds second and millisecond fields
+
+        const iso = new Date(value).toISOString();
+        // annoyingly, datetime-local doesn't accept the trailing Z
+        this._picker.value = iso.slice(0, 23);
+
+        this._label.append(this._picker);
+
+        this.realValue.textContent = iso;
+        this.realValue.className = "value";
+        this._label.append(this.realValue);
+
+        this.rootElement.append(this._label);
+    }
+
+    private _setupEvents() {
+        this._picker.onchange = event => {
+            const iso = this._picker.value + "Z";
+
+            this.realValue.textContent = iso;
+
+            this._sendEdit("contents", iso);
+            this.rootElement.dispatchEvent(new Event("make-dirty"));
         };
     }
 }
