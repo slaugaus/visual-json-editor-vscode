@@ -8,12 +8,22 @@ import { EditorValue } from "./EditorValue";
  */
 export class EditorItem {
 
-    constructor(
+    static create(
+        type: string,
+        name: string,
+        value: SomethingFromJson,
+        parent: HTMLElement,
+        /** Whether the parent is an obj or array. Needed for renaming */
+        parentType: ObjectOrArray
+    ): EditorItem {
+        return new EditorItem(type, name, value, parent, parentType);
+    }
+
+    private constructor(
         private readonly _initialType: string,
         initialName: string,
         initialValue: SomethingFromJson,
         private readonly _parent: HTMLElement,
-        /** Whether the parent is an obj or array. Needed for renaming */
         private readonly _parentType: ObjectOrArray
     ) {
         this._setupHtml(_initialType, initialName);

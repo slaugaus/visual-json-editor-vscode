@@ -163,7 +163,7 @@ export abstract class Helpers {
             const value = obj[key];
             const valueType = this.detectType(value);
 
-            new EditorItem(valueType, key, value, target, objType as ObjectOrArray);
+            EditorItem.create(valueType, key, value, target, objType as ObjectOrArray);
         });
     }
 

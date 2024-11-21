@@ -312,7 +312,7 @@ class EditorCollection implements EditorValue {
     }
 
     addChild(itemType: string, name: string, value: any) {
-        const newChild = new EditorItem(itemType, name, value, this.rootElement, this._type);
+        const newChild = EditorItem.create(itemType, name, value, this.rootElement, this._type);
 
         this._sendEdit<EditAddition>("add", {
             itemType,
