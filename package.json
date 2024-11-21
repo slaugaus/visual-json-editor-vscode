@@ -21,6 +21,12 @@
           "minimum": 0,
           "maximum": 10,
           "description": "Prettify saved JSON files and indent them with this many spaces. (0 to disable)"
+        },
+        "visual-json.maxFileSize": {
+          "type": "number",
+          "default": 256,
+          "minimum": 0,
+          "description": "Maximum file size (in kilobytes) the editor is allowed to open."
         }
       }
     },

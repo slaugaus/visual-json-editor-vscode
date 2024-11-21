@@ -173,6 +173,16 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
             return {};
         }
 
+        // Limit file size
+        let maxFileSize = vscode.workspace.getConfiguration("visual-json")
+            .get<number>("maxFileSize") ?? 256;
+
+        const fileStats = await vscode.workspace.fs.stat(uri);
+        if (fileStats.size > maxFileSize * 1024) {
+            // VS Code has a nice error handler
+            throw new Error(`File is ${(fileStats.size / 1024).toFixed(2)} KB. Max allowed size is ${maxFileSize} KB. (This can be changed in settings)`);
+        }
+
         const doc: vscode.TextDocument = await vscode.workspace.openTextDocument(uri);
         const text: string = doc.getText();
 
@@ -189,10 +199,10 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         //  - Or start as the "paste JSON here" editor
         catch (e) {
             if (e instanceof SyntaxError) {
-                vscode.window.showErrorMessage(`File is not valid JSON: ${e.message}`);
+                throw new Error(`File is not valid JSON: ${e.message}`);
             }
             else if (e instanceof Error) {
-                vscode.window.showErrorMessage(`Error parsing file. ${e.name}: ${e.message}`);
+                throw new Error(`Error parsing file. ${e.name}: ${e.message}`);
             }
             return {};
         }
