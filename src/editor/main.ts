@@ -3,15 +3,6 @@ import { EditAddition, Message, ObjectOrArray, OutputHTML } from "../common";
 import { EditorItem } from "./EditorItem";
 import { Helpers } from "./Helpers";
 
-// const validBaseTypes = [
-//     "string",
-//     "number",
-//     "boolean",
-//     "null",
-//     "array",
-//     "object",
-// ];
-
 // Message Handler
 window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
     const message = event.data;

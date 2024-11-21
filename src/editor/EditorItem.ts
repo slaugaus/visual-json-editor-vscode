@@ -33,6 +33,12 @@ export class EditorItem {
         this._setupValue(_initialType, initialValue);
 
         this._parent.append(this.rootElement);
+
+        // Edge case - Autogen name from add buttons could rarely cause a collision
+        if (!this._nameIsUnique(initialName)){
+            // Not really a proper fix, only makes it rarer
+            this._hName.textContent += " (2)";
+        }
     }
 
     //#region Public Methods/Properties
