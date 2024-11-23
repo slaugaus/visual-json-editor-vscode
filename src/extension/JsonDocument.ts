@@ -4,6 +4,7 @@ import { JsonDocumentDelegate } from "./helpers";
 import { editorSubTypes, editorTypes, JsonEdit, OutputHTML, SomethingFromJson } from "../common";
 import { HTMLElement, parse as parseHtml } from "node-html-parser";
 import { LosslessNumber, parse as parseJson, stringify } from "lossless-json";
+import { randomBytes } from "crypto";
 
 /**
  * Handles loading and saving the JSON file, including serialization.
@@ -179,8 +180,11 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 
         const fileStats = await vscode.workspace.fs.stat(uri);
         if (fileStats.size > maxFileSize * 1024) {
-            // VS Code has a nice error handler
-            throw new Error(`File is ${(fileStats.size / 1024).toFixed(2)} KB. Max allowed size is ${maxFileSize} KB. (This can be changed in settings)`);
+            this._errorWithFallback(
+                `File is ${(fileStats.size / 1024).toFixed(2)} KB. Max allowed size is ${maxFileSize} KB. (This can be changed in settings)`,
+                uri
+            );
+            return {};
         }
 
         const doc: vscode.TextDocument = await vscode.workspace.openTextDocument(uri);
@@ -195,19 +199,35 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         try {
             jsonObject = parseJson(text);
         }
-        // TODO: (QOL) Dump all problems with the JSON? + Signal to open a plaintext editor
-        //  - Or start as the "paste JSON here" editor
         catch (e) {
             if (e instanceof SyntaxError) {
-                throw new Error(`File is not valid JSON: ${e.message}`);
+                this._errorWithFallback(`File is not valid JSON. ${e.message}`, uri);
             }
             else if (e instanceof Error) {
-                throw new Error(`Error parsing file. ${e.name}: ${e.message}`);
+                this._errorWithFallback(`Unknown error parsing file. ${e.name}: ${e.message}`, uri);
             }
-            return {};
         }
 
         return jsonObject;
+    }
+
+    /**
+     * File problems? Show a modal with a custom message and an option to 
+     * open with the plaintext editor.
+     */
+    private static _errorWithFallback(message: string, uri: vscode.Uri) {
+        vscode.window.showErrorMessage(
+            `Visual JSON Editor Error:\n${message}`,
+            { modal: true },
+            "Open with Text Editor"
+            // Cancel button added automatically
+        ).then((option) => {
+            // Close whether canceled or reopened
+            vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+            if (option === "Open with Text Editor") {
+                vscode.commands.executeCommand("vscode.openWith", uri, "default");
+            }
+        });
     }
 
     async save(cancellation: vscode.CancellationToken) {
