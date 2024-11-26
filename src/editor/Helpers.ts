@@ -100,8 +100,8 @@ export abstract class Helpers {
      * @param {String} name 
      * @returns {HTMLElement} \<i class="key">\</i>
      */
-    static codicon(name: string): HTMLElement {
-        const icon = document.createElement("i");
+    static codicon(name: string, elementType: string = "i"): HTMLElement {
+        const icon = document.createElement(elementType);
         if (this.codiconMap.hasOwnProperty(name)) {
             icon.className = this.codiconMap[name];
         } else {

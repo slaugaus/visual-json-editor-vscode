@@ -252,23 +252,31 @@ class EditorBool implements EditorValue {
     private _checkbox: HTMLInputElement = document.createElement("input");
     // Being inside a label makes realValue toggle the checkbox on click
     private _label: HTMLLabelElement = document.createElement("label");
+    // For customizing a checkbox in styles
+    private _fakeCheckbox: HTMLSpanElement = document.createElement("span");
 
     /**
-     * \<label>
+     * \<label class="bool-label">
      *     \<input type="checkbox"/>
+     *     \<span class="fake-checkbox">\</span>
      *     \<span class="value">true\</span>
      * \</label>
      */
     private _setupHtml(value: boolean) {
         this._checkbox.type = "checkbox";
         this._checkbox.checked = value;
-
         this._label.append(this._checkbox);
+
+        this._fakeCheckbox.role = "checkbox";
+        this._fakeCheckbox.ariaChecked = value.toString();
+        this._fakeCheckbox.className = "fake-checkbox";
+        this._label.append(this._fakeCheckbox);
 
         this.realValue.textContent = value.toString();
         this.realValue.className = "value";
         this._label.append(this.realValue);
 
+        this._label.className = "bool-label";
         this.rootElement.append(this._label);
 
         this.rootElement.dispatchEvent(new CustomEvent("change-icon", {

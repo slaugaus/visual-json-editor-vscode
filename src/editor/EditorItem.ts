@@ -113,22 +113,22 @@ export class EditorItem {
     private _value?: EditorValue;
 
     // The HTML comprising this item:
-    private _hLabel: HTMLElement = document.createElement("summary");
+    private _hLabel = document.createElement("summary");
     private _hIcon: HTMLElement = Helpers.codicon(this._initialType);
-    private _hName: HTMLSpanElement = document.createElement("span");
-    private _hType: HTMLSelectElement = document.createElement("select");
+    private _hName = document.createElement("span");
+    private _hType = document.createElement("select");
     private _hDirty: HTMLElement = Helpers.codicon("dirty");
 
-    private _hButtons: HTMLDivElement = document.createElement("div");
-    private _hValue: HTMLDivElement = document.createElement("div");
+    private _hButtons = document.createElement("ul");
+    private _hValue = document.createElement("div");
 
-    private _btnDelete: HTMLButtonElement = document.createElement("button");
-    private _btnClear: HTMLButtonElement = document.createElement("button");
-    private _btnMoveDown: HTMLButtonElement = document.createElement("button");
-    private _btnMoveUp: HTMLButtonElement = document.createElement("button");
+    private _btnDelete = document.createElement("li");
+    private _btnClear = document.createElement("li");
+    private _btnMoveDown = document.createElement("li");
+    private _btnMoveUp = document.createElement("li");
 
     // Type-specific button(s)
-    private _btnAddItem: HTMLButtonElement | undefined;
+    private _btnAddItem: HTMLLIElement | undefined;
 
     // TODO: temp items
     // private _btnWhoAmI: HTMLButtonElement = document.createElement("button");
@@ -179,27 +179,23 @@ export class EditorItem {
         }
         this.rootElement.append(this._hButtons);
 
-        this._btnDelete.type = "button";
         this._btnDelete.title = "Delete this item"; // Tooltip
-        this._btnDelete.append(Helpers.codicon("trash"));
+        this._btnDelete.append(Helpers.codicon("trash", "a"));
         this._btnDelete.className = "item-btn";
         this._hButtons.append(this._btnDelete);
 
-        this._btnClear.type = "button";
         this._btnClear.title = "Delete *the contents of* this item so you can change its type";
-        this._btnClear.append(Helpers.codicon("close"));
+        this._btnClear.append(Helpers.codicon("close", "a"));
         this._btnClear.className = "item-btn";
         this._hButtons.append(this._btnClear);
 
-        this._btnMoveDown.type = "button";
         this._btnMoveDown.title = "Switch places with the item below me";
-        this._btnMoveDown.append(Helpers.codicon("arrow-down"));
+        this._btnMoveDown.append(Helpers.codicon("arrow-down", "a"));
         this._btnMoveDown.className = "item-btn";
         this._hButtons.append(this._btnMoveDown);
 
-        this._btnMoveUp.type = "button";
         this._btnMoveUp.title = "Switch places with the item above me";
-        this._btnMoveUp.append(Helpers.codicon("arrow-up"));
+        this._btnMoveUp.append(Helpers.codicon("arrow-up", "a"));
         this._btnMoveUp.className = "item-btn";
         this._hButtons.append(this._btnMoveUp);
 
@@ -207,9 +203,9 @@ export class EditorItem {
         if (this._btnAddItem) { this._btnAddItem.remove(); }
 
         if (type === "object" || type === "array") {
-            this._btnAddItem = document.createElement("button");
-            this._btnAddItem.type = "button";
-            this._btnAddItem.append(Helpers.codicon("plus"));
+            this._btnAddItem = document.createElement("li");
+            this._btnAddItem.title = `Add an item to the ${type}`;
+            this._btnAddItem.append(Helpers.codicon("plus", "a"));
             this._btnAddItem.className = "item-btn";
             this._hButtons.append(this._btnAddItem);
         }

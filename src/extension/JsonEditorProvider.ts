@@ -219,9 +219,8 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
         const scriptUri = view.asWebviewUri(vscode.Uri.joinPath(
             this._context.extensionUri, "media", "editor.js"));
 
-        // TODO: Swap this with vscode.css eventually
         const styleUri = view.asWebviewUri(vscode.Uri.joinPath(
-            this._context.extensionUri, "media", "programmerArt.css"));
+            this._context.extensionUri, "media", "vscode.css"));
 
         const codiconsUri = view.asWebviewUri(vscode.Uri.joinPath(
             this._context.extensionUri, "node_modules", "@vscode", "codicons", "dist", "codicon.css"));

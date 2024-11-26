@@ -1,1 +1,221 @@
 /* Styles to be pulled from --vscode- variables... probably all of them lol */
+
+/* #region GLOBAL */
+/* Focus outline for all objects */
+*:focus {
+    outline-color: var(--vscode-focusBorder) !important;
+}
+
+body {
+    font-family: var(--vscode-font-family);
+    font-weight: var(--vscode-font-weight);
+    font-size: var(--vscode-font-size);
+    color: var(--vscode-editor-foreground);
+    background-color: transparent;
+}
+
+/* #endregion */
+
+/* #region ITEMS */
+
+/* TODO: COPIED FROM PROGRAMMER ART */
+.item {
+    background-color: rgba(128, 128, 128, 0.1);
+    margin: 5px;
+    padding: 5px;
+}
+
+.value-container {
+    margin-left: 30px;
+}
+
+/* #region ITEMS - KEY ROW */
+/* TODO: FLEXBOX IT??? */
+.name {
+    font-weight: bold;
+}
+
+/* Codicon in each .item */
+.key i {
+    margin-right: 0.25em;
+}
+
+.type {
+    margin: auto 0.3em;
+
+    font-weight: var(--vscode-font-weight);
+    font-size: 0.85em;
+    font-style: italic;
+}
+/* #endregion */
+
+/* #endregion */
+
+/* #region TEXT/ICONS */
+/* 
+ * Auto-growing input fields using contenteditable spans.
+ * Originally by Chris Coyier.
+ * https://codepen.io/chriscoyier/pen/XWbqpzP
+ * MIT License
+ */
+.fake-input,
+.fake-textarea {
+    /* TODO: Style properly */
+    /* border: none; */
+    font-family: var(--vscode-editor-font-family);
+    font-weight: var(--vscode-editor-font-weight);
+    font-size: var(--vscode-editor-font-size);
+
+    padding: 1px 6px;
+
+    color: var(--vscode-input-foreground);
+    background-color: var(--vscode-input-background);
+    outline-color: var(--vscode-input-border);
+}
+
+.codicon {
+    color: var(--vscode-icon-foreground);
+}
+/* #endregion */
+
+/* #region BUTTONS/CLICKABLES */
+button {
+    /* border-color: var(--vscode-button-border); */
+    border: none;
+    border-radius: 2px;
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground) !important;
+    outline: 1px solid transparent;
+    outline-offset: 2px !important;
+
+    display: flex;
+    padding: 4px;
+    text-align: center;
+    justify-content: center;
+    line-height: 18px;
+}
+
+button:hover {
+    cursor: pointer;
+    background: var(--vscode-button-hoverBackground);
+}
+
+button:focus {
+    outline-color: var(--vscode-focusBorder);
+}
+
+button i.codicon {
+    margin: 0 3.2px;
+    color: var(--vscode-button-foreground) !important;
+}
+
+/*
+ * Per-item buttons - emulating the Editor Toolbar
+ * (https://code.visualstudio.com/api/ux-guidelines/editor-actions)
+ */
+.item-btns {
+    display: flex;
+    padding: 0 30px;
+    line-height: 18.2px;
+    align-items: center;
+    margin: 0;
+}
+
+.item-btns li {
+    cursor: pointer;
+    display: block;
+    justify-content: center;
+    margin-right: 4px;
+    position: relative;
+}
+
+.item-btns li .codicon {
+    padding: 3px;
+}
+
+.item-btns li .codicon:hover {
+    outline: 1px dashed var(--vscode-toolbar-hoverOutline);
+    outline-offset: -1px;
+    background-color: var(--vscode-toolbar-hoverBackground);
+    border-radius: 5px;
+    color: var(--vscode-icon-foreground) !important
+}
+
+/* 
+ * Custom checkboxes from W3Schools, modified to match the VSCode settings checkbox
+ * https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_custom_checkbox
+ */
+.bool-label {
+    display: block;
+    position: relative;
+    padding-left: 20px;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Hide the actual checkbox.
+   TODO: probably don't need to bother with a real one at this point */
+.bool-label input {
+    position: absolute;
+    opacity: 0;
+    height: 0;
+    width: 0;
+}
+
+.fake-checkbox {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 16px;
+    width: 16px;
+    color: var(--vscode-settings-checkboxForeground);
+    border: 1px solid var(--vscode-settings-checkboxBorder);
+    border-radius: 3px;
+    background-color: var(--vscode-settings-checkboxBackground);
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.fake-checkbox:after {
+    /* The Codicon for "checkmark" */
+    content: "\EAB2";
+    font-family: "codicon";
+    font-size: 16px;
+
+    display: none;
+}
+
+/* Show the checkmark when checked */
+.bool-label input:checked~.fake-checkbox:after {
+    display: block;
+}
+
+/* #endregion */
+
+
+
+/*
+ * Highlight and flash animation for EditorItem.highlightAndScroll()
+ */
+.highlighted {
+    border-color: yellow;
+    background-color: yellow;
+}
+
+.flash {
+    animation: flash-animation 1s ease-out;
+}
+
+@keyframes flash-animation {
+    0% {
+        border-color: yellow;
+        background-color: yellow;
+    }
+
+    100% {
+        border-color: default;
+        background-color: default;
+    }
+}
