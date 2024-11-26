@@ -29,6 +29,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
                  */
                 webviewOptions: {
                     retainContextWhenHidden: true,
+                    enableFindWidget: true
                 },
                 // TODO: (STRETCH/QOL) Look into syncing state between editors
                 //  - Remove error check in getData()
