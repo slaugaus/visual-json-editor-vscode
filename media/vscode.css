@@ -16,6 +16,17 @@ body {
     background-color: transparent;
 }
 
+/* Use the right theme for color and date inputs, among others */
+body.vscode-dark,
+body.vscode-high-contrast {
+    color-scheme: dark;
+}
+
+body.vscode-light,
+body.vscode-high-contrast-light {
+    color-scheme: light;
+}
+
 /* #region ITEMS */
 
 .item {
@@ -82,6 +93,30 @@ body {
 }
 
 /* #endregion */
+
+/*
+ * Highlight and flash animation for EditorItem.highlightAndScroll()
+ */
+.highlighted {
+    border-color: var(--vscode-settings-modifiedItemIndicator);
+    background-color: var(--vscode-settings-modifiedItemIndicator);
+}
+
+.flash {
+    animation: flash-animation 1s ease-out;
+}
+
+@keyframes flash-animation {
+    0% {
+        border-color: var(--vscode-settings-modifiedItemIndicator);
+        background-color: var(--vscode-settings-modifiedItemIndicator);
+    }
+
+    100% {
+        border-color: default;
+        background-color: default;
+    }
+}
 
 /* #endregion */
 
@@ -190,10 +225,6 @@ button i.codicon {
     position: relative;
     padding-left: 20px;
     cursor: pointer;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
 }
 
 /* Hide the actual checkbox.
@@ -251,26 +282,47 @@ select:disabled {
 
 /* #endregion */
 
-/*
- * Highlight and flash animation for EditorItem.highlightAndScroll()
- */
-.highlighted {
-    border-color: yellow;
-    background-color: yellow;
+/* #region EXTRA EDITORS */
+
+input[type="datetime-local"] {
+    font-family: var(--vscode-editor-font-family);
+    font-weight: var(--vscode-editor-font-weight);
+    font-size: var(--vscode-editor-font-size);
+
+    padding: 4px 6px;
+
+    color: var(--vscode-settings-textInputForeground);
+    background-color: var(--vscode-settings-textInputBackground);
+    border: 1px solid var(--vscode-settings-textInputBorder, transparent);
+    border-radius: 2px;
+    cursor: text;
 }
 
-.flash {
-    animation: flash-animation 1s ease-out;
+::-webkit-calendar-picker-indicator {
+    cursor: pointer;
 }
 
-@keyframes flash-animation {
-    0% {
-        border-color: yellow;
-        background-color: yellow;
-    }
-
-    100% {
-        border-color: default;
-        background-color: default;
-    }
+.value-container label {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
 }
+
+input[type="color"] {
+    cursor: pointer;
+
+    color: var(--vscode-settings-textInputForeground);
+    background-color: var(--vscode-settings-textInputBackground);
+    border: 1px solid var(--vscode-settings-textInputBorder, transparent);
+    border-radius: 2px;
+
+    padding: 0;
+    inline-size: 27px;
+}
+
+::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+/* #endregion */
