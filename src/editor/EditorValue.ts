@@ -68,6 +68,7 @@ class EditorString implements EditorValue {
     private _setupHtml(value: string) {
         this.rootElement.textContent = value;
         this.rootElement.classList.add("value");
+        this.rootElement.classList.add("editable-text");
     }
 
     private _setupEvents() {
@@ -139,6 +140,7 @@ class EditorNumber implements EditorValue {
             this.rootElement.textContent = value.toString();
         }
         this.rootElement.classList.add("value");
+        this.rootElement.classList.add("editable-text");
     }
 
     private _setupEvents() {
@@ -405,8 +407,8 @@ class EditorColor implements EditorValue {
 
             this.rootElement.dispatchEvent(new Event("make-dirty"));
 
-            // hehe
-            this.rootElement.parentElement!.style.borderColor = newColor;
+            // TODO: revisit this dumb easter egg when style finished
+            // this.rootElement.parentElement!.style.borderColor = newColor;
         };
     }
 }

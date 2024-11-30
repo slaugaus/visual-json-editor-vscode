@@ -1,9 +1,11 @@
-/* Styles to be pulled from --vscode- variables... probably all of them lol */
+:root {
+    --child-item-indent: 20px;
+}
 
-/* #region GLOBAL */
 /* Focus outline for all objects */
 *:focus {
-    outline-color: var(--vscode-focusBorder) !important;
+    outline: 1px solid var(--vscode-focusBorder) !important;
+    outline-offset: -1px !important;
 }
 
 body {
@@ -14,25 +16,60 @@ body {
     background-color: transparent;
 }
 
-/* #endregion */
-
 /* #region ITEMS */
 
-/* TODO: COPIED FROM PROGRAMMER ART */
 .item {
-    background-color: rgba(128, 128, 128, 0.1);
-    margin: 5px;
-    padding: 5px;
+    border-left: 2px solid var(--vscode-settings-headerForeground);
+    padding: 2px 4px;
+    margin: 10px 0;
+}
+
+.item.changed {
+    border-color: var(--vscode-settings-modifiedItemIndicator);
+}
+
+.item:hover,
+.item:focus-within {
+    background-color: var(--vscode-settings-rowHoverBackground);
 }
 
 .value-container {
-    margin-left: 30px;
+    margin-left: var(--child-item-indent);
 }
 
 /* #region ITEMS - KEY ROW */
-/* TODO: FLEXBOX IT??? */
+.key {
+    display: flex;
+    align-items: center;
+}
+
+/* Default arrow disappears when using flex (+ I wanted to use a codicon anyway) */
+.key:before {
+    font-family: "codicon";
+    font-size: 16px;
+    margin-right: 4px;
+    cursor: pointer;
+}
+
+.item:not([open]) .key:before {
+    /* Codicon chevron-right */
+    content: "\EAB6";
+}
+
+.item[open] .key:before {
+    /* Codicon chevron-down */
+    content: "\EAB4";
+}
+
+.item.changed .key:after {
+    /* Codicon close-dirty */
+    content: "\EA71";
+    font-family: "codicon";
+    font-size: 16px;
+}
+
 .name {
-    font-weight: bold;
+    font-weight: 600;
 }
 
 /* Codicon in each .item */
@@ -42,46 +79,42 @@ body {
 
 .type {
     margin: auto 0.3em;
-
-    font-weight: var(--vscode-font-weight);
-    font-size: 0.85em;
-    font-style: italic;
 }
+
 /* #endregion */
 
 /* #endregion */
 
 /* #region TEXT/ICONS */
-/* 
- * Auto-growing input fields using contenteditable spans.
- * Originally by Chris Coyier.
- * https://codepen.io/chriscoyier/pen/XWbqpzP
- * MIT License
- */
-.fake-input,
-.fake-textarea {
-    /* TODO: Style properly */
-    /* border: none; */
-    font-family: var(--vscode-editor-font-family);
-    font-weight: var(--vscode-editor-font-weight);
-    font-size: var(--vscode-editor-font-size);
+.editable-text {
+    padding: 4px 6px;
 
-    padding: 1px 6px;
+    color: var(--vscode-settings-textInputForeground);
+    background-color: var(--vscode-settings-textInputBackground);
+    border: 1px solid var(--vscode-settings-textInputBorder, transparent);
+    border-radius: 2px;
+    cursor: text;
 
-    color: var(--vscode-input-foreground);
-    background-color: var(--vscode-input-background);
-    outline-color: var(--vscode-input-border);
+    display: inline-block;
+    overflow-x: auto;
+    max-width: 95%;
+    width: fit-content;
+}
+
+.editable-text:focus {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: -1px;
 }
 
 .codicon {
     color: var(--vscode-icon-foreground);
 }
+
 /* #endregion */
 
-/* #region BUTTONS/CLICKABLES */
+/* #region BUTTONS */
 button {
-    /* border-color: var(--vscode-button-border); */
-    border: none;
+    border: 1px solid var(--vscode-button-border, transparent);
     border-radius: 2px;
     background: var(--vscode-button-background);
     color: var(--vscode-button-foreground) !important;
@@ -89,10 +122,14 @@ button {
     outline-offset: 2px !important;
 
     display: flex;
-    padding: 4px;
-    text-align: center;
+    padding: 4px 6px;
     justify-content: center;
+    align-items: center;
     line-height: 18px;
+
+    font-family: var(--vscode-font-family);
+    font-weight: var(--vscode-font-weight);
+    font-size: var(--vscode-font-size);
 }
 
 button:hover {
@@ -115,10 +152,10 @@ button i.codicon {
  */
 .item-btns {
     display: flex;
-    padding: 0 30px;
     line-height: 18.2px;
     align-items: center;
-    margin: 0;
+    padding: 0;
+    margin: 4px 0 4px var(--child-item-indent);
 }
 
 .item-btns li {
@@ -141,6 +178,9 @@ button i.codicon {
     color: var(--vscode-icon-foreground) !important
 }
 
+/* #endregion */
+
+/* #region OTHER CONTROLS */
 /* 
  * Custom checkboxes from W3Schools, modified to match the VSCode settings checkbox
  * https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_custom_checkbox
@@ -183,7 +223,6 @@ button i.codicon {
     content: "\EAB2";
     font-family: "codicon";
     font-size: 16px;
-
     display: none;
 }
 
@@ -192,9 +231,25 @@ button i.codicon {
     display: block;
 }
 
+/* <select>s from VSCode Settings */
+select {
+    background-color: var(--vscode-settings-dropdownBackground);
+    color: var(--vscode-settings-dropdownForeground);
+    border-color: var(--vscode-settings-dropdownBorder);
+    font-family: var(--vscode-font-family);
+    font-weight: var(--vscode-font-weight);
+    font-size: var(--vscode-font-size);
+    height: 27px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+select:disabled {
+    cursor: default;
+}
+
 /* #endregion */
-
-
 
 /*
  * Highlight and flash animation for EditorItem.highlightAndScroll()

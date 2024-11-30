@@ -244,8 +244,5 @@ export abstract class Helpers {
     static cleanChanged() {
         document.querySelectorAll(".item.changed").forEach(
             item => item.classList.remove("changed"));
-
-        document.querySelectorAll(".dirty-indicator").forEach(
-            item => (item as HTMLElement).style.display = "none");
     }
 }

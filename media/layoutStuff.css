@@ -2,7 +2,8 @@
  * Important functionality/layout styles that are needed regardless of visuals.
  */
 
-.name, .value {
+.editable-text {
+    /* Show all whitespace in names and values */
     white-space: pre;
 }
 
@@ -11,23 +12,7 @@
 }
 
 /* Give empty editable fields something to click on */
-.string .value:empty::before,
-.number .value:empty::before,
-.name:empty::before,
-.fake-input[contenteditable]:empty::before,
-.fake-textarea[contenteditable]:empty::before {
+.editable-text:empty::before {
     content: "(empty)";
     color: gray;
-}
-
-/* 
- * Auto-growing input fields using contenteditable spans.
- * Originally by Chris Coyier.
- * https://codepen.io/chriscoyier/pen/XWbqpzP
- * MIT License
- */
-.fake-textarea {
-    overflow: hidden;
-    /* resize: both; (Resize control) */
-    min-height: 40px;
 }

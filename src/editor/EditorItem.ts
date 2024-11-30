@@ -70,7 +70,6 @@ export class EditorItem {
      */
     makeDirty() {
         this.rootElement.classList.add("changed");
-        this._hDirty.style.display = "unset";
     }
 
     /**
@@ -117,7 +116,6 @@ export class EditorItem {
     private _hIcon: HTMLElement = Helpers.codicon(this._initialType);
     private _hName = document.createElement("span");
     private _hType = document.createElement("select");
-    private _hDirty: HTMLElement = Helpers.codicon("dirty");
 
     private _hButtons = document.createElement("ul");
     private _hValue = document.createElement("div");
@@ -154,6 +152,7 @@ export class EditorItem {
         // name/key of item (inside label)
         this._hName.className = "name clickable";
         this._hName.textContent = name;
+        if (this._parentType !== "array") { this._hName.classList.add("editable-text"); }
         this._hLabel.append(this._hName);
 
         // type of item (inside label)
@@ -167,11 +166,6 @@ export class EditorItem {
         }
         if (this._hType.childElementCount <= 1) { this._hType.disabled = true; }
         this._hLabel.append(this._hType);
-
-        // Dirty (changed) indicator that doesn't rely on color
-        this._hDirty.classList.add("dirty-indicator");
-        this._hDirty.style.display = "none";
-        this._hLabel.append(this._hDirty);
 
         this._hButtons.className = "item-btns";
         for (const btn of this._hButtons.children) {
