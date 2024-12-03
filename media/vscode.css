@@ -228,18 +228,17 @@ button i.codicon {
 
 /* #region OTHER CONTROLS */
 /* 
- * Custom checkboxes from W3Schools, modified to match the VSCode settings checkbox
+ * Custom checkboxes from W3Schools, modified to match the VSCode settings checkbox.
+ * Probably an A11y crime?
  * https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_custom_checkbox
  */
 .bool-label {
-    display: block;
     position: relative;
-    padding-left: 20px;
+    padding-left: 24px;
     cursor: pointer;
 }
 
-/* Hide the actual checkbox.
-   TODO: probably don't need to bother with a real one at this point */
+/* Hide the actual checkbox */
 .bool-label input {
     position: absolute;
     opacity: 0;
@@ -314,7 +313,7 @@ input[type="datetime-local"] {
 }
 
 .value-container label {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 6px;
