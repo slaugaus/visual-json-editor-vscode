@@ -2,9 +2,9 @@
 
 ## SCRATCHPAD
 
-Figure out a way for array children to include their parents' name and [] without touching the actual name
+Setting to enable undo/redo
 
-BUG: Bools occasionally save as strings for some reason?
+BUG: Bools occasionally save as strings for some reason? Can't repro consistently
 
 **Syncing per edit isn't THAT hard, just fire an event with the change and the item's ancestry. There will be snags and renaming will need to be handled, but it's not as bad as you made it out to be.**
 

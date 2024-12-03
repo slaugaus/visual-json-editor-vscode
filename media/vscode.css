@@ -2,7 +2,7 @@
     --child-item-indent: 20px;
 }
 
-/* Focus outline for all objects */
+/* Focus outline for all(?) objects that have one */
 *:focus {
     outline: 1px solid var(--vscode-focusBorder) !important;
     outline-offset: -1px !important;
@@ -16,7 +16,7 @@ body {
     background-color: transparent;
 }
 
-/* Use the right theme for color and date inputs, among others */
+/* Use the right theme for at least color and date inputs */
 body.vscode-dark,
 body.vscode-high-contrast {
     color-scheme: dark;
@@ -72,7 +72,7 @@ body.vscode-high-contrast-light {
     content: "\EAB4";
 }
 
-.item.changed .key:after {
+.item.changed > .key:after {
     /* Codicon close-dirty */
     content: "\EA71";
     font-family: "codicon";
@@ -81,6 +81,17 @@ body.vscode-high-contrast-light {
 
 .name {
     font-weight: 600;
+}
+
+/* Names of array items */
+.name:not(.editable-text)::before {
+    /* Var set in EditorItem._setupValue(), or [ if unset
+       (Can be unset if the file is an array) */
+    content: var(--array-parent-name, '[');
+}
+
+.name:not(.editable-text)::after {
+    content: ']';
 }
 
 /* Codicon in each .item */

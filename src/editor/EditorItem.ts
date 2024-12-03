@@ -35,7 +35,7 @@ export class EditorItem {
         this._parent.append(this.rootElement);
 
         // Edge case - Autogen name from add buttons could rarely cause a collision
-        if (!this._nameIsUnique(initialName)){
+        if (!this._nameIsUnique(initialName)) {
             // Not really a proper fix, only makes it rarer
             this._hName.textContent += " (1)";
         }
@@ -128,9 +128,6 @@ export class EditorItem {
     // Type-specific button(s)
     private _btnAddItem: HTMLLIElement | undefined;
 
-    // TODO: temp items
-    // private _btnWhoAmI: HTMLButtonElement = document.createElement("button");
-
     //#region Initializers
 
     /**
@@ -203,12 +200,6 @@ export class EditorItem {
             this._btnAddItem.className = "item-btn";
             this._hButtons.append(this._btnAddItem);
         }
-
-        // TODO: temp items
-        // this.hBtnWhoAmI.type = "button";
-        // this.hBtnWhoAmI.append(Helpers.codicon("search"));
-        // this.hBtnWhoAmI.className = "item-btn";
-        // this.hButtons.append(this.hBtnWhoAmI);
     }
 
     /**
@@ -312,15 +303,6 @@ export class EditorItem {
                 this._value!.addChild!("null", name, null);
             };
         }
-
-        // this.hBtnWhoAmI.onclick = event => {
-        //     const identity = this.path.join(".");
-
-        //     const myself = Helpers.getItemFromPath(this.path);
-        //     const itWorked = myself === this.rootElement;
-
-        //     Helpers.debugMsg(`You clicked on ${identity}!\n  Did getItemFromPath work? ${itWorked}`);
-        // };
     }
 
     /**
@@ -339,6 +321,9 @@ export class EditorItem {
                 }
             );
         }
+
+        // Set a CSS var that array children can reference to show their parent's name
+        this._hValue.style.setProperty("--array-parent-name", `'${this.name}['`);
 
         this.rootElement.append(this._hValue);
     }
@@ -377,6 +362,8 @@ export class EditorItem {
 
                 // Strip newlines that get pasted in
                 this._hName.textContent = (this._hName.textContent?.replace("\n", "") ?? null);
+                // Update name for children of arrays
+                this._hValue.style.setProperty("--array-parent-name", `'${this.name}['`);
 
                 Helpers.sendEdit(this.path, "rename", this._hName.textContent);
             }
