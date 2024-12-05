@@ -407,8 +407,7 @@ class EditorColor implements EditorValue {
 
             this.rootElement.dispatchEvent(new Event("make-dirty"));
 
-            // TODO: revisit this dumb easter egg when style finished
-            // this.rootElement.parentElement!.style.borderColor = newColor;
+            this.rootElement.parentElement!.style.borderColor = newColor;
         };
     }
 }

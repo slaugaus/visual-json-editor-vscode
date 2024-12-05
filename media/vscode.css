@@ -287,7 +287,11 @@ select {
 }
 
 select:disabled {
+    /* Pretend it's not a <select> at all! */
     cursor: default;
+    background-color: transparent;
+    border-color: transparent;
+    appearance: none;
 }
 
 /* #endregion */
