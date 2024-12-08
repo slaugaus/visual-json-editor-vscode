@@ -19,7 +19,7 @@ export abstract class EditorValue {
                 return new EditorBool(value as boolean, target, delegate);
             case "object":
             case "array":
-                return new EditorCollection(type as ObjectOrArray, value as object | any[], target, delegate);
+                return new EditorCollection(type as ObjectOrArray, value as object | any[], target);
             case "color":
                 return new EditorColor(value as string, target, delegate);
             case "datetime":
@@ -228,7 +228,7 @@ class EditorNumber implements EditorValue {
         ) { return; }
 
         // Block everything else but numbers, e (exponent), signs, and decimal point
-        if (!/^[0-9]|e|E|-|\+|\.$/.test(event.key)) {
+        if (!/^[0-9eE\-\+\.]$/.test(event.key)) {
             event.preventDefault();
         }
     }
@@ -318,7 +318,6 @@ class EditorCollection implements EditorValue {
         private _type: ObjectOrArray,
         initialValue: any,
         readonly rootElement: HTMLDivElement,
-        private readonly _sendEdit: PartialEditDelegate
     ) {
         this._setupHtml(initialValue);
     }
@@ -326,12 +325,12 @@ class EditorCollection implements EditorValue {
     addChild(itemType: string, name: string, value: any) {
         const newChild = EditorItem.create(itemType, name, value, this.rootElement, this._type);
 
-        this._sendEdit<EditAddition>("add", {
-            itemType,
-            value,
-            parentType: this._type,
+        // does NOT use the delegate, since we're basing it on newChild's path which is known
+        Helpers.sendEdit<EditAddition>(newChild.path, "add", {
+            itemType: itemType,
+            value: value,
+            parentType: this._type
         });
-        // TODO: Name of this object needs to be in the path!
 
         this.rootElement.dispatchEvent(new Event("make-dirty"));
         newChild.makeDirty();
@@ -346,20 +345,21 @@ class EditorCollection implements EditorValue {
 
 /**
  * GUIDE TO TYPE ADDITION
- * (see tags are Ctrl+clickable)
  * - common.ts: Add to editorSubTypes
- * - @see {@link Helpers}:
- *      - Put a Codicon in @see {@link Helpers.codiconMap}
- *      - Add to @see {@link Helpers.validConversions}
- *      - Detect your type in @see {@link Helpers.detectType}
- *        or @see {@link Helpers.detectSpecialString}
+ * - {@link Helpers}:
+ *      - Put a Codicon in {@link Helpers.codiconMap}
+ *      - Add to {@link Helpers.validConversions}
+ *      - Detect your type in {@link Helpers.detectType}
+ *        or {@link Helpers.detectSpecialString}
  * 
- * - Implement a new type class here; @see {@link EditorBool} is a good reference
- * - Add your type class to @see {@link EditorValue.create}
+ * - Implement a new type class here; {@link EditorBool} is a good reference
+ * - Add your type class to {@link EditorValue.create}
  * - If you get yelled at on save, fix JsonDocument._addFromNode
+ * - Add to {@link Helpers.setValueOfItem}
  */
 
 
+/***/
 class EditorColor implements EditorValue {
 
     constructor(
@@ -404,10 +404,7 @@ class EditorColor implements EditorValue {
             this.realValue.textContent = newColor;
 
             this._sendEdit("contents", newColor);
-
             this.rootElement.dispatchEvent(new Event("make-dirty"));
-
-            this.rootElement.parentElement!.style.borderColor = newColor;
         };
     }
 }

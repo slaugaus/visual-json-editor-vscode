@@ -14,6 +14,8 @@ body {
     font-size: var(--vscode-font-size);
     color: var(--vscode-editor-foreground);
     background-color: transparent;
+    /* Extra "overscroll" area like the text editor (editor.scrollBeyondLastLine setting) */
+    padding-bottom: 90vh;
 }
 
 /* Use the right theme for at least color and date inputs */

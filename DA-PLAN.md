@@ -2,7 +2,13 @@
 
 ## SCRATCHPAD
 
-Setting to enable undo/redo
+Publish your stuff to https://open-vsx.org/ too
+
+QOL: Loading overlay (or VSCode's builtin loading thing) during first load and edit playback
+
+- Idea is to prevent interaction
+
+FEAT: On-hover "add between" button like notebooks
 
 BUG: Bools occasionally save as strings for some reason? Can't repro consistently
 
@@ -18,18 +24,9 @@ Editor's save (HTML -> object) must fail safe, so “emergency exits” don't lo
 
 - Dumping jsonContainer.innerHTML wouldn't work as event listeners would be lost
 
-If the editor fails to load from JSON, it should open it in the text editor and offer a dump of all the syntax issues (if JSON.parse gives you all of them)
-
-- OR, since you wanted a “paste JSON here” type, open it as one of those
-
 “File modified externally,” probably an event that can be listened for, should do something.
 
 - JsonDocument.onDidChangeContent does NOT do this (if you modify in a different editor)
-
-it'd be SO FUNNY if certain editor widgets were just Monacos (i.e. micro instances of VS Code text editor)
-
-- https://github.com/microsoft/monaco-editor
-- https://stackoverflow.com/questions/61307979/how-to-import-npm-packages-in-vs-code-webview-extension-development
 
 ## EDITING
 

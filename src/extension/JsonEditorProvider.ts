@@ -130,13 +130,13 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 
     public saveCustomDocument(document: JsonDocument, cancellation: vscode.CancellationToken): Thenable<void> {
         const save = document.save(cancellation);
-        this._sendMessageAll(document, { type: "saved" });
+        this._sendMessageAll(document, { type: "saved", body: document.object });
         return save;
     }
 
     public saveCustomDocumentAs(document: JsonDocument, destination: vscode.Uri, cancellation: vscode.CancellationToken): Thenable<void> {
         const saveAs = document.saveAs(destination, cancellation);
-        this._sendMessageAll(document, { type: "saved" });
+        this._sendMessageAll(document, { type: "saved", body: document.object });
         return saveAs;
     }
 

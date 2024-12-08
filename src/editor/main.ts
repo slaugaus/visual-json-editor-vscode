@@ -3,6 +3,9 @@ import { EditAddition, Message, ObjectOrArray, OutputHTML } from "../common";
 import { EditorItem } from "./EditorItem";
 import { Helpers } from "./Helpers";
 
+/** The object I was initialized with */
+let startingObject = {};
+
 // Message Handler
 window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
     const message = event.data;
@@ -10,6 +13,7 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
         // Entrypoint for object parser (extension has a JsonDocument ready)
         case "doc":
             Helpers.jsonContainer.textContent = null;
+            startingObject = message.body;
             Helpers.parseObject(message.body, Helpers.jsonContainer);
             // vscode.setState(something);
             return;
@@ -26,16 +30,17 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
             });
             return;
 
-        // Extension finished saving, clear dirty states
+        // Extension finished saving, clear dirty states and update the base object
         case "saved":
             Helpers.cleanChanged();
+            startingObject = message.body;
             return;
 
-        // TODO: "change"
+        // Extension requested change to the document (Undo, redo, or revert)
         case "change":
             Helpers.jsonContainer.textContent = null;
-            Helpers.parseObject(message.body.content, Helpers.jsonContainer);
-            // Helpers.debugMsg("Changes (undo, redo, revert...) are not supported yet.");
+            Helpers.parseObject(startingObject, Helpers.jsonContainer);
+            Helpers.playbackEdits(message.body!.edits);
             return;
 
         default:

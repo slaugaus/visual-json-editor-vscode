@@ -76,6 +76,7 @@ export class EditorItem {
      * Scroll to me (rootDiv) smoothly, with a highlight animation (CSS-dependent)
      */
     highlightAndScroll() {
+        if (Helpers.ignoreEdits) { return; }
         this.rootElement.classList.add("highlighted");
 
         // Detect whether I'm visible
@@ -172,22 +173,22 @@ export class EditorItem {
 
         this._btnDelete.title = "Delete this item"; // Tooltip
         this._btnDelete.append(Helpers.codicon("trash", "a"));
-        this._btnDelete.className = "item-btn";
+        this._btnDelete.className = "item-btn delete-btn";
         this._hButtons.append(this._btnDelete);
 
         this._btnClear.title = "Delete *the contents of* this item so you can change its type";
-        this._btnClear.append(Helpers.codicon("close", "a"));
-        this._btnClear.className = "item-btn";
+        this._btnClear.append(Helpers.codicon("clear-all", "a"));
+        this._btnClear.className = "item-btn clear-btn";
         this._hButtons.append(this._btnClear);
 
         this._btnMoveDown.title = "Switch places with the item below me";
         this._btnMoveDown.append(Helpers.codicon("arrow-down", "a"));
-        this._btnMoveDown.className = "item-btn";
+        this._btnMoveDown.className = "item-btn down-btn";
         this._hButtons.append(this._btnMoveDown);
 
         this._btnMoveUp.title = "Switch places with the item above me";
         this._btnMoveUp.append(Helpers.codicon("arrow-up", "a"));
-        this._btnMoveUp.className = "item-btn";
+        this._btnMoveUp.className = "item-btn up-btn";
         this._hButtons.append(this._btnMoveUp);
 
         // Type-specific button(s)
@@ -197,7 +198,7 @@ export class EditorItem {
             this._btnAddItem = document.createElement("li");
             this._btnAddItem.title = `Add an item to the ${type}`;
             this._btnAddItem.append(Helpers.codicon("plus", "a"));
-            this._btnAddItem.className = "item-btn";
+            this._btnAddItem.className = "item-btn add-btn";
             this._hButtons.append(this._btnAddItem);
         }
     }
@@ -240,7 +241,7 @@ export class EditorItem {
             this._setupValue(this.type, realValue);
             this.makeDirty();
 
-            Helpers.sendEdit(this.path, "contents", this.value);
+            Helpers.sendEdit(this.path, "type", this.type);
         };
 
         this._btnDelete.onclick = event => {
@@ -263,18 +264,22 @@ export class EditorItem {
                 this._setupEvents();
                 this._setupValue("null", null);
                 this.makeDirty();
-                Helpers.sendEdit(this.path, "contents", null);
+                Helpers.sendEdit(this.path, "type", "null");
             }
         };
 
         this._btnMoveDown.onclick = event => {
             const next = this.rootElement.nextElementSibling;
-            this._moveNextTo(next, next?.after.bind(next));
+            if (this._moveNextTo(next, next?.after.bind(next))) {
+                Helpers.sendEdit(this.path, "move", "down");
+            }
         };
 
         this._btnMoveUp.onclick = event => {
             const prev = this.rootElement.previousElementSibling;
-            this._moveNextTo(prev, prev?.before.bind(prev));
+            if (this._moveNextTo(prev, prev?.before.bind(prev))) {
+                Helpers.sendEdit(this.path, "move", "up");
+            }
         };
 
         // For bools, let the icon act as a checkbox
@@ -340,6 +345,7 @@ export class EditorItem {
         this._hName.focus();
 
         const oldName = this._hName.textContent;
+        const oldPath = this.path;
 
         let wasClosed = false;
 
@@ -365,7 +371,7 @@ export class EditorItem {
                 // Update name for children of arrays
                 this._hValue.style.setProperty("--array-parent-name", `'${this.name}['`);
 
-                Helpers.sendEdit(this.path, "rename", this._hName.textContent);
+                Helpers.sendEdit(oldPath, "rename", this._hName.textContent);
             }
 
             wasClosed = true;
@@ -413,9 +419,14 @@ export class EditorItem {
     /**
      * Swap this item with a neighbor using its "after" or "before" method.
      * @param neighbor An Element, likely acquired by next/previousElementSibling
-     * @param inserter neighbor's "before" or "after" method, with .bind(neighbor) called on it to preserve context
+     * @param inserter neighbor's "before" or "after" method, with .bind(neighbor)
+     *     called on it to preserve context
+     * @todo Preserve the item's position on screen, like Colab
      */
-    private _moveNextTo(neighbor: Element | null, inserter: ((...nodes: (string | Node)[]) => void) | undefined) {
+    private _moveNextTo(
+        neighbor: Element | null, 
+        inserter: ((...nodes: (string | Node)[]) => void) | undefined
+    ): boolean {
         if (neighbor && inserter) {
             inserter(this.rootElement);
 
@@ -428,8 +439,10 @@ export class EditorItem {
             }
 
             this.highlightAndScroll();
-            Helpers.sendEdit(this.path, "swap", Helpers.getPathToItem(neighbor));
+            return true;
+            // sendEdit is done by a method with more information
         }
+        return false;
     }
 
     //#endregion

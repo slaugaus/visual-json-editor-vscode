@@ -8,8 +8,6 @@ export type SomethingFromJson = null | string | number | boolean | object | any[
 export const editorSubTypes: Readonly<{ [key: string]: string }> = Object.freeze({
     color: "string",    // input type="color"
     datetime: "string", // input type="date"
-    // rawJson: "string",  // paste JSON here (Monaco)
-    // upload: "string"    // convert to base64
 });
 
 /** Possible types of one item in the editor */
@@ -41,7 +39,7 @@ export type OutputHTML = {
     html: string
 }
 
-export type JsonEditType = "contents" | "add" | "delete" | "rename" | "swap";
+export type JsonEditType = "contents" | "add" | "delete" | "rename" | "move" | "type";
 
 /** Edits made to a JsonDocument */
 export interface JsonEdit<T = any> {
@@ -52,7 +50,8 @@ export interface JsonEdit<T = any> {
     // ADD: An EditAddition
     // DELETE: Nothing
     // RENAME: The new name
-    // SWAP: Path to what was swapped with
+    // MOVE: "up" | "down"
+    // TYPE: The new type
     readonly change?: T,
 }
 
