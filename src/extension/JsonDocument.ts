@@ -277,7 +277,11 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
                 childValue = valElement.textContent;
                 break;
             case "number":
-                childValue = new LosslessNumber(valElement.textContent ?? "0");
+                if (valElement.textContent === "") {
+                    childValue = new LosslessNumber("0");
+                } else {
+                    childValue = new LosslessNumber(valElement.textContent ?? "0");
+                }
                 break;
             case "boolean":
                 childValue = valElement.textContent === "true";

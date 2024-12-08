@@ -139,6 +139,8 @@ class EditorNumber implements EditorValue {
         } else {
             this.rootElement.textContent = value.toString();
         }
+
+        if (this.rootElement.textContent === "") {this.rootElement.textContent = "0";}
         this.rootElement.classList.add("value");
         this.rootElement.classList.add("editable-text");
     }
