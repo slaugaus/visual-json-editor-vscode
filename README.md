@@ -1,71 +1,76 @@
-# visual-json-editor-vscode README
+# Visual JSON Editor
 
-This is the README for your extension "visual-json-editor-vscode". After writing up a brief description, we recommend including the following sections.
+Open JSON files in a GUI that looks (kind of) like the VS Code settings page! Includes type changing, item rearrangement, undo/redo, and assistance with colors, dates, and times.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### Edit Names & Values
 
-For example if there is an image subfolder under your extension project workspace:
+Names are validated:
 
-\!\[feature X\]\(images/feature-x.png\)
+![](.readme/rename.gif)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Strings have multi-line support:
 
-## Requirements
+![](.readme/string.gif)
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Numbers are validated and aren't constrained by JS limits:
+
+![](.readme/number.gif)
+
+Booleans become checkboxes:
+
+![](.readme/bool.gif)
+
+Full support for object and array nesting:
+
+![](.readme/obj.gif)
+
+6-digit hex codes give you the Chromium color picker:
+
+![](.readme/color.png)
+
+Finally, ISO 8601 zoneless date-time strings give you the Chromium `datetime-local` picker:
+
+![](.readme/datetime.png)
+
+### Type Conversion
+
+Convert certain types of item to other types using the dropdown box.
+
+![](.readme/type.gif)
+
+If something's "stuck" as a certain type, use the clear button to nullify it and try again.
+
+![](.readme/clear.gif)
+
+### Rearrange Items
+
+Use the up and down arrows to move an item around the "layer" it's in.
+
+![](.readme/move.gif)
+
+### Theme Compatible
+
+All colors are pulled from your current color theme.
+
+![](.readme/theme-collage.png)
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `visual-json.outputPrettiness`: Number of space characters to indent saved JSON files by, or 0 to save in one line. Defaults to 2 spaces. (This gets passed as the [`space` parameter of `JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#space).)
+* `visual-json.maxFileSize`: Maximum file size (in kilobytes) the editor will open before displaying an error message. Defaults to 256 KB.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+* The same file cannot be open in multiple instances of the editor. This was done intentionally to avoid the complexity of syncing state between them.
+  * The editor doesn't sync its state with text editors that have the same file open, either. Not sure if that's even possible.
+* Tab-key navigation has not yet been implemented - sorry, keyboard warriors, you'll need your mouse for this.
 
-## Release Notes
-
-Users appreciate release notes as you update your extension.
+## Version History
 
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+* Initial release

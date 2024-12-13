@@ -1,14 +1,30 @@
 {
   "name": "visual-json",
   "displayName": "Visual JSON Editor",
-  "description": "TODO: write a description",
-  "version": "0.0.1",
+  "description": "Open JSON files in a GUI that looks like the settings page",
+  "icon": "./media/icon.png",
+  "version": "1.0.0",
+  "publisher": "slaugaus",
   "engines": {
     "vscode": "^1.93.0"
   },
+  "license": "MIT",
   "categories": [
+    "Visualization",
     "Other"
   ],
+  "keywords": [
+    "json",
+    "editor"
+  ],
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/slaugaus/visual-json-editor-vscode"
+  },
+  "homepage": "https://github.com/slaugaus/visual-json-editor-vscode",
+  "bugs": {
+    "url": "https://github.com/slaugaus/visual-json-editor-vscode/issues"
+  },
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {

@@ -2,7 +2,7 @@
 
 ## VSCode Extension Samples (Custom Editor - CatScratch/PawDraw)
 
-Referenced to get an idea of the "best practices" and things I wouldn't think of for developing a custom editor. "Substantial portions" are likely still in the extension codebase. (The JS for the webview is largely original, though.)
+Referenced to get an idea of the "best practices" and things I wouldn't think of for developing a custom editor. "Substantial portions" are likely still in the extension codebase. (The webview code is mostly original.)
 
 ```txt
 MIT License
