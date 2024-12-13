@@ -264,7 +264,7 @@ export abstract class Helpers {
      * triggering the same events a user would!
      */
     static playbackEdits(edits: JsonEdit[]) {
-        console.log("PLAYING BACK EDITS...");
+        // console.log("PLAYING BACK EDITS...");
         this.ignoreEdits = true;
 
         try {
@@ -272,14 +272,14 @@ export abstract class Helpers {
                 const target = this.getItemFromPath(edit.path);
                 switch (edit.type) {
                     case "contents": {
-                        console.log(`  CONTENTS - [${edit.path.join(", ")}] -> ${edit.change}`);
+                        // console.log(`  CONTENTS - [${edit.path.join(", ")}] -> ${edit.change}`);
                         this.setValueOfItem(target, edit.change);
                         break;
                     }
 
                     case "add": {
                         // TODO: Additions are always null, innit?
-                        console.log(`  ADD - [${edit.path.join(", ")}] -> ${JSON.stringify(edit.change)}`);
+                        // console.log(`  ADD - [${edit.path.join(", ")}] -> ${JSON.stringify(edit.change)}`);
                         const addition: EditAddition = edit.change!;
                         // Item name is the last path item
                         const name = edit.path.pop()!;
@@ -297,14 +297,14 @@ export abstract class Helpers {
                     }
 
                     case "delete": {
-                        console.log(`  DELETE - [${edit.path.join(", ")}] -> ${edit.change}`);
+                        // console.log(`  DELETE - [${edit.path.join(", ")}] -> ${edit.change}`);
                         // Press delete button, since it triggers an array renumber
                         target.querySelector(".delete-btn")?.dispatchEvent(new Event("click"));
                         break;
                     }
 
                     case "rename": {
-                        console.log(`  RENAME - [${edit.path.join(", ")}] -> ${edit.change}`);
+                        // console.log(`  RENAME - [${edit.path.join(", ")}] -> ${edit.change}`);
                         target.querySelector(":scope>.key>.name")!.textContent = edit.change;
                         // Update name for arrays
                         (target.querySelector(":scope>.value") as HTMLElement)
@@ -313,14 +313,14 @@ export abstract class Helpers {
                     }
 
                     case "move": {
-                        console.log(`  MOVE - [${edit.path.join(", ")}] -> ${edit.change}`);
+                        // console.log(`  MOVE - [${edit.path.join(", ")}] -> ${edit.change}`);
                         // Trigger the up/down button
                         target.querySelector(`.${edit.change}-btn`)?.dispatchEvent(new Event("click"));
                         break;
                     }
 
                     case "type": {
-                        console.log(`  TYPE - [${edit.path.join(", ")}] -> ${edit.change}`);
+                        // console.log(`  TYPE - [${edit.path.join(", ")}] -> ${edit.change}`);
                         // If null, trigger clear button
                         if (edit.change === "null") {
                             target.querySelector(".clear-btn")?.dispatchEvent(new Event("click"));
@@ -336,7 +336,7 @@ export abstract class Helpers {
             });
         } finally { // Failsafe
             this.ignoreEdits = false;
-            console.log("END EDIT PLAYBACK\n");
+            // console.log("END EDIT PLAYBACK\n");
         }
     }
 

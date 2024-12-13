@@ -23,7 +23,7 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
         const actualUri = typeof backupId === "string" ? vscode.Uri.parse(backupId) : uri;
 
         if (typeof backupId === "string") {
-            console.log(`Loaded a backup from ${backupId}`);
+            console.log(`Visual JSON Editor loaded a backup from ${backupId}`);
         }
 
         const fileObj = await this._readFile(actualUri);
