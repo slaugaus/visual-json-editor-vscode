@@ -1,4 +1,5 @@
 const esbuild = require("esbuild");
+const { copy } = require("esbuild-plugin-copy");
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
@@ -58,13 +59,24 @@ async function buildEditor() {
 		bundle: true,
 		format: 'iife',	// Immediately-Invoked Function Expression - limits scope
 		minify: production,
+		sourcemap: !production,
 		sourcesContent: false,
 		platform: 'browser',
-		outfile: 'media/editor.js',
+		outfile: 'dist/editor.js',
 		logLevel: 'silent',
 		plugins: [
 			/* add to the end of plugins array */
 			esbuildProblemMatcherPlugin,
+			copy({
+				resolveFrom: "cwd",
+				assets: {
+					from: [
+						"./node_modules/@vscode/codicons/dist/codicon.css",
+						"./node_modules/@vscode/codicons/dist/codicon.ttf"
+					],
+					to: ["./dist"]
+				}
+			})
 		],
 	});
 	if (watch) {

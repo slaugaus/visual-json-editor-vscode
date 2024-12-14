@@ -217,13 +217,13 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
     private _buildViewHtml(view: vscode.Webview): string {
         // Get paths to CSS/JS (media folder) that the webview can reach
         const scriptUri = view.asWebviewUri(vscode.Uri.joinPath(
-            this._context.extensionUri, "media", "editor.js"));
+            this._context.extensionUri, "dist", "editor.js"));
 
         const styleUri = view.asWebviewUri(vscode.Uri.joinPath(
             this._context.extensionUri, "media", "vscode.css"));
 
         const codiconsUri = view.asWebviewUri(vscode.Uri.joinPath(
-            this._context.extensionUri, "node_modules", "@vscode", "codicons", "dist", "codicon.css"));
+            this._context.extensionUri, "dist", "codicon.css"));
 
         const layoutUri = view.asWebviewUri(vscode.Uri.joinPath(
             this._context.extensionUri, "media", "layoutStuff.css"));

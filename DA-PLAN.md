@@ -2,6 +2,7 @@
 
 ## READY TO DEVELOP
 
+* BUG: Undo/redo broke when demoing to professor, needs better testing
 * FEAT: KEYBOARD NAV - "like writing YAML" or something
 * QOL: Up/down buttons cause scrolling like in Colab
 * QOL: Allow conversion of "empty" items ("", 0, etc.)

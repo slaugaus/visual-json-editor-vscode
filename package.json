@@ -79,15 +79,16 @@
     "@types/vscode": "^1.93.0",
     "@typescript-eslint/eslint-plugin": "^8.7.0",
     "@typescript-eslint/parser": "^8.7.0",
+    "@vscode/codicons": "^0.0.36",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
     "esbuild": "^0.24.0",
+    "esbuild-plugin-copy": "^2.1.1",
     "eslint": "^9.11.1",
     "npm-run-all": "^2.1.0",
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "@vscode/codicons": "^0.0.36",
     "lossless-json": "^4.0.2",
     "node-html-parser": "^6.1.13"
   }
