@@ -82,7 +82,7 @@
     "@vscode/codicons": "^0.0.36",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.25.5",
     "esbuild-plugin-copy": "^2.1.1",
     "eslint": "^9.11.1",
     "npm-run-all": "^2.1.0",
