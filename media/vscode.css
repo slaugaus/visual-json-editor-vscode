@@ -54,6 +54,7 @@ body.vscode-high-contrast-light {
 .key {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 /* Default arrow disappears when using flex (+ I wanted to use a codicon anyway) */
@@ -203,7 +204,7 @@ button i.codicon {
     line-height: 18.2px;
     align-items: center;
     padding: 0;
-    margin: 4px 0 4px var(--child-item-indent);
+    margin: 4px 0 4px 0;
 }
 
 .item-btns li {

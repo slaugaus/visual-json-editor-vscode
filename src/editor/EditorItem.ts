@@ -169,7 +169,7 @@ export class EditorItem {
         for (const btn of this._hButtons.children) {
             if (btn.childElementCount > 0) { btn.innerHTML = ""; }
         }
-        this.rootElement.append(this._hButtons);
+        this._hLabel.append(this._hButtons);
 
         this._btnDelete.title = "Delete this item"; // Tooltip
         this._btnDelete.append(Helpers.codicon("trash", "a"));
