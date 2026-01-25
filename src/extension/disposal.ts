@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 export function disposeAll(disposables: vscode.Disposable[]): void {
 	while (disposables.length) {
@@ -9,7 +9,7 @@ export function disposeAll(disposables: vscode.Disposable[]): void {
 	}
 }
 
-/** 
+/**
  * A class that has multiple children you'd want to dispose of.
  */
 export abstract class Disposable {
@@ -21,7 +21,7 @@ export abstract class Disposable {
 	protected _disposables: vscode.Disposable[] = [];
 
 	/** Dispose everything I own. BURN IT ALL!! */
-	public dispose(): any {
+	public dispose(): void {
 		if (this._isDisposed) {
 			return;
 		}
@@ -37,5 +37,5 @@ export abstract class Disposable {
 			this._disposables.push(value);
 		}
 		return value;
-	}	
+	}
 }
