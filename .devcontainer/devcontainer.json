@@ -1,11 +1,9 @@
 {
-  "name": "Bun",
-  "dockerFile": "Dockerfile",
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "oven.bun-vscode"
-      ]
-    }
-  }
+	"name": "Bun",
+	"dockerFile": "Dockerfile",
+	"customizations": {
+		"vscode": {
+			"extensions": ["oven.bun-vscode", "biomejs.biome", "ms-vscode.extension-test-runner"]
+		}
+	}
 }

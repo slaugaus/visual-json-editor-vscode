@@ -1,0 +1,55 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.3.12/schema.json",
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		},
+		"enabled": true
+	},
+	"files": {
+		"includes": ["**", "!!**/dist"]
+	},
+	"formatter": {
+		"attributePosition": "multiline",
+		"expand": "never",
+		"lineEnding": "lf",
+		"lineWidth": 100
+	},
+	"javascript": {
+		"formatter": {
+			"arrowParentheses": "asNeeded",
+			"bracketSameLine": true,
+			"jsxQuoteStyle": "single",
+			"operatorLinebreak": "before",
+			"quoteStyle": "single",
+			"trailingCommas": "all"
+		},
+		"parser": {
+			"jsxEverywhere": false
+		}
+	},
+	"json": {
+		"formatter": {
+			"expand": "auto"
+		}
+	},
+	"linter": {
+		"rules": {
+			"a11y": {
+				"useGenericFontNames": "off"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["**/*.ts"]
+		}
+	],
+	"vcs": {
+		"clientKind": "git",
+		"enabled": true,
+		"useIgnoreFile": true
+	}
+}
