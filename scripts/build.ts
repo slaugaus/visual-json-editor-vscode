@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
 
+import console from 'node:console';
+import { copyFileSync } from 'node:fs';
+import process from 'node:process';
 import { build } from 'bun';
-import console from 'console';
-import process from 'process';
-import { copyFileSync } from 'fs';
 
 const production = process.argv.includes('--production');
 
