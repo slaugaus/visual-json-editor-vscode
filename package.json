@@ -60,18 +60,16 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "bun package",
-    "compile": "bun check-types && bun lint && bun build.ts",
-    "watch": "npm-run-all -p watch:*",
-    "watch:esbuild": "node esbuild.js --watch",
-    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package": "bun check-types && bun lint && bun build.ts --production",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
+    "vscode:prepublish": "bun compile:prod",
+    "compile": "bun check-types && bun lint && bun scripts/build.ts",
+    "compile:prod": "bun check-types && bun lint && bun scripts/build.ts --production",
+    "compile:tests": "tsc -p . --outDir out",
+    "watch:tests": "tsc -p . -w --outDir out",
     "pretest": "bun compile-tests && bun compile && bun lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "ci": "bun scripts/ci-version.ts && vsce package"
   },
   "devDependencies": {
     "@types/bun": "^1.3.6",
@@ -83,6 +81,7 @@
     "@vscode/codicons": "^0.0.36",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^3.7.1",
     "bun": "^1.3.6",
     "eslint": "^9.11.1",
     "npm-run-all": "^2.1.0",

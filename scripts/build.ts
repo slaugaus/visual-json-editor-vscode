@@ -1,3 +1,5 @@
+#!/usr/bin/env bun
+
 import { build } from 'bun';
 import console from 'console';
 import process from 'process';
