@@ -1,13 +1,8 @@
 .vscode/**
 .vscode-test/**
-out/**
 node_modules/**
 src/**
-old-page/**
 .gitignore
-.yarnrc
-esbuild.js
-vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs
 **/*.map
@@ -15,3 +10,6 @@ vsc-extension-quickstart.md
 **/.vscode-test.*
 DA-PLAN.md
 .readme/**
+.github/**
+.devcontainer/**
+bun.lock
