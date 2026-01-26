@@ -12,7 +12,6 @@
 		"includes": ["**", "!!**/dist"]
 	},
 	"formatter": {
-		"attributePosition": "multiline",
 		"expand": "never",
 		"lineEnding": "lf",
 		"lineWidth": 100
@@ -20,7 +19,6 @@
 	"javascript": {
 		"formatter": {
 			"arrowParentheses": "asNeeded",
-			"bracketSameLine": true,
 			"jsxQuoteStyle": "single",
 			"operatorLinebreak": "before",
 			"quoteStyle": "single",

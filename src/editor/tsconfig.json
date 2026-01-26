@@ -1,14 +1,14 @@
 {
-    "compilerOptions": {
-        "target": "ES6",
-        "module": "ES6",
-        "lib": [
-            "ES6", "DOM", "DOM.Iterable"
-        ],
-        "outDir": "../../media",
-        "strict": true,
-        "forceConsistentCasingInFileNames": true,
-        "skipLibCheck": true,
-        "moduleResolution": "bundler"
-    }
+	"compilerOptions": {
+		"forceConsistentCasingInFileNames": true,
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"outDir": "../../dist",
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "ESNext"
+	}
 }

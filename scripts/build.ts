@@ -4,6 +4,7 @@ import console from 'node:console';
 import { copyFileSync } from 'node:fs';
 import process from 'node:process';
 import { build } from 'bun';
+import { SolidPlugin } from 'bun-plugin-solid';
 
 const production = process.argv.includes('--production');
 
@@ -21,7 +22,8 @@ async function buildExtension() {
 
 async function buildEditor() {
 	await build({
-		entrypoints: ['./src/editor/editor.ts'],
+		plugins: [SolidPlugin()],
+		entrypoints: ['./src/editor/editor.tsx'],
 		format: 'iife',
 		target: 'browser',
 		minify: production,
