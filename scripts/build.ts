@@ -7,6 +7,7 @@ import { build } from 'bun';
 import { SolidPlugin } from 'bun-plugin-solid';
 
 const production = process.argv.includes('--production');
+const standalone = process.argv.includes('--standalone');
 
 async function buildExtension() {
 	await build({
@@ -23,12 +24,14 @@ async function buildExtension() {
 async function buildEditor() {
 	await build({
 		plugins: [SolidPlugin()],
-		entrypoints: ['./src/editor/editor.tsx'],
+		entrypoints: standalone
+			? ['./src/editor/vscode-webview-shim.ts', './src/editor/editor.ts']
+			: ['./src/editor/editor.ts'],
 		format: 'iife',
 		target: 'browser',
 		minify: production,
 		sourcemap: production ? 'none' : 'inline',
-		external: ['vscode'],
+		external: standalone ? undefined : ['vscode'],
 		outdir: './dist',
 	});
 	copyFileSync('./node_modules/@vscode/codicons/dist/codicon.css', './dist/codicon.css');
@@ -37,7 +40,9 @@ async function buildEditor() {
 
 async function main() {
 	console.time('build finished');
-	await buildExtension();
+	if (!standalone) {
+		await buildExtension();
+	}
 	await buildEditor();
 	console.timeEnd('build finished');
 }
