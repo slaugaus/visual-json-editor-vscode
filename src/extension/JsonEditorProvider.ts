@@ -285,6 +285,11 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 				<script defer src="${scriptUri}" nonce="${nonce}"></script>
 			</head>
 			<body>
+				<div id="jsonContainer"></div>
+				<button type="button" id="rootPlus">
+					<i class="codicon codicon-plus"></i> New Item
+				</button>
+				<!-- TODO: restore this when you resume solid dev
 				<div class="split">
 					<div id="jsonContainerNew"></div>
 					<div>
@@ -293,7 +298,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 							<i class="codicon codicon-plus"></i> New Item
 						</button>
 					</div>
-				</div>
+				</div> -->
 			</body>
 			</html>
 		`;
