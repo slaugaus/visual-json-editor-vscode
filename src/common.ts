@@ -25,7 +25,11 @@ export const editorTypes = Object.freeze([
 // TODO: extend this when messaging system is better defined?
 // (a string literal can be a type)
 /** Messages sent between the editor and extension */
-export type Message<T = unknown> = { type: 'edit' | string; requestId?: number; body?: T };
+export type Message<T = unknown> = {
+	type: 'edit' | string;
+	requestId?: number;
+	body?: T;
+};
 
 export type ObjectOrArray = 'object' | 'array';
 
@@ -54,4 +58,8 @@ export interface JsonEdit<T = unknown> {
  * Parent and name information are already in JsonEdit.path;
  * these are the remaining items for the EditorItem constructor.
  */
-export type EditAddition<T = unknown> = { itemType: string; value: T; parentType: ObjectOrArray };
+export type EditAddition<T = unknown> = {
+	itemType: string;
+	value: T;
+	parentType: ObjectOrArray;
+};

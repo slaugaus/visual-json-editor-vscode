@@ -61,7 +61,10 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 	//#region Editing
 
 	private readonly _onDidChangeDocument = this._register(
-		new vscode.EventEmitter<{ readonly content?: unknown; readonly edits: readonly JsonEdit[] }>(),
+		new vscode.EventEmitter<{
+			readonly content?: unknown;
+			readonly edits: readonly JsonEdit[];
+		}>(),
 	);
 
 	/** Fired to notify webviews of a change to the document. */
@@ -141,7 +144,10 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 			if (e instanceof SyntaxError) {
 				JsonDocument._errorWithFallback(`File is not valid JSON. ${e.message}`, uri);
 			} else if (e instanceof Error) {
-				JsonDocument._errorWithFallback(`Unknown error parsing file. ${e.name}: ${e.message}`, uri);
+				JsonDocument._errorWithFallback(
+					`Unknown error parsing file. ${e.name}: ${e.message}`,
+					uri,
+				);
 			}
 		}
 
@@ -219,7 +225,10 @@ export class JsonDocument extends Disposable implements vscode.CustomDocument {
 		}
 		this._object = fileOnDisk;
 		this._freshEdits = this._savedEdits;
-		this._onDidChangeDocument.fire({ content: await fileOnDisk, edits: this._freshEdits });
+		this._onDidChangeDocument.fire({
+			content: await fileOnDisk,
+			edits: this._freshEdits,
+		});
 	}
 
 	/** Called by VS Code if it needs to save a backup. */

@@ -106,7 +106,9 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 		webviewPanel.webview.html = this._buildViewHtml(webviewPanel.webview);
 
 		// Subscribe to messages from this webview
-		webviewPanel.webview.onDidReceiveMessage(event => this._onGetMessage(document, event));
+		webviewPanel.webview.onDidReceiveMessage(event =>
+			this._onGetMessage(document, event),
+		);
 
 		// Wait for the webview to be properly ready before we init
 		webviewPanel.webview.onDidReceiveMessage(event => {
@@ -230,7 +232,9 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 			}
 
 			default:
-				vscode.window.showErrorMessage(`What am I supposed to do with a ${message.type}?!`);
+				vscode.window.showErrorMessage(
+					`What am I supposed to do with a ${message.type}?!`,
+				);
 				return;
 		}
 	}

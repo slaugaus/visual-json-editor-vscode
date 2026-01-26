@@ -9,7 +9,7 @@
 	"typescript.tsc.autoDetect": "off",
 	"editor.tabSize": 2,
 	"editor.defaultFormatter": "biomejs.biome",
-	"editor.rulers": [100],
+	"editor.rulers": [90],
 	"editor.insertSpaces": false,
 	"editor.detectIndentation": false
 }

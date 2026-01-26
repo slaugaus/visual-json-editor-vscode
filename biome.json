@@ -14,7 +14,7 @@
 	"formatter": {
 		"expand": "never",
 		"lineEnding": "lf",
-		"lineWidth": 100
+		"lineWidth": 90
 	},
 	"javascript": {
 		"formatter": {

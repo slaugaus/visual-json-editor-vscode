@@ -3,22 +3,22 @@
  */
 
 .editable-text {
-    /* Show all whitespace in names and values */
-    white-space: pre;
+	/* Show all whitespace in names and values */
+	white-space: pre;
 }
 
 .clickable {
-    pointer-events: all;
+	pointer-events: all;
 }
 
 /* Give empty editable fields something to click on */
 .editable-text:empty::before {
-    content: "(empty)";
-    color: gray;
+	content: "(empty)";
+	color: gray;
 }
 
 /**** TODO: TEMP ****/
 .split {
-    display: grid;
-    grid-template-columns: 50% 50%;
+	display: grid;
+	grid-template-columns: 50% 50%;
 }

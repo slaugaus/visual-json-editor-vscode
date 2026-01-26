@@ -1,7 +1,4 @@
 {
 	"files": [],
-	"references": [
-		{"path": "./src/extension"},
-		{"path": "./src/editor"}
-	]
+	"references": [{ "path": "./src/extension" }, { "path": "./src/editor" }]
 }

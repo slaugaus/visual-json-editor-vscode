@@ -3,7 +3,11 @@
 	"dockerFile": "Dockerfile",
 	"customizations": {
 		"vscode": {
-			"extensions": ["oven.bun-vscode", "biomejs.biome", "ms-vscode.extension-test-runner"]
+			"extensions": [
+				"oven.bun-vscode",
+				"biomejs.biome",
+				"ms-vscode.extension-test-runner"
+			]
 		}
 	}
 }
