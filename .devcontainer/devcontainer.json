@@ -1,12 +1,14 @@
 {
-	"name": "Bun",
+	"name": "Rust, Bun, Tauri",
 	"dockerFile": "Dockerfile",
+	"forwardPorts": [3000],
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"oven.bun-vscode",
-				"biomejs.biome",
-				"ms-vscode.extension-test-runner"
+				"oxc.oxc-vscode",
+				"ms-vscode.extension-test-runner",
+				"tauri-apps.tauri-vscode"
 			]
 		}
 	}

@@ -13,6 +13,3 @@ RUN if [ "slim" == "alpine" ] ; then apk add git ; else apt-get install -y git ;
 # Deploy NPM shim
 COPY ./npm.sh /usr/local/bin/npm
 RUN chmod 777 /usr/local/bin/npm
-
-# Install Biome globally for the VS Code extension
-RUN bun add -g @biomejs/biome@2.3.12

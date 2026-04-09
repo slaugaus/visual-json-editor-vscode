@@ -1,9 +1,0 @@
-Skipped 41 suggested fixes.
-If you wish to apply the suggested (unsafe) fixes, use the command biome check --write --unsafe
-
-The number of diagnostics exceeds the limit allowed. Use --max-diagnostics to increase it.
-Diagnostics not shown: 73.
-Checked 29 files in 11ms. No fixes applied.
-Found 10 errors.
-Found 74 warnings.
-Found 9 infos.

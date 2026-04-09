@@ -1,0 +1,87 @@
+{
+	"categories": {
+		"correctness": "error",
+		"suspicious": "warn",
+		"pedantic": "warn",
+		"perf": "warn",
+		"style": "warn"
+	},
+	"env": {
+		"builtin": true
+	},
+	"jsPlugins": ["eslint-plugin-solid"],
+	"ignorePatterns": ["dist*/**", "gen/**", "target/**"],
+	"options": {
+		"typeAware": true,
+		"typeCheck": true
+	},
+	"plugins": [
+		"eslint",
+		"typescript",
+		"unicorn",
+		"oxc",
+		"jsx-a11y",
+		"import",
+		"promise",
+		"jsdoc"
+	],
+	"rules": {
+		"capitalized-comments": "off",
+		"sort-imports": "off",
+		"sort-keys": "off",
+		"sort-vars": "off",
+		"no-ternary": "off",
+		"new-cap": "off",
+		"func-style": [
+			"error",
+			"expression",
+			{
+				"allowArrowFunctions": true,
+				"overrides": {
+					"namedExports": "declaration"
+				}
+			}
+		],
+		"typescript/explicit-function-return-type": "off",
+
+		// Solid TS recommendations @ plugin 0.14.5
+		// (node_modules/eslint-plugin-solid/src/configs/typescript.ts)
+		// identifier usage is important
+		"solid/jsx-no-duplicate-props": "error",
+		"solid/jsx-uses-vars": "error",
+		// security problems
+		"solid/no-innerhtml": "error",
+		"solid/jsx-no-script-url": "error",
+		// reactivity
+		"solid/components-return-once": "warn",
+		"solid/no-destructure": "error",
+		"solid/prefer-for": "error",
+		"solid/reactivity": "warn",
+		"solid/event-handlers": "warn",
+		// these rules are mostly style suggestions
+		"solid/imports": "warn",
+		"solid/style-prop": "warn",
+		"solid/no-react-deps": "warn",
+		"solid/no-react-specific-props": "warn",
+		"solid/self-closing-comp": "warn",
+		"solid/no-array-handlers": "off",
+		// handled by Solid compiler, opt-in style suggestion
+		"solid/prefer-show": "off",
+		// only necessary for resource-constrained environments
+		"solid/no-proxy-apis": "off",
+		// deprecated
+		"solid/prefer-classlist": "off",
+		// TS specific
+		"solid/jsx-no-undef": ["error", { "typescriptEnabled": true }],
+		// namespaces taken care of by TS
+		"solid/no-unknown-namespaces": 0
+	},
+	"overrides": [
+		{
+			"files": ["scripts/**", "**/test/**", "src/extension/**"],
+			"rules": {
+				"import/no-nodejs-modules": "off"
+			}
+		}
+	]
+}
