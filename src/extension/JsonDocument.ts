@@ -4,8 +4,8 @@ import vscode from 'vscode';
 import { type EditorHtml } from '@common/messaging/EditorHtml';
 import { type JsonEdit } from '@common/messaging/JsonEdit';
 
-import { Disposable } from './disposal';
-import parseHtml from './parseHtml';
+import { Disposable } from './utils/disposal';
+import parseHtml from './utils/parseHtml';
 
 type GetDataDelegate = {
 	getData(): Promise<EditorHtml>;

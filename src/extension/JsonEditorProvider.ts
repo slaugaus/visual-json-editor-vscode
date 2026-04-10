@@ -9,10 +9,10 @@ import {
 } from '@common/messaging/EditorMessage';
 import { type ExtensionMessage } from '@common/messaging/ExtensionMessage';
 
-import buildViewHtml from './buildViewHtml';
-import { disposeAll } from './disposal';
 import JsonDocument from './JsonDocument';
-import WebviewCollection from './WebviewCollection';
+import buildViewHtml from './utils/buildViewHtml';
+import { disposeAll } from './utils/disposal';
+import WebviewCollection from './utils/WebviewCollection';
 
 export default class JsonEditorProvider implements vscode.CustomEditorProvider {
 	constructor(private readonly _context: vscode.ExtensionContext) {}
