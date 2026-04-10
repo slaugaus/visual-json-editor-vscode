@@ -8,8 +8,9 @@
 **/*.map
 **/*.ts
 **/tsconfig.json
-biome.json
 bun.lock
 DA-PLAN.md
+dist-standalone/**
 node_modules/**
 src/**
+src-tauri/**
