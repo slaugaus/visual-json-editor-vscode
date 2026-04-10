@@ -1,12 +1,20 @@
-import { randomBytes } from 'node:crypto';
-import * as vscode from 'vscode';
-import type { JsonEdit, Message, OutputHTML } from '../common';
-import { disposeAll } from './disposal';
-import { WebviewCollection } from './helpers';
-import { JsonDocument } from './JsonDocument';
+import { randomUUID, type UUID } from 'node:crypto';
 
-export class JsonEditorProvider implements vscode.CustomEditorProvider {
-	// _context is actually accessible just by doing this
+import vscode from 'vscode';
+
+import { type EditorHtml } from '@common/messaging/EditorHtml';
+import {
+	type GetDataResponse,
+	type EditorMessage,
+} from '@common/messaging/EditorMessage';
+import { type ExtensionMessage } from '@common/messaging/ExtensionMessage';
+
+import buildViewHtml from './buildViewHtml';
+import { disposeAll } from './disposal';
+import JsonDocument from './JsonDocument';
+import WebviewCollection from './WebviewCollection';
+
+export default class JsonEditorProvider implements vscode.CustomEditorProvider {
 	constructor(private readonly _context: vscode.ExtensionContext) {}
 
 	/** Name/ID of the custom editor - reference this in commands that open it */
@@ -18,13 +26,14 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 		return vscode.window.registerCustomEditorProvider(
 			JsonEditorProvider._viewType,
 			new JsonEditorProvider(context),
-			// Add'l options object
 			{
 				/**
-				 * This option keeps editor webviews "alive" when they're not visible.
-				 * It uses extra RAM, but is necessary to preserve the document
-				 * (which is currently stored in/as the UI).
-				 * @todo: Look for a way to let this be false? (Something about state in view's code)
+				 * This option keeps editor webviews "alive" when they're not visible. It uses
+				 * extra RAM, but is necessary to preserve the document (which is currently stored
+				 * in/as the UI).
+				 *
+				 * @todo Look for a way to let this be false? (Something about state in view's
+				 *   code)
 				 */
 				webviewOptions: { retainContextWhenHidden: true, enableFindWidget: true },
 				// TODO: (STRETCH/QOL) Look into syncing state between editors
@@ -34,8 +43,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 		);
 	}
 
-	/** Tracks all webviews (editors) the extension has open. */
-	private readonly _webviews = new WebviewCollection();
+	private readonly _openWebviews = new WebviewCollection();
 
 	//#region CustomEditorProvider Implementation
 
@@ -49,18 +57,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 		const document = await JsonDocument.create(uri, openContext.backupId, {
 			// Implement retrieving data from the webview here, as JsonDocument
 			// doesn't get to access it. Hooray for delegates!
-			getData: async () => {
-				const webviewsForThisDoc = Array.from(this._webviews.get(document.uri));
-				if (webviewsForThisDoc.length === 0) {
-					throw new Error('Could not find a webview for this document');
-				} else if (webviewsForThisDoc.length > 1) {
-					throw new Error('Doc is somehow open in multiple tabs...');
-				}
-				return await this._sendMessageWithResponse<OutputHTML>(webviewsForThisDoc[0], {
-					type: 'getData',
-					body: null,
-				});
-			},
+			getData: async () => await this._getData(document),
 		});
 
 		const docListeners: vscode.Disposable[] = [];
@@ -70,7 +67,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 			document.onDidChange(event => {
 				this._onDidChangeCustomDocument.fire({
 					document,
-					...event, // remaining items = contents of event
+					...event,
 				});
 			}),
 		);
@@ -78,8 +75,8 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 		// Event telling all the webviews that the document changed
 		docListeners.push(
 			document.onDidChangeContent(event => {
-				for (const panel of this._webviews.get(document.uri)) {
-					this._sendMessage(panel, { type: 'change', body: event });
+				for (const panel of this._openWebviews.get(document.uri)) {
+					this._sendMessage(panel, { type: 'change', changes: [...event.edits] });
 				}
 			}),
 		);
@@ -98,17 +95,19 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 		webviewPanel: vscode.WebviewPanel,
 		_token: vscode.CancellationToken,
 	): Promise<void> {
-		// Add the webview to our internal set of active webviews
-		this._webviews.add(document.uri, webviewPanel);
+		this._openWebviews.add(document.uri, webviewPanel);
 
 		webviewPanel.webview.options = { enableScripts: true };
 
-		webviewPanel.webview.html = this._buildViewHtml(webviewPanel.webview);
+		webviewPanel.webview.html = buildViewHtml(
+			webviewPanel.webview,
+			this._context.extensionUri,
+		);
 
 		// Subscribe to messages from this webview
-		webviewPanel.webview.onDidReceiveMessage(event =>
-			this._onGetMessage(document, event),
-		);
+		webviewPanel.webview.onDidReceiveMessage(event => {
+			this._onGetMessage(document, event);
+		});
 
 		// Wait for the webview to be properly ready before we init
 		webviewPanel.webview.onDidReceiveMessage(event => {
@@ -116,7 +115,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 				if (document.uri.scheme === 'untitled') {
 					// Handle any setup necessary for new documents (probably none?)
 				} else {
-					this._sendMessage(webviewPanel, { type: 'doc', body: document.object });
+					this._sendMessage(webviewPanel, { type: 'document', content: document.object });
 				}
 			}
 		});
@@ -132,7 +131,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 		cancellation: vscode.CancellationToken,
 	): Thenable<void> {
 		const save = document.save(cancellation);
-		this._sendMessageAll(document, { type: 'saved', body: document.object });
+		this._sendMessageAll(document, { type: 'saved', content: document.object });
 		return save;
 	}
 
@@ -142,7 +141,7 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 		cancellation: vscode.CancellationToken,
 	): Thenable<void> {
 		const saveAs = document.saveAs(destination, cancellation);
-		this._sendMessageAll(document, { type: 'saved', body: document.object });
+		this._sendMessageAll(document, { type: 'saved', content: document.object });
 		return saveAs;
 	}
 
@@ -165,142 +164,68 @@ export class JsonEditorProvider implements vscode.CustomEditorProvider {
 
 	//#region Messaging
 
-	private _sendMessage(panel: vscode.WebviewPanel, message: Message): void {
+	/** Strongly typed! */
+	private _sendMessage(panel: vscode.WebviewPanel, message: ExtensionMessage): void {
 		panel.webview.postMessage(message);
 	}
 
-	/** Message all webviews belonging to a JsonDocument */
-	private _sendMessageAll(document: JsonDocument, message: Message): void {
-		for (const panel of this._webviews.get(document.uri)) {
-			panel.webview.postMessage(message);
+	/** Messages all webviews belonging to a JsonDocument. */
+	private _sendMessageAll(document: JsonDocument, message: ExtensionMessage): void {
+		for (const panel of this._openWebviews.get(document.uri)) {
+			this._sendMessage(panel, message);
 		}
 	}
 
-	private _requestId = 1;
-	private readonly _callbacks = new Map<number, (value: unknown) => void>();
+	private readonly _callbacks = new Map<UUID, (value: GetDataResponse) => void>();
 
-	/** Send a message to panel expecting a response (the Promise returned). */
-	private _sendMessageWithResponse<R = unknown>(
-		panel: vscode.WebviewPanel,
-		message: Message<R | null>,
-	): Promise<R> {
-		const requestId = this._requestId++;
-		// When this promise is resolved, add the result to _callbacks
-		const p = new Promise<R>(resolve =>
-			this._callbacks.set(requestId, resolve as (value: unknown) => void),
+	/** Requests the data from the given document, returning it as a promise. */
+	private async _getData(document: JsonDocument): Promise<EditorHtml> {
+		const webviewsForThisDoc = [...this._openWebviews.get(document.uri)];
+
+		if (webviewsForThisDoc.length === 0) {
+			throw new Error('Could not find a webview for this document');
+		} else if (webviewsForThisDoc.length > 1) {
+			throw new Error('Doc is somehow open in multiple tabs...');
+		}
+
+		const requestId = randomUUID();
+		// oxlint-disable-next-line promise/avoid-new -- presumably an edge case
+		const promise = new Promise<GetDataResponse>(resolve =>
+			this._callbacks.set(requestId, resolve),
 		);
-		// Send the message
-		panel.webview.postMessage({ type: message.type, requestId, body: message.body });
-		return p;
+
+		this._sendMessage(webviewsForThisDoc[0], { type: 'getData', requestId });
+
+		return promise;
 	}
 
-	private _onGetMessage(document: JsonDocument, message: Message): void {
+	private _onGetMessage(document: JsonDocument, message: EditorMessage): void {
 		switch (message.type) {
-			case 'responseReady': {
-				const callback = this._callbacks.get(message.requestId as number);
-				callback?.(message.body);
-				return;
+			case 'getData_response': {
+				this._callbacks.get(message.requestId)?.(message);
 			}
 
 			case 'ready':
 				return;
 
 			case 'edit': {
-				const msg = message as Message<JsonEdit>;
-				if (msg.body) {
-					document.makeEdit(msg.body);
-				}
+				document.makeEdit(message.edit);
 				return;
 			}
 
-			case 'debug': {
-				const msg = message as Message<string>;
-				if (msg.body !== undefined) {
-					vscode.window.showInformationMessage(msg.body);
-				}
-				console.log(message.body);
+			case 'debugMsg': {
+				vscode.window.showInformationMessage(message.message);
+				console.log(message.message);
 				return;
 			}
 
-			case 'error': {
-				const msg = message as Message<string>;
-				if (msg.body !== undefined) {
-					vscode.window.showErrorMessage(msg.body);
-					console.error(msg.body);
-				}
+			case 'errorMsg': {
+				vscode.window.showErrorMessage(message.message);
+				console.error(message.message);
 				return;
 			}
-
-			default:
-				vscode.window.showErrorMessage(
-					`What am I supposed to do with a ${message.type}?!`,
-				);
-				return;
 		}
 	}
 
 	//#endregion
-
-	/**
-	 * Returns the static HTML for the webview.
-	 */
-	private _buildViewHtml(view: vscode.Webview): string {
-		// Get paths to CSS/JS (media folder) that the webview can reach
-		const scriptUri = view.asWebviewUri(
-			vscode.Uri.joinPath(this._context.extensionUri, 'dist', 'editor.js'),
-		);
-
-		const styleUri = view.asWebviewUri(
-			vscode.Uri.joinPath(this._context.extensionUri, 'media', 'vscode.css'),
-		);
-
-		const codiconsUri = view.asWebviewUri(
-			vscode.Uri.joinPath(this._context.extensionUri, 'dist', 'codicon.css'),
-		);
-
-		const layoutUri = view.asWebviewUri(
-			vscode.Uri.joinPath(this._context.extensionUri, 'media', 'layoutStuff.css'),
-		);
-
-		// "Number Used Once" for preventing script injection
-		const nonce = randomBytes(32).toString('base64');
-
-		return `
-			<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="UTF-8">
-
-				<!-- Allow only images from HTTPS or this extension, styles and fonts from this extension,
-					and scripts with a certain nonce -->
-				<meta http-equiv="Content-Security-Policy"
-				content="default-src 'none'; img-src ${view.cspSource} blob:; style-src ${view.cspSource}; font-src ${view.cspSource}; script-src 'nonce-${nonce}';">
-
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>JSON Editor</title>
-
-				<link rel="stylesheet" href="${styleUri}"> 
-				<link rel="stylesheet" href="${codiconsUri}">
-				<link rel="stylesheet" href="${layoutUri}">
-				<script defer src="${scriptUri}" nonce="${nonce}"></script>
-			</head>
-			<body>
-				<div id="jsonContainer"></div>
-				<button type="button" id="rootPlus">
-					<i class="codicon codicon-plus"></i> New Item
-				</button>
-				<!-- TODO: restore this when you resume solid dev
-				<div class="split">
-					<div id="jsonContainerNew"></div>
-					<div>
-						<div id="jsonContainer"></div>
-						<button type="button" id="rootPlus">
-							<i class="codicon codicon-plus"></i> New Item
-						</button>
-					</div>
-				</div> -->
-			</body>
-			</html>
-		`;
-	}
 }

@@ -3,13 +3,14 @@
 import console from 'node:console';
 import { copyFileSync } from 'node:fs';
 import process from 'node:process';
+
 import { build } from 'bun';
 import { SolidPlugin } from 'bun-plugin-solid';
 
 const production = process.argv.includes('--production');
 const standalone = process.argv.includes('--standalone');
 
-async function buildExtension() {
+const buildExtension = async () => {
 	await build({
 		entrypoints: ['./src/extension/extension.ts'],
 		format: 'cjs',
@@ -19,35 +20,39 @@ async function buildExtension() {
 		external: ['vscode'],
 		outdir: './dist',
 	});
-}
+};
 
-async function buildEditor() {
+const buildEditor = async () => {
 	await build({
 		plugins: [SolidPlugin()],
 		entrypoints: standalone
-			? ['./src/editor/vscode-webview-shim.ts', './src/editor/editor.ts']
+			? ['./src/standalone/index.html']
 			: ['./src/editor/editor.ts'],
 		format: 'iife',
 		target: 'browser',
 		minify: production,
 		sourcemap: production ? 'none' : 'inline',
 		external: standalone ? undefined : ['vscode'],
-		outdir: './dist',
+		outdir: standalone ? './dist-standalone' : './dist',
 	});
-	copyFileSync('./node_modules/@vscode/codicons/dist/codicon.css', './dist/codicon.css');
-	copyFileSync('./node_modules/@vscode/codicons/dist/codicon.ttf', './dist/codicon.ttf');
-}
+};
 
-async function main() {
+try {
 	console.time('build finished');
 	if (!standalone) {
 		await buildExtension();
+		copyFileSync(
+			'./node_modules/@vscode/codicons/dist/codicon.css',
+			'./dist/codicon.css',
+		);
+		copyFileSync(
+			'./node_modules/@vscode/codicons/dist/codicon.ttf',
+			'./dist/codicon.ttf',
+		);
 	}
 	await buildEditor();
 	console.timeEnd('build finished');
-}
-
-main().catch(e => {
-	console.error(e);
+} catch (error) {
+	console.error(error);
 	process.exit(1);
-});
+}

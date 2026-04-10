@@ -1,7 +1,7 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 export function disposeAll(disposables: vscode.Disposable[]): void {
-	while (disposables.length) {
+	while (disposables.length > 0) {
 		const item = disposables.pop();
 		if (item) {
 			item.dispose();
@@ -9,9 +9,7 @@ export function disposeAll(disposables: vscode.Disposable[]): void {
 	}
 }
 
-/**
- * A class that has multiple children you'd want to dispose of.
- */
+/** A class that has multiple children you'd want to dispose of. */
 export abstract class Disposable {
 	private _isDisposed = false;
 	protected get isDisposed(): boolean {
@@ -20,7 +18,7 @@ export abstract class Disposable {
 
 	protected _disposables: vscode.Disposable[] = [];
 
-	/** Dispose everything I own. BURN IT ALL!! */
+	/** Disposes everything I own. BURN IT ALL!! */
 	public dispose(): void {
 		if (this._isDisposed) {
 			return;
@@ -29,7 +27,12 @@ export abstract class Disposable {
 		disposeAll(this._disposables);
 	}
 
-	/** Take responsibility for disposing a Disposable. */
+	/**
+	 * Takes responsibility for disposing a Disposable.
+	 *
+	 * @param value What to register.
+	 * @returns The value that was registered.
+	 */
 	protected _register<T extends vscode.Disposable>(value: T): T {
 		if (this._isDisposed) {
 			value.dispose();

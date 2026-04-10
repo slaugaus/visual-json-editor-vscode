@@ -1,108 +1,108 @@
 :root {
-    --child-item-indent: 20px;
+	--child-item-indent: 20px;
 }
 
 /* Focus outline for all(?) objects that have one */
 *:focus {
-    outline: 1px solid var(--vscode-focusBorder) !important;
-    outline-offset: -1px !important;
+	outline: 1px solid var(--vscode-focusBorder) !important;
+	outline-offset: -1px !important;
 }
 
 body {
-    font-family: var(--vscode-font-family);
-    font-weight: var(--vscode-font-weight);
-    font-size: var(--vscode-font-size);
-    color: var(--vscode-editor-foreground);
-    background-color: transparent;
-    /* Extra "overscroll" area like the text editor (editor.scrollBeyondLastLine setting) */
-    padding-bottom: 90vh;
+	font-family: var(--vscode-font-family);
+	font-weight: var(--vscode-font-weight);
+	font-size: var(--vscode-font-size);
+	color: var(--vscode-editor-foreground);
+	background-color: transparent;
+	/* Extra "overscroll" area like the text editor (editor.scrollBeyondLastLine setting) */
+	padding-bottom: 90vh;
 }
 
 /* Use the right theme for at least color and date inputs */
 body.vscode-dark,
 body.vscode-high-contrast {
-    color-scheme: dark;
+	color-scheme: dark;
 }
 
 body.vscode-light,
 body.vscode-high-contrast-light {
-    color-scheme: light;
+	color-scheme: light;
 }
 
 /* #region ITEMS */
 
 .item {
-    border-left: 2px solid var(--vscode-settings-headerForeground);
-    padding: 2px 4px;
-    margin: 10px 0;
+	border-left: 2px solid var(--vscode-settings-headerForeground);
+	padding: 2px 4px;
+	margin: 10px 0;
 }
 
 .item.changed {
-    border-color: var(--vscode-settings-modifiedItemIndicator);
+	border-color: var(--vscode-settings-modifiedItemIndicator);
 }
 
 .item:hover,
 .item:focus-within {
-    background-color: var(--vscode-settings-rowHoverBackground);
+	background-color: var(--vscode-settings-rowHoverBackground);
 }
 
 .value-container {
-    margin-left: var(--child-item-indent);
+	margin-left: var(--child-item-indent);
 }
 
 /* #region ITEMS - KEY ROW */
 .key {
-    display: flex;
-    align-items: center;
+	display: flex;
+	align-items: center;
 }
 
 /* Default arrow disappears when using flex (+ I wanted to use a codicon anyway) */
 .key:before {
-    font-family: "codicon";
-    font-size: 16px;
-    margin-right: 4px;
-    cursor: pointer;
+	font-family: "codicon";
+	font-size: 16px;
+	margin-right: 4px;
+	cursor: pointer;
 }
 
 .item:not([open]) .key:before {
-    /* Codicon chevron-right */
-    content: "\EAB6";
+	/* Codicon chevron-right */
+	content: "\EAB6";
 }
 
 .item[open] .key:before {
-    /* Codicon chevron-down */
-    content: "\EAB4";
+	/* Codicon chevron-down */
+	content: "\EAB4";
 }
 
 .item.changed > .key:after {
-    /* Codicon close-dirty */
-    content: "\EA71";
-    font-family: "codicon";
-    font-size: 16px;
+	/* Codicon close-dirty */
+	content: "\EA71";
+	font-family: "codicon";
+	font-size: 16px;
 }
 
 .name {
-    font-weight: 600;
+	font-weight: 600;
 }
 
 /* Names of array items */
 .name:not(.editable-text)::before {
-    /* Var set in EditorItem._setupValue(), or [ if unset
-       (Can be unset if the file is an array) */
-    content: var(--array-parent-name, '[');
+	/* Var set in EditorItem._setupValue(), or [ if unset
+		(Can be unset if the file is an array) */
+	content: var(--array-parent-name, "[");
 }
 
 .name:not(.editable-text)::after {
-    content: ']';
+	content: "]";
 }
 
 /* Codicon in each .item */
 .key i {
-    margin-right: 0.25em;
+	margin-right: 0.25em;
 }
 
 .type {
-    margin: auto 0.3em;
+	margin: auto 0.3em;
 }
 
 /* #endregion */
@@ -111,87 +111,87 @@ body.vscode-high-contrast-light {
  * Highlight and flash animation for EditorItem.highlightAndScroll()
  */
 .highlighted {
-    border-color: var(--vscode-settings-modifiedItemIndicator);
-    background-color: var(--vscode-settings-modifiedItemIndicator);
+	border-color: var(--vscode-settings-modifiedItemIndicator);
+	background-color: var(--vscode-settings-modifiedItemIndicator);
 }
 
 .flash {
-    animation: flash-animation 1s ease-out;
+	animation: flash-animation 1s ease-out;
 }
 
 @keyframes flash-animation {
-    0% {
-        border-color: var(--vscode-settings-modifiedItemIndicator);
-        background-color: var(--vscode-settings-modifiedItemIndicator);
-    }
+	0% {
+		border-color: var(--vscode-settings-modifiedItemIndicator);
+		background-color: var(--vscode-settings-modifiedItemIndicator);
+	}
 
-    100% {
-        border-color: default;
-        background-color: default;
-    }
+	100% {
+		border-color: default;
+		background-color: default;
+	}
 }
 
 /* #endregion */
 
 /* #region TEXT/ICONS */
 .editable-text {
-    padding: 4px 6px;
+	padding: 4px 6px;
 
-    color: var(--vscode-settings-textInputForeground);
-    background-color: var(--vscode-settings-textInputBackground);
-    border: 1px solid var(--vscode-settings-textInputBorder, transparent);
-    border-radius: 2px;
-    cursor: text;
+	color: var(--vscode-settings-textInputForeground);
+	background-color: var(--vscode-settings-textInputBackground);
+	border: 1px solid var(--vscode-settings-textInputBorder, transparent);
+	border-radius: 2px;
+	cursor: text;
 
-    display: inline-block;
-    overflow-x: auto;
-    max-width: 95%;
-    width: fit-content;
+	display: inline-block;
+	overflow-x: auto;
+	max-width: 95%;
+	width: fit-content;
 }
 
 .editable-text:focus {
-    outline: 1px solid var(--vscode-focusBorder);
-    outline-offset: -1px;
+	outline: 1px solid var(--vscode-focusBorder);
+	outline-offset: -1px;
 }
 
 .codicon {
-    color: var(--vscode-icon-foreground);
+	color: var(--vscode-icon-foreground);
 }
 
 /* #endregion */
 
 /* #region BUTTONS */
 button {
-    border: 1px solid var(--vscode-button-border, transparent);
-    border-radius: 2px;
-    background: var(--vscode-button-background);
-    color: var(--vscode-button-foreground) !important;
-    outline: 1px solid transparent;
-    outline-offset: 2px !important;
+	border: 1px solid var(--vscode-button-border, transparent);
+	border-radius: 2px;
+	background: var(--vscode-button-background);
+	color: var(--vscode-button-foreground) !important;
+	outline: 1px solid transparent;
+	outline-offset: 2px !important;
 
-    display: flex;
-    padding: 4px 6px;
-    justify-content: center;
-    align-items: center;
-    line-height: 18px;
+	display: flex;
+	padding: 4px 6px;
+	justify-content: center;
+	align-items: center;
+	line-height: 18px;
 
-    font-family: var(--vscode-font-family);
-    font-weight: var(--vscode-font-weight);
-    font-size: var(--vscode-font-size);
+	font-family: var(--vscode-font-family);
+	font-weight: var(--vscode-font-weight);
+	font-size: var(--vscode-font-size);
 }
 
 button:hover {
-    cursor: pointer;
-    background: var(--vscode-button-hoverBackground);
+	cursor: pointer;
+	background: var(--vscode-button-hoverBackground);
 }
 
 button:focus {
-    outline-color: var(--vscode-focusBorder);
+	outline-color: var(--vscode-focusBorder);
 }
 
 button i.codicon {
-    margin: 0 3.2px;
-    color: var(--vscode-button-foreground) !important;
+	margin: 0 3.2px;
+	color: var(--vscode-button-foreground) !important;
 }
 
 /*
@@ -199,31 +199,31 @@ button i.codicon {
  * (https://code.visualstudio.com/api/ux-guidelines/editor-actions)
  */
 .item-btns {
-    display: flex;
-    line-height: 18.2px;
-    align-items: center;
-    padding: 0;
-    margin: 4px 0 4px var(--child-item-indent);
+	display: flex;
+	line-height: 18.2px;
+	align-items: center;
+	padding: 0;
+	margin: 4px 0 4px var(--child-item-indent);
 }
 
 .item-btns li {
-    cursor: pointer;
-    display: block;
-    justify-content: center;
-    margin-right: 4px;
-    position: relative;
+	cursor: pointer;
+	display: block;
+	justify-content: center;
+	margin-right: 4px;
+	position: relative;
 }
 
 .item-btns li .codicon {
-    padding: 3px;
+	padding: 3px;
 }
 
 .item-btns li .codicon:hover {
-    outline: 1px dashed var(--vscode-toolbar-hoverOutline);
-    outline-offset: -1px;
-    background-color: var(--vscode-toolbar-hoverBackground);
-    border-radius: 5px;
-    color: var(--vscode-icon-foreground) !important
+	outline: 1px dashed var(--vscode-toolbar-hoverOutline);
+	outline-offset: -1px;
+	background-color: var(--vscode-toolbar-hoverBackground);
+	border-radius: 5px;
+	color: var(--vscode-icon-foreground) !important;
 }
 
 /* #endregion */
@@ -235,65 +235,65 @@ button i.codicon {
  * https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_custom_checkbox
  */
 .bool-label {
-    position: relative;
-    padding-left: 24px;
-    cursor: pointer;
+	position: relative;
+	padding-left: 24px;
+	cursor: pointer;
 }
 
 /* Hide the actual checkbox */
 .bool-label input {
-    position: absolute;
-    opacity: 0;
-    height: 0;
-    width: 0;
+	position: absolute;
+	opacity: 0;
+	height: 0;
+	width: 0;
 }
 
 .fake-checkbox {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 16px;
-    width: 16px;
-    color: var(--vscode-settings-checkboxForeground);
-    border: 1px solid var(--vscode-settings-checkboxBorder);
-    border-radius: 3px;
-    background-color: var(--vscode-settings-checkboxBackground);
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 16px;
+	width: 16px;
+	color: var(--vscode-settings-checkboxForeground);
+	border: 1px solid var(--vscode-settings-checkboxBorder);
+	border-radius: 3px;
+	background-color: var(--vscode-settings-checkboxBackground);
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
 .fake-checkbox:after {
-    /* The Codicon for "checkmark" */
-    content: "\EAB2";
-    font-family: "codicon";
-    font-size: 16px;
-    display: none;
+	/* The Codicon for "checkmark" */
+	content: "\EAB2";
+	font-family: "codicon";
+	font-size: 16px;
+	display: none;
 }
 
 /* Show the checkmark when checked */
-.bool-label input:checked~.fake-checkbox:after {
-    display: block;
+.bool-label input:checked ~ .fake-checkbox:after {
+	display: block;
 }
 
 /* <select>s from VSCode Settings */
 select {
-    background-color: var(--vscode-settings-dropdownBackground);
-    color: var(--vscode-settings-dropdownForeground);
-    border-color: var(--vscode-settings-dropdownBorder);
-    font-family: var(--vscode-font-family);
-    font-weight: var(--vscode-font-weight);
-    font-size: var(--vscode-font-size);
-    height: 27px;
-    padding: 2px 6px;
-    border-radius: 2px;
-    cursor: pointer;
+	background-color: var(--vscode-settings-dropdownBackground);
+	color: var(--vscode-settings-dropdownForeground);
+	border-color: var(--vscode-settings-dropdownBorder);
+	font-family: var(--vscode-font-family);
+	font-weight: var(--vscode-font-weight);
+	font-size: var(--vscode-font-size);
+	height: 27px;
+	padding: 2px 6px;
+	border-radius: 2px;
+	cursor: pointer;
 }
 
 select:disabled {
-    /* Pretend it's not a <select> at all! */
-    cursor: default;
-    background-color: transparent;
-    border-color: transparent;
-    appearance: none;
+	/* Pretend it's not a <select> at all! */
+	cursor: default;
+	background-color: transparent;
+	border-color: transparent;
+	appearance: none;
 }
 
 /* #endregion */
@@ -301,44 +301,44 @@ select:disabled {
 /* #region EXTRA EDITORS */
 
 input[type="datetime-local"] {
-    font-family: var(--vscode-editor-font-family);
-    font-weight: var(--vscode-editor-font-weight);
-    font-size: var(--vscode-editor-font-size);
+	font-family: var(--vscode-editor-font-family);
+	font-weight: var(--vscode-editor-font-weight);
+	font-size: var(--vscode-editor-font-size);
 
-    padding: 4px 6px;
+	padding: 4px 6px;
 
-    color: var(--vscode-settings-textInputForeground);
-    background-color: var(--vscode-settings-textInputBackground);
-    border: 1px solid var(--vscode-settings-textInputBorder, transparent);
-    border-radius: 2px;
-    cursor: text;
+	color: var(--vscode-settings-textInputForeground);
+	background-color: var(--vscode-settings-textInputBackground);
+	border: 1px solid var(--vscode-settings-textInputBorder, transparent);
+	border-radius: 2px;
+	cursor: text;
 }
 
 ::-webkit-calendar-picker-indicator {
-    cursor: pointer;
+	cursor: pointer;
 }
 
 .value-container label {
-    display: inline-flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
+	display: inline-flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
 }
 
 input[type="color"] {
-    cursor: pointer;
+	cursor: pointer;
 
-    color: var(--vscode-settings-textInputForeground);
-    background-color: var(--vscode-settings-textInputBackground);
-    border: 1px solid var(--vscode-settings-textInputBorder, transparent);
-    border-radius: 2px;
+	color: var(--vscode-settings-textInputForeground);
+	background-color: var(--vscode-settings-textInputBackground);
+	border: 1px solid var(--vscode-settings-textInputBorder, transparent);
+	border-radius: 2px;
 
-    padding: 0;
-    inline-size: 27px;
+	padding: 0;
+	inline-size: 27px;
 }
 
 ::-webkit-color-swatch-wrapper {
-    padding: 0;
+	padding: 0;
 }
 
 /* #endregion */

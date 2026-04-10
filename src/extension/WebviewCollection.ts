@@ -1,23 +1,21 @@
-import type * as vscode from 'vscode';
-import type { OutputHTML } from '../common';
-
-export interface JsonDocumentDelegate {
-	getData(): Promise<OutputHTML>;
-}
+import type vscode from 'vscode';
 
 /**
  * Wrapper for a Set that tracks all of the extension's webviews.
  *
  * (From Custom Editor Sample)
  */
-export class WebviewCollection {
+export default class WebviewCollection {
 	private readonly _webviews = new Set<{
 		readonly resource: string;
 		readonly webviewPanel: vscode.WebviewPanel;
 	}>();
 
 	/**
-	 * Get all known webviews for a given URI. Produces an iterable.
+	 * Gets all known webviews for a given URI.
+	 *
+	 * @param uri A URI.
+	 * @yields All known webviews for a given URI.
 	 */
 	public *get(uri: vscode.Uri): Iterable<vscode.WebviewPanel> {
 		const key = uri.toString();
@@ -29,7 +27,10 @@ export class WebviewCollection {
 	}
 
 	/**
-	 * Add a new webview to the collection.
+	 * Adds a new webview to the collection.
+	 *
+	 * @param uri A URI.
+	 * @param webviewPanel The webview to add.
 	 */
 	public add(uri: vscode.Uri, webviewPanel: vscode.WebviewPanel) {
 		const entry = { resource: uri.toString(), webviewPanel };

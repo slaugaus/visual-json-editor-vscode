@@ -32,7 +32,8 @@ Full support for object and array nesting:
 
 ![](.readme/color.png)
 
-Finally, ISO 8601 zoneless date-time strings give you the Chromium `datetime-local` picker:
+Finally, ISO 8601 zoneless date-time strings give you the Chromium `datetime-local`
+picker:
 
 ![](.readme/datetime.png)
 
@@ -42,7 +43,8 @@ Convert certain types of item to other types using the dropdown box.
 
 ![](.readme/type.gif)
 
-If something's "stuck" as a certain type, use the clear button to nullify it and try again.
+If something's "stuck" as a certain type, use the clear button to nullify it and try
+again.
 
 ![](.readme/clear.gif)
 
@@ -62,17 +64,23 @@ All colors are pulled from your current color theme.
 
 This extension contributes the following settings:
 
-* `visual-json.outputPrettiness`: Number of space characters to indent saved JSON files by, or 0 to save in one line. Defaults to 2 spaces. (This gets passed as the [`space` parameter of `JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#space).)
-* `visual-json.maxFileSize`: Maximum file size (in kilobytes) the editor will open before displaying an error message. Defaults to 256 KB.
+- `visual-json.outputPrettiness`: Number of space characters to indent saved JSON files
+  by, or 0 to save in one line. Defaults to 2 spaces. (This gets passed as the
+  [`space` parameter of `JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#space).)
+- `visual-json.maxFileSize`: Maximum file size (in kilobytes) the editor will open before
+  displaying an error message. Defaults to 256 KB.
 
 ## Known Issues
 
-* The same file cannot be open in multiple instances of the editor. This was done intentionally to avoid the complexity of syncing state between them.
-  * The editor doesn't sync its state with text editors that have the same file open, either. Not sure if that's even possible.
-* Tab-key navigation has not yet been implemented - sorry, keyboard warriors, you'll need your mouse for this.
+- The same file cannot be open in multiple instances of the editor. This was done
+  intentionally to avoid the complexity of syncing state between them.
+  - The editor doesn't sync its state with text editors that have the same file open,
+    either. Not sure if that's even possible.
+- Tab-key navigation has not yet been implemented - sorry, keyboard warriors, you'll need
+  your mouse for this.
 
 ## Version History
 
 ### 1.0.0
 
-* Initial release
+- Initial release

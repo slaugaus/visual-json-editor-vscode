@@ -5,7 +5,6 @@
 	"ignorePatterns": ["dist*/**", "gen/**", "target/**"],
 	"jsdoc": true,
 	"jsxSingleQuote": true,
-	"objectWrap": "collapse",
 	"printWidth": 90,
 	"proseWrap": "always",
 	"singleQuote": true,
@@ -13,12 +12,6 @@
 	"sortPackageJson": false,
 	"useTabs": true,
 	"overrides": [
-		{
-			"files": ["*.json"],
-			"options": {
-				"objectWrap": "preserve"
-			}
-		},
 		{
 			"files": ["*.css"],
 			"options": {

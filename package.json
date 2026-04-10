@@ -61,17 +61,17 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "bun compile:prod",
-		"compile": "bun check-types && bun lint && bun scripts/build.ts",
+		"compile": "bun lint && bun scripts/build.ts",
 		"compile:prod": "bun scripts/build.ts --production",
 		"compile:tests": "tsc -p . --outDir out",
 		"watch:tests": "tsc -p . -w --outDir out",
-		"pretest": "bun compile-tests && bun compile && bun lint",
+		"pretest": "bun compile:tests && bun compile && bun lint",
 		"check-types": "tsc --noEmit",
 		"lint": "oxfmt --check && oxlint",
 		"lint:ci": "oxfmt --check && oxlint --format=github --deny-warnings",
 		"test": "vscode-test",
-		"ci": "bun scripts/ci-version.ts && bun lint:ci && vsce package",
-		"fix": "oxlint --fix && oxfmt"
+		"ci": "bun scripts/ciVersion.ts && bun lint:ci && vsce package",
+		"fix": "oxlint --fix; oxfmt"
 	},
 	"devDependencies": {
 		"@tauri-apps/cli": "2.9.6",
@@ -89,12 +89,13 @@
 		"oxfmt": "0.44.0",
 		"oxlint": "1.59.0",
 		"oxlint-tsgolint": "0.20.0",
-		"typescript": "5.9.3"
+		"typescript": "6.0.2"
 	},
 	"dependencies": {
 		"@tauri-apps/api": "2.9.1",
 		"lossless-json": "4.3.0",
 		"node-html-parser": "6.1.13",
-		"solid-js": "1.9.11"
+		"solid-js": "1.9.11",
+		"zod": "4.3.6"
 	}
 }
