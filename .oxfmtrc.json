@@ -8,7 +8,9 @@
 	"printWidth": 90,
 	"proseWrap": "always",
 	"singleQuote": true,
-	"sortImports": true,
+	"sortImports": {
+		"internalPattern": ["@common"]
+	},
 	"sortPackageJson": false,
 	"useTabs": true,
 	"overrides": [

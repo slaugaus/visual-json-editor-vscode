@@ -2,14 +2,19 @@
 	"categories": {
 		"correctness": "error",
 		"suspicious": "warn",
-		"pedantic": "warn",
 		"perf": "warn",
 		"style": "warn"
 	},
 	"env": {
 		"builtin": true
 	},
-	"jsPlugins": ["eslint-plugin-solid"],
+	"jsPlugins": [
+		"eslint-plugin-solid",
+		{
+			"name": "jsdoc-legacy",
+			"specifier": "eslint-plugin-jsdoc"
+		}
+	],
 	"ignorePatterns": ["dist*/**", "gen/**", "target/**"],
 	"options": {
 		"typeAware": true,
@@ -30,8 +35,47 @@
 		"sort-imports": "off",
 		"sort-keys": "off",
 		"sort-vars": "off",
+		"max-statements": ["warn", 20],
+		"no-duplicate-imports": [
+			"warn",
+			{
+				"allowSeparateTypeImports": true
+			}
+		],
+		"no-magic-numbers": "off",
 		"no-ternary": "off",
 		"new-cap": "off",
+		"import/group-exports": "off",
+		"import/no-named-export": "off",
+		"typescript/consistent-type-definitions": ["warn", "type"],
+		"import/exports-last": "off",
+		"unicorn/switch-case-braces": "off",
+		// Nice in theory but it doesn't account for external types defined as ... | null
+		"unicorn/no-null": "off",
+		// False-positives on vscode.postMessage
+		"unicorn/require-post-message-target-origin": "off",
+		"typescript/parameter-properties": [
+			"warn",
+			{
+				"prefer": "parameter-property"
+			}
+		],
+		"unicorn/filename-case": [
+			"error",
+			{
+				"cases": {
+					"camelCase": true,
+					"pascalCase": true
+				}
+			}
+		],
+		"id-length": [
+			"warn",
+			{
+				"checkGeneric": false,
+				"exceptions": ["_"]
+			}
+		],
 		"func-style": [
 			"error",
 			"expression",
@@ -43,6 +87,23 @@
 			}
 		],
 		"typescript/explicit-function-return-type": "off",
+
+		// TODO: hopefully they deprecate more rules from legacy
+		"jsdoc-legacy/require-jsdoc": [
+			"warn",
+			{
+				"publicOnly": true
+			}
+		],
+		"jsdoc-legacy/require-description": "warn",
+		"jsdoc-legacy/no-types": "warn",
+		// JSDoc pedantic
+		// "jsdoc/require-param": "warn",
+		// "jsdoc/require-param-description": "warn",
+		"jsdoc/require-param-name": "warn",
+		// "jsdoc/require-returns": "warn",
+		// "jsdoc/require-returns-description": "warn",
+		"jsdoc/require-yields": "warn",
 
 		// Solid TS recommendations @ plugin 0.14.5
 		// (node_modules/eslint-plugin-solid/src/configs/typescript.ts)
@@ -78,7 +139,7 @@
 	},
 	"overrides": [
 		{
-			"files": ["scripts/**", "**/test/**", "src/extension/**"],
+			"files": ["scripts/**", "**/test/**", "src/extension/**", "src/common/**"],
 			"rules": {
 				"import/no-nodejs-modules": "off"
 			}
