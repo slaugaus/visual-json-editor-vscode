@@ -199,25 +199,25 @@ export default class JsonEditorProvider implements vscode.CustomEditorProvider {
 
 	private _onGetMessage(document: JsonDocument, message: EditorMessage): void {
 		switch (message.type) {
-			case 'getData_response': {
+			case 'GetDataResponse': {
 				this._callbacks.get(message.requestId)?.(message);
 			}
 
-			case 'ready':
+			case 'Ready':
 				return;
 
-			case 'edit': {
+			case 'Edit': {
 				document.makeEdit(message.edit);
 				return;
 			}
 
-			case 'debugMsg': {
+			case 'DebugMsg': {
 				vscode.window.showInformationMessage(message.message);
 				console.log(message.message);
 				return;
 			}
 
-			case 'errorMsg': {
+			case 'ErrorMsg': {
 				vscode.window.showErrorMessage(message.message);
 				console.error(message.message);
 				return;

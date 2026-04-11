@@ -34,7 +34,7 @@ window.addEventListener('message', (event: MessageEvent<ExtensionMessage>) => {
 		// Extension requested a save
 		case 'getData':
 			vscode.postMessage({
-				type: 'getData_response',
+				type: 'GetDataResponse',
 				requestId: message.requestId,
 				// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 				rootType: safeClassName(),
@@ -77,7 +77,7 @@ document.getElementById('rootPlus')!.addEventListener('click', _ => {
 	);
 
 	sendEdit({
-		type: 'add',
+		type: 'Add',
 		path: newThing.path,
 		itemType: 'null',
 		value: null,
@@ -88,4 +88,4 @@ document.getElementById('rootPlus')!.addEventListener('click', _ => {
 	newThing.highlightAndScroll();
 });
 
-vscode.postMessage({ type: 'ready' });
+vscode.postMessage({ type: 'Ready' });

@@ -6,20 +6,20 @@ import type { JsonEdit } from './JsonEdit';
 /** A message sent **from** the editor. */
 export type EditorMessage =
 	| {
-			type: 'edit';
+			type: 'Edit';
 			edit: JsonEdit;
 	  }
 	| {
-			type: 'debugMsg' | 'errorMsg';
+			type: 'DebugMsg' | 'ErrorMsg';
 			message: string;
 	  }
 	| GetDataResponse
 	| {
-			type: 'ready';
+			type: 'Ready';
 	  };
 
 /** A response to a GetDataRequest. */
 export type GetDataResponse = {
-	type: 'getData_response';
+	type: 'GetDataResponse';
 	requestId: UUID;
 } & EditorHtml;

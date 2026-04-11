@@ -267,11 +267,11 @@ export default class EditorItem {
 			this._setupValue(this.type, realValue as JsonUnknown);
 			this.makeDirty();
 
-			sendEdit({ path: this.path, type: 'type', newType: this.type });
+			sendEdit({ path: this.path, type: 'Type', newType: this.type });
 		});
 
 		this._btnDelete.addEventListener('click', _ => {
-			sendEdit({ path: this.path, type: 'delete' });
+			sendEdit({ path: this.path, type: 'Delete' });
 			this._parent.dispatchEvent(new Event('make-dirty'));
 			this.rootElement.remove();
 			if (this._parentType === 'array') {
@@ -290,21 +290,21 @@ export default class EditorItem {
 				this._setupEvents();
 				this._setupValue('null', null);
 				this.makeDirty();
-				sendEdit({ path: this.path, type: 'type', newType: 'null' });
+				sendEdit({ path: this.path, type: 'Type', newType: 'null' });
 			}
 		});
 
 		this._btnMoveDown.addEventListener('click', _ => {
 			const next = this.rootElement.nextElementSibling;
 			if (this._moveNextTo(next, next?.after.bind(next))) {
-				sendEdit({ path: this.path, type: 'move', direction: 'down' });
+				sendEdit({ path: this.path, type: 'Move', direction: 'down' });
 			}
 		});
 
 		this._btnMoveUp.addEventListener('click', _ => {
 			const prev = this.rootElement.previousElementSibling;
 			if (this._moveNextTo(prev, prev?.before.bind(prev))) {
-				sendEdit({ path: this.path, type: 'move', direction: 'up' });
+				sendEdit({ path: this.path, type: 'Move', direction: 'up' });
 			}
 		});
 
@@ -398,7 +398,7 @@ export default class EditorItem {
 				// Update name for children of arrays
 				this._hValue.style.setProperty('--array-parent-name', `'${this.name}['`);
 
-				sendEdit({ path: oldPath, type: 'rename', newName: this._hName.textContent });
+				sendEdit({ path: oldPath, type: 'Rename', newName: this._hName.textContent });
 			}
 
 			wasClosed = true;

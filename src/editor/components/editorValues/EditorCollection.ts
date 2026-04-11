@@ -29,7 +29,7 @@ export default class EditorCollection implements EditorValue {
 
 		// does NOT use the delegate, since we're basing it on newChild's path which is known
 		sendEdit({
-			type: 'add',
+			type: 'Add',
 			path: newChild.path,
 			itemType,
 			value,

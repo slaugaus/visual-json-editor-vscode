@@ -61,7 +61,7 @@ export default class EditorBool implements EditorValue {
 			const boxVal = this._checkbox.checked.toString();
 			this.realValue.textContent = boxVal;
 
-			this._sendEdit({ path: [''], type: 'contents', newValue: boxVal });
+			this._sendEdit({ path: [''], type: 'Contents', newValue: boxVal });
 
 			this.rootElement.dispatchEvent(new Event('make-dirty'));
 

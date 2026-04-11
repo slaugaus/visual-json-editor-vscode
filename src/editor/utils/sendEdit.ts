@@ -11,6 +11,6 @@ import vscode from './vscodeWebview';
  */
 export default function sendEdit(edit: JsonEdit): void {
 	if (!shouldIgnoreEdits()) {
-		vscode.postMessage({ type: 'edit', edit });
+		vscode.postMessage({ type: 'Edit', edit });
 	}
 }

@@ -23,12 +23,12 @@ export default function playbackEdits(edits: JsonEdit[]) {
 		for (const edit of edits) {
 			const target = getItemFromPath(edit.path);
 			switch (edit.type) {
-				case 'contents': {
+				case 'Contents': {
 					setValueOfItem(target, edit.newValue);
 					break;
 				}
 
-				case 'add': {
+				case 'Add': {
 					const name = edit.path.pop()!;
 					const parent =
 						edit.path.length === 0 ? jsonContainer : target.querySelector('.value');
@@ -46,12 +46,12 @@ export default function playbackEdits(edits: JsonEdit[]) {
 					break;
 				}
 
-				case 'delete': {
+				case 'Delete': {
 					target.querySelector('.delete-btn')?.dispatchEvent(new Event('click'));
 					break;
 				}
 
-				case 'rename': {
+				case 'Rename': {
 					target.querySelector(':scope>.key>.name')!.textContent = edit.newName;
 					(target.querySelector(':scope>.value') as HTMLElement)?.style.setProperty(
 						'--array-parent-name',
@@ -60,14 +60,14 @@ export default function playbackEdits(edits: JsonEdit[]) {
 					break;
 				}
 
-				case 'move': {
+				case 'Move': {
 					target
 						.querySelector(`.${edit.direction}-btn`)
 						?.dispatchEvent(new Event('click'));
 					break;
 				}
 
-				case 'type': {
+				case 'Type': {
 					if (edit.newType === 'null') {
 						target.querySelector('.clear-btn')?.dispatchEvent(new Event('click'));
 					} else {

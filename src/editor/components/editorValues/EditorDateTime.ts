@@ -45,7 +45,7 @@ export default class EditorDateTime implements EditorValue {
 
 			this.realValue.textContent = iso;
 
-			this._sendEdit({ path: [''], type: 'contents', newValue: iso });
+			this._sendEdit({ path: [''], type: 'Contents', newValue: iso });
 			this.rootElement.dispatchEvent(new Event('make-dirty'));
 		});
 	}

@@ -6,30 +6,30 @@ export type JsonEdit = {
 	path: string[];
 } & (
 	| {
-			type: 'contents';
+			type: 'Contents';
 			newValue: JsonUnknown;
 	  }
 	| {
-			type: 'add';
+			type: 'Add';
 			itemType: EditorType;
 			value: JsonUnknown;
 			parentType: 'object' | 'array';
 	  }
 	| {
-			type: 'delete';
+			type: 'Delete';
 	  }
 	| {
-			type: 'rename';
+			type: 'Rename';
 			newName: string;
 	  }
 	| {
-			type: 'move';
+			type: 'Move';
 			direction: 'up' | 'down';
 	  }
 	| {
-			type: 'type';
+			type: 'Type';
 			newType: EditorType;
 	  }
 );
 
-export type JsonEditType = 'contents' | 'add' | 'delete' | 'rename' | 'move' | 'type';
+export type JsonEditType = 'Contents' | 'Add' | 'Delete' | 'Rename' | 'Move' | 'Type';

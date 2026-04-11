@@ -6,5 +6,5 @@ import vscode from './vscodeWebview';
  * @param message The error message.
  */
 export default function errorMsg(message: string): void {
-	vscode.postMessage({ type: 'errorMsg', message });
+	vscode.postMessage({ type: 'ErrorMsg', message });
 }

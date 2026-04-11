@@ -43,7 +43,7 @@ export default class EditorColor implements EditorValue {
 			const newColor = this._picker.value;
 			this.realValue.textContent = newColor;
 
-			this._sendEdit({ path: [''], type: 'contents', newValue: newColor });
+			this._sendEdit({ path: [''], type: 'Contents', newValue: newColor });
 			this.rootElement.dispatchEvent(new Event('make-dirty'));
 		});
 	}

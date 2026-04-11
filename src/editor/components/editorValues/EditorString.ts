@@ -47,7 +47,7 @@ export default class EditorString implements EditorValue {
 					this.rootElement.dispatchEvent(new Event('make-dirty'));
 					this._sendEdit({
 						path: [''],
-						type: 'contents',
+						type: 'Contents',
 						newValue: this.rootElement.textContent,
 					});
 				}
