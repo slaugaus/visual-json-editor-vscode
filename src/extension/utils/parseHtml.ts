@@ -2,8 +2,8 @@ import { LosslessNumber } from 'lossless-json';
 import { HTMLElement, parse as parseHtmlReal } from 'node-html-parser';
 import vscode from 'vscode';
 
-import { type EditorHtml } from '@common/messaging/EditorHtml';
-import { type JsonUnknown } from '@common/messaging/JsonUnknown';
+import type { EditorHtml } from '@common/messaging/EditorHtml';
+import type { JsonUnknown } from '@common/messaging/JsonUnknown';
 import { EditorType, EditorSubTypeTable } from '@common/schema/EditorType';
 
 /**

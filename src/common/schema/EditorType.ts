@@ -11,6 +11,8 @@ export const EditorType = z.enum([
 	'datetime',
 ]);
 
+// TODO: use zod for more than runtime enums lol
+
 export type EditorType = z.infer<typeof EditorType>;
 
 /** Map of "special" types to their underlying type. */

@@ -1,7 +1,7 @@
-import { type UUID } from 'crypto';
+import type { UUID } from 'crypto';
 
-import { type EditorHtml } from './EditorHtml';
-import { type JsonEdit } from './JsonEdit';
+import type { EditorHtml } from './EditorHtml';
+import type { JsonEdit } from './JsonEdit';
 
 /** A message sent **from** the editor. */
 export type EditorMessage =

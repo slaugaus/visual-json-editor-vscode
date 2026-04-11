@@ -1,13 +1,11 @@
-import { randomUUID, type UUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
+import type { UUID } from 'node:crypto';
 
 import vscode from 'vscode';
 
-import { type EditorHtml } from '@common/messaging/EditorHtml';
-import {
-	type GetDataResponse,
-	type EditorMessage,
-} from '@common/messaging/EditorMessage';
-import { type ExtensionMessage } from '@common/messaging/ExtensionMessage';
+import type { EditorHtml } from '@common/messaging/EditorHtml';
+import type { GetDataResponse, EditorMessage } from '@common/messaging/EditorMessage';
+import type { ExtensionMessage } from '@common/messaging/ExtensionMessage';
 
 import JsonDocument from './JsonDocument';
 import buildViewHtml from './utils/buildViewHtml';

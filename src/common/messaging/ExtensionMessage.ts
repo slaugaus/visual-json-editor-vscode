@@ -1,6 +1,6 @@
-import { type UUID } from 'crypto';
+import type { UUID } from 'crypto';
 
-import { type JsonEdit } from './JsonEdit';
+import type { JsonEdit } from './JsonEdit';
 
 /** A message sent **from** the extension. */
 export type ExtensionMessage =

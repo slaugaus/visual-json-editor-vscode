@@ -7,6 +7,7 @@
 		"CREDITS.md": true
 	},
 	"js/ts.tsc.autoDetect": "off",
+	"js/ts.preferences.preferTypeOnlyAutoImports": true,
 	"editor.tabSize": 2,
 	"editor.defaultFormatter": "oxc.oxc-vscode",
 	"editor.rulers": [90],

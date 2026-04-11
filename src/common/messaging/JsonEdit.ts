@@ -1,5 +1,5 @@
-import { type EditorType } from '../schema/EditorType';
-import { type JsonUnknown } from './JsonUnknown';
+import type { EditorType } from '../schema/EditorType';
+import type { JsonUnknown } from './JsonUnknown';
 
 /** Edits made to a JsonDocument. */
 export type JsonEdit = {
