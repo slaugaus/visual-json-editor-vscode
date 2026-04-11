@@ -6,9 +6,11 @@
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
 		"module": "ESNext",
 		"moduleResolution": "bundler",
-		"outDir": "../../dist",
 		"skipLibCheck": true,
 		"strict": true,
-		"target": "ESNext"
+		"target": "ESNext",
+		"paths": {
+			"@common/*": ["../common/*"]
+		}
 	}
 }

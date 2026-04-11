@@ -11,7 +11,7 @@ export type JsonEdit = {
 	  }
 	| {
 			type: 'add';
-			itemType: string;
+			itemType: EditorType;
 			value: JsonUnknown;
 			parentType: 'object' | 'array';
 	  }

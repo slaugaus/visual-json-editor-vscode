@@ -1,12 +1,14 @@
-import { z } from 'zod/mini';
+import type { z } from 'zod';
+import { enum as znum } from 'zod/mini';
 
 /** The types that one editor component can be. */
-export const EditorType = z.enum([
+export const EditorType = znum([
 	'string',
 	'number',
 	'boolean',
 	'object',
 	'array',
+	'null',
 	'color',
 	'datetime',
 ]);

@@ -1,50 +1,62 @@
-import { vscode } from './vscode-webview';
-import { EditAddition, Message, ObjectOrArray, OutputHTML } from '../common';
-import { EditorItem } from './EditorItem';
-import { Helpers } from './Helpers';
+import type { ExtensionMessage } from '@common/messaging/ExtensionMessage';
+
+import EditorItem from './components/EditorItem';
+import cleanChanged from './utils/cleanChanged';
+import debugMsg from './utils/debugMsg';
+import jsonContainer from './utils/jsonContainer';
+import parseObject from './utils/parseObject';
+import playbackEdits from './utils/playbackEdits';
+import sendEdit from './utils/sendEdit';
+import vscode from './utils/vscodeWebview';
 
 /** The object I was initialized with */
-let startingObject = {};
+let startingObject: unknown = {};
+
+const safeClassName = () => {
+	if (jsonContainer.className === 'object' || jsonContainer.className === 'array') {
+		return jsonContainer.className;
+	}
+	throw new Error('#jsonContainer is missing its type!');
+};
 
 // Message Handler
-window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
+window.addEventListener('message', (event: MessageEvent<ExtensionMessage>) => {
 	const message = event.data;
 	switch (message.type) {
 		// Entrypoint for object parser (extension has a JsonDocument ready)
-		case 'doc':
-			Helpers.jsonContainer.textContent = null;
-			startingObject = message.body;
-			Helpers.parseObject(message.body, Helpers.jsonContainer);
+		case 'document':
+			jsonContainer.textContent = null;
+			startingObject = message.content;
+			parseObject(message.content, jsonContainer);
 			// vscode.setState(something);
 			return;
 
 		// Extension requested a save
 		case 'getData':
-			vscode.postMessage<OutputHTML>({
-				type: 'responseReady',
+			vscode.postMessage({
+				type: 'getData_response',
 				requestId: message.requestId,
-				body: {
-					type: Helpers.jsonContainer.className as ObjectOrArray,
-					html: Helpers.jsonContainer.innerHTML,
-				},
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+				rootType: safeClassName(),
+				html: jsonContainer.innerHTML,
 			});
 			return;
 
 		// Extension finished saving, clear dirty states and update the base object
 		case 'saved':
-			Helpers.cleanChanged();
-			startingObject = message.body;
+			cleanChanged();
+			startingObject = message.content;
 			return;
 
 		// Extension requested change to the document (Undo, redo, or revert)
 		case 'change':
-			Helpers.jsonContainer.textContent = null;
-			Helpers.parseObject(startingObject, Helpers.jsonContainer);
-			Helpers.playbackEdits(message.body!.edits);
+			jsonContainer.textContent = null;
+			parseObject(startingObject, jsonContainer);
+			playbackEdits(message.changes);
 			return;
 
 		default:
-			Helpers.debugMsg(`Editor received unknown message: ${message.type}`);
+			debugMsg(`Editor received an unknown message: ${JSON.stringify(message)}`);
 			return;
 	}
 });
@@ -54,24 +66,26 @@ window.addEventListener('message', (event: MessageEvent<Message<any>>) => {
 // const lastState = vscode.getState();
 // if (lastState) {}
 
-document.getElementById('rootPlus')!.onclick = event => {
-	const numRootItems = Helpers.jsonContainer.childElementCount;
+document.getElementById('rootPlus')!.addEventListener('click', _ => {
+	const numRootItems = jsonContainer.childElementCount;
 	const newThing = EditorItem.create(
 		'null',
 		`New Thing ${numRootItems}`,
 		null,
-		Helpers.jsonContainer,
-		Helpers.jsonContainer.className as ObjectOrArray,
+		jsonContainer,
+		safeClassName(),
 	);
 
-	Helpers.sendEdit<EditAddition>(newThing.path, 'add', {
+	sendEdit({
+		type: 'add',
+		path: newThing.path,
 		itemType: 'null',
 		value: null,
-		parentType: Helpers.jsonContainer.className as ObjectOrArray,
+		parentType: safeClassName(),
 	});
 
 	newThing.makeDirty();
 	newThing.highlightAndScroll();
-};
+});
 
 vscode.postMessage({ type: 'ready' });
