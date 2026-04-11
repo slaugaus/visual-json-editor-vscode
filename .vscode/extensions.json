@@ -2,6 +2,7 @@
 	"recommendations": [
 		"oven.bun-vscode",
 		"oxc.oxc-vscode",
-		"ms-vscode.extension-test-runner"
+		"ms-vscode.extension-test-runner",
+		"tauri-apps.tauri-vscode"
 	]
 }
