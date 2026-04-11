@@ -1,13 +1,14 @@
 {
 	"categories": {
 		"correctness": "error",
-		"suspicious": "warn",
 		"perf": "warn",
-		"style": "warn"
+		"style": "warn",
+		"suspicious": "warn"
 	},
 	"env": {
 		"builtin": true
 	},
+	"ignorePatterns": ["dist*/**", "gen/**", "target/**"],
 	"jsPlugins": [
 		"eslint-plugin-solid",
 		{
@@ -15,11 +16,18 @@
 			"specifier": "eslint-plugin-jsdoc"
 		}
 	],
-	"ignorePatterns": ["dist*/**", "gen/**", "target/**"],
 	"options": {
 		"typeAware": true,
 		"typeCheck": true
 	},
+	"overrides": [
+		{
+			"files": ["scripts/**", "**/test/**", "src/extension/**", "src/common/**"],
+			"rules": {
+				"import/no-nodejs-modules": "off"
+			}
+		}
+	],
 	"plugins": [
 		"eslint",
 		"typescript",
@@ -32,10 +40,44 @@
 	],
 	"rules": {
 		"capitalized-comments": "off",
-		"sort-imports": "off",
-		"sort-keys": "off",
-		"sort-vars": "off",
+		"func-style": [
+			"error",
+			"expression",
+			{
+				"allowArrowFunctions": true,
+				"overrides": {
+					"namedExports": "declaration"
+				}
+			}
+		],
+		"id-length": [
+			"warn",
+			{
+				"checkGeneric": false,
+				"exceptions": ["_"]
+			}
+		],
+		"import/exports-last": "off",
+		"import/group-exports": "off",
+		"import/no-named-export": "off",
+		"jsdoc-legacy/no-types": "warn",
+		"jsdoc-legacy/require-description": "warn",
+		// TODO: hopefully they deprecate more rules from legacy
+		"jsdoc-legacy/require-jsdoc": [
+			"warn",
+			{
+				"publicOnly": true
+			}
+		],
+		// JSDoc pedantic
+		// "jsdoc/require-param": "warn",
+		// "jsdoc/require-param-description": "warn",
+		"jsdoc/require-param-name": "warn",
+		// "jsdoc/require-returns": "warn",
+		// "jsdoc/require-returns-description": "warn",
+		"jsdoc/require-yields": "warn",
 		"max-statements": ["warn", 20],
+		"new-cap": "off",
 		"no-duplicate-imports": [
 			"warn",
 			{
@@ -44,16 +86,47 @@
 		],
 		"no-magic-numbers": "off",
 		"no-ternary": "off",
-		"new-cap": "off",
-		"import/group-exports": "off",
-		"import/no-named-export": "off",
+		// reactivity
+		"solid/components-return-once": "warn",
+		"solid/event-handlers": "warn",
+		// these rules are mostly style suggestions
+		"solid/imports": "warn",
+		// Solid TS recommendations @ plugin 0.14.5
+		// (node_modules/eslint-plugin-solid/src/configs/typescript.ts)
+		// identifier usage is important
+		"solid/jsx-no-duplicate-props": "error",
+		"solid/jsx-no-script-url": "error",
+		// TS specific
+		"solid/jsx-no-undef": [
+			"error",
+			{
+				"typescriptEnabled": true
+			}
+		],
+		"solid/jsx-uses-vars": "error",
+		"solid/no-array-handlers": "off",
+		"solid/no-destructure": "error",
+		// security problems
+		"solid/no-innerhtml": "error",
+		// only necessary for resource-constrained environments
+		"solid/no-proxy-apis": "off",
+		"solid/no-react-deps": "warn",
+		"solid/no-react-specific-props": "warn",
+		// namespaces taken care of by TS
+		"solid/no-unknown-namespaces": 0,
+		// deprecated
+		"solid/prefer-classlist": "off",
+		"solid/prefer-for": "error",
+		// handled by Solid compiler, opt-in style suggestion
+		"solid/prefer-show": "off",
+		"solid/reactivity": "warn",
+		"solid/self-closing-comp": "warn",
+		"solid/style-prop": "warn",
+		"sort-imports": "off",
+		"sort-keys": "off",
+		"sort-vars": "off",
 		"typescript/consistent-type-definitions": ["warn", "type"],
-		"import/exports-last": "off",
-		"unicorn/switch-case-braces": "off",
-		// Nice in theory but it doesn't account for external types defined as ... | null
-		"unicorn/no-null": "off",
-		// False-positives on vscode.postMessage
-		"unicorn/require-post-message-target-origin": "off",
+		"typescript/explicit-function-return-type": "off",
 		"typescript/parameter-properties": [
 			"warn",
 			{
@@ -69,80 +142,10 @@
 				}
 			}
 		],
-		"id-length": [
-			"warn",
-			{
-				"checkGeneric": false,
-				"exceptions": ["_"]
-			}
-		],
-		"func-style": [
-			"error",
-			"expression",
-			{
-				"allowArrowFunctions": true,
-				"overrides": {
-					"namedExports": "declaration"
-				}
-			}
-		],
-		"typescript/explicit-function-return-type": "off",
-
-		// TODO: hopefully they deprecate more rules from legacy
-		"jsdoc-legacy/require-jsdoc": [
-			"warn",
-			{
-				"publicOnly": true
-			}
-		],
-		"jsdoc-legacy/require-description": "warn",
-		"jsdoc-legacy/no-types": "warn",
-		// JSDoc pedantic
-		// "jsdoc/require-param": "warn",
-		// "jsdoc/require-param-description": "warn",
-		"jsdoc/require-param-name": "warn",
-		// "jsdoc/require-returns": "warn",
-		// "jsdoc/require-returns-description": "warn",
-		"jsdoc/require-yields": "warn",
-
-		// Solid TS recommendations @ plugin 0.14.5
-		// (node_modules/eslint-plugin-solid/src/configs/typescript.ts)
-		// identifier usage is important
-		"solid/jsx-no-duplicate-props": "error",
-		"solid/jsx-uses-vars": "error",
-		// security problems
-		"solid/no-innerhtml": "error",
-		"solid/jsx-no-script-url": "error",
-		// reactivity
-		"solid/components-return-once": "warn",
-		"solid/no-destructure": "error",
-		"solid/prefer-for": "error",
-		"solid/reactivity": "warn",
-		"solid/event-handlers": "warn",
-		// these rules are mostly style suggestions
-		"solid/imports": "warn",
-		"solid/style-prop": "warn",
-		"solid/no-react-deps": "warn",
-		"solid/no-react-specific-props": "warn",
-		"solid/self-closing-comp": "warn",
-		"solid/no-array-handlers": "off",
-		// handled by Solid compiler, opt-in style suggestion
-		"solid/prefer-show": "off",
-		// only necessary for resource-constrained environments
-		"solid/no-proxy-apis": "off",
-		// deprecated
-		"solid/prefer-classlist": "off",
-		// TS specific
-		"solid/jsx-no-undef": ["error", { "typescriptEnabled": true }],
-		// namespaces taken care of by TS
-		"solid/no-unknown-namespaces": 0
-	},
-	"overrides": [
-		{
-			"files": ["scripts/**", "**/test/**", "src/extension/**", "src/common/**"],
-			"rules": {
-				"import/no-nodejs-modules": "off"
-			}
-		}
-	]
+		// Nice in theory but it doesn't account for external types defined as ... | null
+		"unicorn/no-null": "off",
+		// False-positives on vscode.postMessage
+		"unicorn/require-post-message-target-origin": "off",
+		"unicorn/switch-case-braces": "off"
+	}
 }
