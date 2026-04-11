@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"forceConsistentCasingInFileNames": true,
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "ESNext",
+		"paths": {
+			"@common/*": ["../common/*"]
+		}
+	}
+}

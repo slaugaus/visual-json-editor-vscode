@@ -63,15 +63,17 @@
 		"vscode:prepublish": "bun compile:prod",
 		"compile": "bun lint && bun scripts/build.ts",
 		"compile:prod": "bun scripts/build.ts --production",
+		"compile:standalone-prod": "bun scripts/build.ts --production --standalone",
 		"compile:tests": "tsc -p . --outDir out",
 		"watch:tests": "tsc -p . -w --outDir out",
 		"pretest": "bun compile:tests && bun compile && bun lint",
-		"check-types": "tsc --noEmit",
 		"lint": "oxfmt --check && oxlint",
 		"lint:ci": "oxfmt --check && oxlint --format=github --deny-warnings",
 		"test": "vscode-test",
 		"ci": "bun scripts/ciVersion.ts && bun lint:ci && vsce package",
-		"fix": "oxlint --fix; oxfmt"
+		"fix": "oxlint --fix; oxfmt",
+		"dev:standalone": "bun run src/standalone/index.html --port 1420",
+		"tauri:dev": "bun run tauri dev"
 	},
 	"devDependencies": {
 		"@tauri-apps/cli": "2.9.6",

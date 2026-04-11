@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Visual JSON Editor</title>
+
+		<link rel="stylesheet" href="./vscode-dump.css" />
+		<link rel="stylesheet" href="../../node_modules/@vscode/codicons/dist/codicon.css" />
+		<link rel="stylesheet" href="../../media/vscode.css" />
+		<link rel="stylesheet" href="../../media/layoutStuff.css" />
+		<script defer src="./shims.ts"></script>
+		<script defer src="./menubar.ts"></script>
+		<script defer src="../editor/editor.ts"></script>
+	</head>
+
+	<body>
+		<main>
+			<div id="jsonContainer" class="object"></div>
+			<button type="button" id="rootPlus">
+				<i class="codicon codicon-plus"></i> New Item
+			</button>
+		</main>
+		<!-- TODO: restore this when you resume solid dev
+	<div class="split">
+		<div id="jsonContainerNew"></div>
+		<div>
+			<div id="jsonContainer"></div>
+			<button type="button" id="rootPlus">
+				<i class="codicon codicon-plus"></i> New Item
+			</button>
+		</div>
+	</div> -->
+	</body>
+</html>

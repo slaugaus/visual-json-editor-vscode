@@ -9,6 +9,9 @@
 		},
 		{
 			"path": "./src/common"
+		},
+		{
+			"path": "./src/standalone"
 		}
 	]
 }

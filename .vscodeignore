@@ -14,3 +14,5 @@ dist-standalone/**
 node_modules/**
 src/**
 src-tauri/**
+.ox*.json
+bunfig.toml
