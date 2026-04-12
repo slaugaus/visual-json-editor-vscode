@@ -1,16 +1,16 @@
 import { randomUUID } from 'node:crypto';
 import type { UUID } from 'node:crypto';
 
-import vscode from 'vscode';
+import * as vscode from 'vscode';
 
 import type { EditorHtml } from '@common/messaging/EditorHtml';
 import type { GetDataResponse, EditorMessage } from '@common/messaging/EditorMessage';
 import type { ExtensionMessage } from '@common/messaging/ExtensionMessage';
 
 import JsonDocument from './JsonDocument';
-import buildViewHtml from './utils/buildViewHtml';
 import { disposeAll } from './utils/disposal';
 import WebviewCollection from './utils/WebviewCollection';
+import WebviewHtml from './utils/WebviewHtml';
 
 export default class JsonEditorProvider implements vscode.CustomEditorProvider {
 	constructor(private readonly _context: vscode.ExtensionContext) {}
@@ -97,10 +97,10 @@ export default class JsonEditorProvider implements vscode.CustomEditorProvider {
 
 		webviewPanel.webview.options = { enableScripts: true };
 
-		webviewPanel.webview.html = buildViewHtml(
-			webviewPanel.webview,
-			this._context.extensionUri,
-		);
+		webviewPanel.webview.html = WebviewHtml.toString({
+			view: webviewPanel.webview,
+			extensionUri: this._context.extensionUri,
+		});
 
 		// Subscribe to messages from this webview
 		webviewPanel.webview.onDidReceiveMessage(event => {

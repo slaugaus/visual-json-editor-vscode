@@ -1,14 +1,16 @@
 {
 	"compilerOptions": {
-		"module": "Node16",
-		"target": "ES2022",
-		"lib": ["ES2022"],
+		"module": "commonjs",
+		"target": "ES2024",
+		"lib": ["ES2024"],
 		"types": ["node", "vscode"],
 		"sourceMap": true,
 		"strict": true,
 		"forceConsistentCasingInFileNames": true,
 		"paths": {
 			"@common/*": ["../common/*"]
-		}
+		},
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js"
 	}
 }

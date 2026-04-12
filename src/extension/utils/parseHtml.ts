@@ -1,6 +1,6 @@
 import { LosslessNumber } from 'lossless-json';
 import { HTMLElement, parse as parseHtmlReal } from 'node-html-parser';
-import vscode from 'vscode';
+import * as vscode from 'vscode';
 
 import type { EditorHtml } from '@common/messaging/EditorHtml';
 import type { JsonUnknown } from '@common/messaging/JsonUnknown';

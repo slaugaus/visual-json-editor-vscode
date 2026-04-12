@@ -60,6 +60,12 @@
 		"import/exports-last": "off",
 		"import/group-exports": "off",
 		"import/no-named-export": "off",
+		"import/no-namespace": [
+			"error",
+			{
+				"ignore": ["vscode"]
+			}
+		],
 		"jsdoc-legacy/no-types": "warn",
 		"jsdoc-legacy/require-description": "warn",
 		// TODO: hopefully they deprecate more rules from legacy
@@ -86,13 +92,13 @@
 		],
 		"no-magic-numbers": "off",
 		"no-ternary": "off",
+		// Solid TS recommendations @ plugin 0.14.5
+		// (node_modules/eslint-plugin-solid/src/configs/typescript.ts)
 		// reactivity
 		"solid/components-return-once": "warn",
 		"solid/event-handlers": "warn",
 		// these rules are mostly style suggestions
 		"solid/imports": "warn",
-		// Solid TS recommendations @ plugin 0.14.5
-		// (node_modules/eslint-plugin-solid/src/configs/typescript.ts)
 		// identifier usage is important
 		"solid/jsx-no-duplicate-props": "error",
 		"solid/jsx-no-script-url": "error",

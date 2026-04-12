@@ -12,6 +12,7 @@ const standalone = process.argv.includes('--standalone');
 
 const buildExtension = async () => {
 	await build({
+		plugins: [SolidPlugin({ generate: 'ssr', hydratable: false })],
 		entrypoints: ['./src/extension/extension.ts'],
 		format: 'cjs',
 		target: 'node',

@@ -1,5 +1,5 @@
 import { parse as parseJson, stringify } from 'lossless-json';
-import vscode from 'vscode';
+import * as vscode from 'vscode';
 
 import type { EditorHtml } from '@common/messaging/EditorHtml';
 import type { JsonEdit } from '@common/messaging/JsonEdit';
