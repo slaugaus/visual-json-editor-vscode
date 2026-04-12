@@ -8,7 +8,8 @@
 				"oven.bun-vscode",
 				"oxc.oxc-vscode",
 				"ms-vscode.extension-test-runner",
-				"tauri-apps.tauri-vscode"
+				"tauri-apps.tauri-vscode",
+				"github.vscode-github-actions"
 			]
 		}
 	}

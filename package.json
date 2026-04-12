@@ -97,7 +97,7 @@
 	"dependencies": {
 		"@tauri-apps/api": "2.10.1",
 		"lossless-json": "4.3.0",
-		"node-html-parser": "6.1.13",
+		"node-html-parser": "7.1.0",
 		"solid-js": "1.9.12",
 		"zod": "4.3.6"
 	}

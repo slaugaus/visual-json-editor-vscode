@@ -2,7 +2,9 @@
 
 [![CI](https://github.com/slaugaus/visual-json-editor-vscode/actions/workflows/ci.yml/badge.svg)](https://github.com/slaugaus/visual-json-editor-vscode/actions/workflows/ci.yml)
 
-Open JSON files in a GUI that looks (kind of) like the VS Code settings page! Includes type changing, item rearrangement, undo/redo, and assistance with colors, dates, and times.
+Open JSON files in a GUI that looks (kind of) like the VS Code settings page! Includes
+type changing, item rearrangement, undo/redo, and assistance with colors, dates, and
+times.
 
 ## Features
 
