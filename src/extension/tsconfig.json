@@ -1,5 +1,7 @@
 {
+	"references": [{ "path": "../common" }],
 	"compilerOptions": {
+		"composite": true,
 		"module": "commonjs",
 		"target": "ES2024",
 		"lib": ["ES2024"],

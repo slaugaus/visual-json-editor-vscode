@@ -1,14 +1,14 @@
 {
-	"files": [],
+	"include": ["src/**/*", "scripts/**/*"],
 	"references": [
 		{
-			"path": "./src/extension"
+			"path": "./src/common"
 		},
 		{
 			"path": "./src/editor"
 		},
 		{
-			"path": "./src/common"
+			"path": "./src/extension"
 		},
 		{
 			"path": "./src/standalone"

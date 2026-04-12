@@ -1,5 +1,7 @@
 {
+	"references": [{ "path": "../common" }],
 	"compilerOptions": {
+		"composite": true,
 		"forceConsistentCasingInFileNames": true,
 		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
